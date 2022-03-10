@@ -34,7 +34,12 @@ class IpfsController {
     }
     String base64Encode = head + base64.encode(bytes);
     // debugPrint("base64Encode=$base64Encode");
-    controller.webViewController.runJavascript("addBase64File($taskId,'$base64Encode',${delay.inMilliseconds})");
+    var command = "window.nft.addBase64File($taskId,'$base64Encode',${delay.inMilliseconds})";
+    print(command);
+    controller.webViewController.runJavascript(command);
+    // controller.webViewController.runJavascript("""
+  // window.log('test')
+  //       """);
   }
 }
 
@@ -100,6 +105,11 @@ class _IpfsWebpageState extends State<IpfsWebpage> {
         debugPrint(e.failingUrl);
       },
       javascriptChannels: <JavascriptChannel>{
+        JavascriptChannel(
+            name: "logHandler",
+            onMessageReceived: (JavascriptMessage message) {
+              debugPrint("[webview] ${message.message}");
+            }),
         JavascriptChannel(
             name: "onNodeReady",
             onMessageReceived: (JavascriptMessage message) {

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<!--  <title>IPFS in the Browser</title>-->
+<!--  <link rel="icon favicon" href="favicon.ico"/>-->
+
+<!--  <script-->
+<!--    src="https://cdn.jsdelivr.net/npm/nft.storage@6.0.2/dist/bundle.esm.min.js"-->
+<!--    defer-->
+<!--  ></script>-->
+  <script src="src/nft.storage.js"  type="module" defer></script>
+  <script src="src/index.js" type="module" defer></script>
+<!--  <script src="src/index.js"  defer></script>-->
+</head>
+<body>
+<body onload="
+ setTimeout(function () {
+       window.nft.addBase64FileTest('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAMAAAC67D+PAAABBVBMVEWVk7NncaH/5d65scmioMGKjLaMgaN+e51xdpxYWIOlfoL//P/F+v/N+/7t7Pn7+viu5fj48vbu/fL94vDB5u1/yO2NzuvKyOXz5ePT0+Kfzdv73NqhwdmDvNiYxdfp1tTw2dHC2dDw1M+2tc6rp87Ux83BuMy1qczy38v2zsvpycvLu8riwcenqsPiv8Lp08DAsb+3qr69srzUtLvduLqporigkrfJsLSlm7R8j7OmmbK5oK+Ti6+Yh694hKysl6tzhquLiKlhcqK+oaGulp9ibppaaJpRYpd5dZFlbJFdZJGXgpBVXYw1S4qGe4c3RIQ1SHuJdHRxanSEYnBhWG5yV2skCAF6u6WtAAAAcUlEQVQI1wXBAwKEUAAFwPdzrW3bto3M+x+lGUwSjpZ5q7t4Er2NFWYUQy+G0DVzgQbLi9cgIlws2771L78onh16QO8f8qcGj2uutkPJfuXxZWaHcZ1aCingjwVVqc7PaRwFwk8LrREp44S76EprlpR8bzUO1oB/b30AAAAASUVORK5CYII=')
+    }, 1000);
+">
+<!--<script type="module">-->
+<!--  import * as index from './src/index.js'-->
+<!--console.log("index.js loaded")-->
+<!--</script>-->
+</body>
+</html>

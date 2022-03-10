@@ -2,12 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:app/ui/ipfs_node.dart';
+import 'package:app/ui/pages/home/home.dart';
+import 'package:app/ui/widgets/ipfs_node.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pretty_json/pretty_json.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -16,22 +18,66 @@ import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
   preferences.init();
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({Key? key}) : super(key: key);
 
   // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const FirstPage(),
+      // home: HomeScreen(),
+      home: HomeScreen(),
+    );
+  }
+}
+
+class TestState {
+  int number = 0;
+  String text = "hello";
+
+  TestState(this.number, this.text);
+}
+
+final StateProvider<int> counterProvider = StateProvider<int>((ref) {
+  return 0;
+});
+final StateProvider<String> textProvider = StateProvider<String>((ref) {
+  return "hello";
+});
+final StateProvider<TestState> combinedProvider = StateProvider<TestState>((ref) {
+  var counter = ref.watch(counterProvider);
+  var text = ref.watch(textProvider);
+  return TestState(counter, text);
+});
+
+class Home extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Counter example ${ref.watch(combinedProvider.state).state.text}')),
+      body: Center(
+        // Consumer is a widget that allows you reading providers.
+        child: Consumer(builder: (context, ref, _) {
+          return Text('${ref.watch(combinedProvider.state).state.number}');
+        }),
+      ),
+      floatingActionButton: FloatingActionButton(
+        // The read method is a utility to read a provider without listening to it
+        onPressed: () {
+          ref.read(counterProvider.state).state++;
+          ref.read(textProvider.state).state = "hello ${ref.read(counterProvider.state).state}";
+        },
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
