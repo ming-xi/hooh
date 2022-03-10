@@ -44,35 +44,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       extendBody: true,
       body: pages[index],
-      // bottomNavigationBar: Consumer(
-      //   builder: (context, ref, child) {
-      //     return BottomNavigationBar(
-      //       backgroundColor: Colors.transparent,
-      //       items: const [
-      //         BottomNavigationBarItem(icon: Icon(Icons.input), label: "input"),
-      //         BottomNavigationBarItem(icon: Icon(Icons.album), label: "album"),
-      //         BottomNavigationBarItem(icon: Icon(Icons.explore), label: "explore"),
-      //         BottomNavigationBarItem(icon: Icon(Icons.person), label: "person"),
-      //       ],
-      //       selectedItemColor: Colors.blue,
-      //       unselectedItemColor: Colors.grey,
-      //       onTap: (index) {
-      //         // HomeScreenState state = ref.read(widget.provider);
-      //         ref.read(widget.indexProvider.state).state = index;
-      //       },
-      //       currentIndex: index,
-      //     ).frosted(blur: 2.5, frostColor: Colors.white);
-      //   },
-      // ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          ref.read(bottomBarVisibilityProvider.state).state = !ref.read(bottomBarVisibilityProvider.state).state;
-        },
-        child: Icon(Icons.info),
-      ),
-      bottomNavigationBar: AnimatedContainer(
+      bottomNavigationBar: AnimatedSlide(
         duration: Duration(milliseconds: 250),
-        height: ref.watch(bottomBarVisibilityProvider.state).state ? 140 : 0,
+        offset: Offset(0, ref.watch(bottomBarVisibilityProvider.state).state ? 0 : 1),
         child: SafeArea(
           child: Container(
             margin: EdgeInsets.all(16),
@@ -129,61 +103,61 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 }
+// 是希希帮了大忙找到的代码~有很大的启发~
+// class ScrollToHideWidget extends StatefulWidget {
+//   final Widget child;
+//   final ScrollController controller;
+//   final Duration duration;
+//
+//   const ScrollToHideWidget({
+//     Key? key,
+//     required this.child,
+//     required this.controller,
+//     this.duration = const Duration(milliseconds: 250),
+//   }) : super(key: key);
+//
+//   @override
+//   State<ScrollToHideWidget> createState() => _ScrollToHideWidgetState();
+// }
 
-class ScrollToHideWidget extends StatefulWidget {
-  final Widget child;
-  final ScrollController controller;
-  final Duration duration;
-
-  const ScrollToHideWidget({
-    Key? key,
-    required this.child,
-    required this.controller,
-    this.duration = const Duration(milliseconds: 250),
-  }) : super(key: key);
-
-  @override
-  State<ScrollToHideWidget> createState() => _ScrollToHideWidgetState();
-}
-
-class _ScrollToHideWidgetState extends State<ScrollToHideWidget> {
-  bool isVisible = true;
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    widget.controller.addListener(listen);
-  }
-
-  void listen() {
-    final direction = widget.controller.position.userScrollDirection;
-    if (direction == ScrollDirection.forward) {
-      show();
-    } else if (direction == ScrollDirection.reverse) {
-      hide();
-    }
-  }
-
-  void show() {
-    if (!isVisible) setState(() => isVisible = true);
-  }
-
-  void hide() {
-    if (isVisible) setState(() => isVisible = false);
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    widget.controller.removeListener(listen);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => AnimatedContainer(
-        duration: widget.duration,
-        height: isVisible ? 140 : 0,
-        child: Wrap(children: [widget.child]),
-      );
-}
+// class _ScrollToHideWidgetState extends State<ScrollToHideWidget> {
+//   bool isVisible = true;
+//
+//   @override
+//   void initState() {
+//     // TODO: implement initState
+//     super.initState();
+//     widget.controller.addListener(listen);
+//   }
+//
+//   void listen() {
+//     final direction = widget.controller.position.userScrollDirection;
+//     if (direction == ScrollDirection.forward) {
+//       show();
+//     } else if (direction == ScrollDirection.reverse) {
+//       hide();
+//     }
+//   }
+//
+//   void show() {
+//     if (!isVisible) setState(() => isVisible = true);
+//   }
+//
+//   void hide() {
+//     if (isVisible) setState(() => isVisible = false);
+//   }
+//
+//   @override
+//   void dispose() {
+//     // TODO: implement dispose
+//     widget.controller.removeListener(listen);
+//     super.dispose();
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) => AnimatedContainer(
+//         duration: widget.duration,
+//         height: isVisible ? 140 : 0,
+//         child: Wrap(children: [widget.child]),
+//       );
+// }
