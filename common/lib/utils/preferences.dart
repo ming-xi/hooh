@@ -7,11 +7,13 @@ class Preferences {
   /// 顶层变量，单例模式
   Preferences._internal();
 
-  void init() {
-    SharedPreferences.getInstance().then((value) {
-       _prefs = value;
-       debugPrint("Preferences ready");
-    });
+  Future<void> init() async {
+    // SharedPreferences.getInstance().then((value) {
+    //    _prefs = value;
+    //    debugPrint("Preferences ready");
+    // });
+    _prefs = await SharedPreferences.getInstance();
+    debugPrint("Preferences ready");
   }
 
   late SharedPreferences _prefs;

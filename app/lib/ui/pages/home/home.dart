@@ -119,7 +119,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 //   @override
 //   State<ScrollToHideWidget> createState() => _ScrollToHideWidgetState();
 // }
-
+//
 // class _ScrollToHideWidgetState extends State<ScrollToHideWidget> {
 //   bool isVisible = true;
 //

@@ -17,10 +17,22 @@ import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   runApp(const ProviderScope(child: MyApp()));
-  preferences.init();
+  await initUtils();
 }
+
+Future<void> initUtils() async {
+  await initSyncUtils();
+  initASyncUtils();
+}
+
+///需要同步初始化的工具类
+Future<void> initSyncUtils() async {
+  await preferences.init();
+}
+
+///不需要同步初始化的工具类
+void initASyncUtils() {}
 
 class MyApp extends ConsumerWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -28,9 +40,8 @@ class MyApp extends ConsumerWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'HooH',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
