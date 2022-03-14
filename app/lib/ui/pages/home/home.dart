@@ -47,34 +47,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       bottomNavigationBar: AnimatedSlide(
         duration: Duration(milliseconds: 250),
         offset: Offset(0, ref.watch(bottomBarVisibilityProvider.state).state ? 0 : 1),
-        child: SafeArea(
-          child: Theme(
-            data: Theme.of(context).copyWith(
-              canvasColor: Colors.transparent,
-            ),
-            child: BottomNavigationBar(
-              type: BottomNavigationBarType.fixed,
-              showSelectedLabels: false,
-              showUnselectedLabels: false,
-              elevation: 0,
-              items: const [
-                BottomNavigationBarItem(icon: Icon(Icons.input), label: "input"),
-                BottomNavigationBarItem(icon: Icon(Icons.album), label: "album"),
-                BottomNavigationBarItem(icon: Icon(Icons.explore), label: "explore"),
-                BottomNavigationBarItem(icon: Icon(Icons.person), label: "person"),
-              ],
-              selectedItemColor: Colors.blue,
-              unselectedItemColor: Colors.grey,
-              onTap: (index) {
-                // HomeScreenState state = ref.read(widget.provider);
-                ref.read(widget.pageIndexProvider.state).state = index;
-              },
-              currentIndex: index,
-            ),
-          ).frosted(
-            blur: 2.5,
-            frostColor: Colors.white,
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            canvasColor: Colors.transparent,
           ),
+          child: BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+            elevation: 0,
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.input), label: "input"),
+              BottomNavigationBarItem(icon: Icon(Icons.image), label: "album"),
+              BottomNavigationBarItem(icon: Icon(Icons.explore), label: "explore"),
+              BottomNavigationBarItem(icon: Icon(Icons.person), label: "person"),
+            ],
+            selectedItemColor: Colors.blue,
+            unselectedItemColor: Colors.grey,
+            onTap: (index) {
+              // HomeScreenState state = ref.read(widget.provider);
+              ref.read(widget.pageIndexProvider.state).state = index;
+            },
+            currentIndex: index,
+          ),
+        ).frosted(
+          blur: 2.5,
+          frostColor: Colors.white,
+          frostOpacity: 0.7,
         ),
       ),
     );
