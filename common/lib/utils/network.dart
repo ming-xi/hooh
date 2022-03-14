@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:common/models/gallery_category.dart';
 import 'package:common/models/user.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
@@ -25,6 +26,10 @@ class Network {
 
   Future<User> getUser(String userSafeId) {
     return _getResponseObject<User>(HttpMethod.get, _buildFygtUri("users/$userSafeId"), deserializer: User.fromJson);
+  }
+
+  Future<List<GalleryCategory>> getGalleryCategoryList() {
+    return _getResponseList(HttpMethod.get, _buildFygtUri("/v2/gallery/categoriesV4"), deserializer: GalleryCategory.fromJson);
   }
 
   Future<M> _getResponseObject<M>(HttpMethod method, Uri uri,
