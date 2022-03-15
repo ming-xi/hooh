@@ -72,7 +72,17 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
                           item.selected = false;
                         }
                         categories[index].selected = true;
-                        ref.read(galleryCategoriesProvider.state).state = categories;
+                        // 因为categories其实还是原来的list，所以给state赋值无效。所以要构建一个新的list赋值，有3种写法：
+                        // #1
+                        // List<GalleryCategoryItem> newList = [];
+                        // newList.addAll(categories);
+                        // ref.read(galleryCategoriesProvider.state).state = newList;
+
+                        // #2 这个叫联什么什么写法，就是两个点，代表要对这个对象进行后面的操作
+                        // ref.read(galleryCategoriesProvider.state).state = []..addAll(categories);
+
+                        // #3 dart把#2优化成了3个点的，叫spread，一个意思，语法糖
+                        ref.read(galleryCategoriesProvider.state).state = [...categories];
                       },
                       child: CategoryItemView(categories[index]),
                     );
@@ -105,11 +115,7 @@ class CategoryItemView extends ConsumerWidget {
         color: item.selected ? Colors.yellow : Colors.transparent,
       ),
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-
-      child: Text(item.galleryCategory.name ?? "",
-      style: const TextStyle(
-        fontSize: 12
-      )),
+      child: Text(item.galleryCategory.name ?? "", style: const TextStyle(fontSize: 12)),
     );
   }
 }
