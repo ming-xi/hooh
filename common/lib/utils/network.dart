@@ -53,8 +53,8 @@ class Network {
       M Function(Map<String, dynamic>)? deserializer}) async {
     if (deserializer != null) {
       return (await _getRawResponse(method, uri, queryParams: queryParams, extraHeaders: extraHeaders, body: body, deserializer: deserializer)
-              as List<Map<String, dynamic>>)
-          .map((e) => deserializer(e))
+              as List<dynamic>)
+          .map((e) => deserializer(e as Map<String, dynamic>))
           .toList();
     } else {
       return Future.value([]);

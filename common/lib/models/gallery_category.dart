@@ -2,17 +2,18 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'gallery_category.g.dart';
 
-enum GalleryCategoryType { normal, local, favorite, newest, trending, unknown }
+// enum GalleryCategoryType { normal, local, favorite, newest, trending, unknown }
 
 @JsonSerializable()
 class GalleryCategory {
-  final String safeId;
+  @JsonKey(name: "safe_id")
+  String safeId;
 
-  final String? name;
+  String? name;
 
-  final GalleryCategoryType? type;
+  // final GalleryCategoryType? type;
 
-  GalleryCategory({required this.safeId, required this.name, required this.type});
+  GalleryCategory({required this.safeId});
 
   factory GalleryCategory.fromJson(Map<String, dynamic> json) => _$GalleryCategoryFromJson(json);
 

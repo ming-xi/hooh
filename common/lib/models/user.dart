@@ -5,13 +5,13 @@ part 'user.g.dart';
 
 @JsonSerializable()
 class User {
-  final String name;
+  String name;
 
-  final String? username;
+  String? username;
 
-  final DateTime? createdAt;
+  DateTime? createdAt;
 
-  User({required this.name, required this.username, this.createdAt});
+  User({required this.name});
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 

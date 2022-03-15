@@ -63,6 +63,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
               SizedBox(
                 height: 80,
                 child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
                   itemBuilder: (context, index) {
                     return CategoryItemView(categories[index]);
                   },
