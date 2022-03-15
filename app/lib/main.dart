@@ -1,14 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/widgets/ipfs_node.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pretty_json/pretty_json.dart';
@@ -17,48 +15,6 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
 void main() async {
-  // const sslUrl = 'https://valid-isrgrootx1.letsencrypt.org/';
-  // /// From dart:io, create a HttpClient with a trusted certificate [cert]
-  // /// added to SecurityContext.
-  // /// Wrapped in try catch in case the certificate is already trusted by
-  // /// device/os, which will cause an exception to be thrown.
-  // HttpClient customHttpClient({String cert}) {
-  //   SecurityContext context = SecurityContext.defaultContext;
-  //   try {
-  //     if (cert != null) {
-  //       Uint8List bytes = utf8.encode(cert);
-  //       context.setTrustedCertificatesBytes(bytes);
-  //     }
-  //     print('createHttpClient() - cert added!');
-  //   } on TlsException catch (e) {
-  //     if (e?.osError?.message != null &&
-  //         e.osError.message.contains('CERT_ALREADY_IN_HASH_TABLE')) {
-  //       print('createHttpClient() - cert already trusted! Skipping.');
-  //     }
-  //     else {
-  //       print('createHttpClient().setTrustedCertificateBytes EXCEPTION: $e');
-  //       rethrow;
-  //     }
-  //   } finally {}
-  //   HttpClient httpClient = new HttpClient(context: context);
-  //   return httpClient;
-  // }
-  // /// Use package:http Client with our custom dart:io HttpClient with added
-  // /// LetsEncrypt trusted certificate
-  // http.Client createLEClient() {
-  //   IOClient ioClient;
-  //   ioClient = IOClient(customHttpClient(cert: ISRG_X1));
-  //   return ioClient;
-  // }
-  // /// Example using a custom package:http Client
-  // /// that will work with devices missing LetsEncrypt
-  // /// ISRG Root X1 certificates, like old Android 7 devices.
-  // test('HTTP client to LetsEncrypt SSL website', () async {
-  //   http.Client _client = createLEClient();
-  //   http.Response _response = await _client.get(sslUrl);
-  //   print(_response.body);
-  //   expect(_response.statusCode, 200);
-  // });
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const ProviderScope(child: MyApp()));
   await initUtils();
