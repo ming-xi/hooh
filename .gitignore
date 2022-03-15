@@ -474,3 +474,5 @@ Dependencies/
 
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij,flutter,android,swift,objective-c,node
+
+*.g.dart
