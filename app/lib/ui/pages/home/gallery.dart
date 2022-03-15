@@ -61,13 +61,24 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
                 ),
               ),
               SizedBox(
-                height: 80,
+                height: 40,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemBuilder: (context, index) {
-                    return CategoryItemView(categories[index]);
+                    return GestureDetector(
+                      onTap: () {
+                        print(index);
+                        for (var item in categories) {
+                          item.selected = false;
+                        }
+                        categories[index].selected = true;
+                        ref.read(galleryCategoriesProvider.state).state = categories;
+                      },
+                      child: CategoryItemView(categories[index]),
+                    );
                   },
                   itemCount: categories.length,
+                  padding: const EdgeInsets.fromLTRB(16, 0, 0, 0),
                 ),
               ),
             ],
@@ -89,9 +100,16 @@ class CategoryItemView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(100),
+        color: item.selected ? Colors.yellow : Colors.transparent,
+      ),
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      color: item.selected ? Colors.yellow : Colors.transparent,
-      child: Text(item.galleryCategory.name ?? ""),
+
+      child: Text(item.galleryCategory.name ?? "",
+      style: const TextStyle(
+        fontSize: 12
+      )),
     );
   }
 }
