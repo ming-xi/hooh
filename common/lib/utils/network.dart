@@ -14,7 +14,8 @@ enum HttpMethod { get, post, put, delete }
 
 class Network {
   /// 顶层变量，单例模式
-  Network._internal();
+  Network._internal() {
+  }
 
   static const host = "api.fygtapp.cn";
   static const serverPathPrefix = "v2/";
@@ -29,7 +30,7 @@ class Network {
   }
 
   Future<List<GalleryCategory>> getGalleryCategoryList() {
-    return _getResponseList(HttpMethod.get, _buildFygtUri("/v2/gallery/categoriesV4"), deserializer: GalleryCategory.fromJson);
+    return _getResponseList<GalleryCategory>(HttpMethod.get, _buildFygtUri("gallery/categoriesV4"), deserializer: GalleryCategory.fromJson);
   }
 
   Future<M> _getResponseObject<M>(HttpMethod method, Uri uri,
