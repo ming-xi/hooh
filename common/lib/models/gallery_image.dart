@@ -12,9 +12,11 @@ class GalleryImage {
   String imageUrl;
   @JsonKey(name: "uploader_name")
   String uploaderName;
+  @JsonKey(name: "favorited")
+  bool favorited;
   // final GalleryImageType? type;
 
-  GalleryImage({required this.safeId, required this.imageUrl, required this.uploaderName});
+  GalleryImage({required this.safeId, required this.imageUrl, required this.uploaderName, required this.favorited});
 
   factory GalleryImage.fromJson(Map<String, dynamic> json) => _$GalleryImageFromJson(json);
 

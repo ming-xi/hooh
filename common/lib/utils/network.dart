@@ -47,6 +47,9 @@ class Network {
       Map<String, dynamic>? body,
       M Function(Map<String, dynamic>)? deserializer}) async {
     if (deserializer != null) {
+      extraHeaders ??= {};
+        extraHeaders["Authorization"]= "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBY2Nlc3NUb2tlbiIsInVzZXJfc2FmZV9pZCI6ImRlOTkyYWVkLWEyYzctNGEzZS05YzZkLTU3YmM3YTEyNWYwYyIsImV4cCI6MTY1MDA5ODgwNywiaWF0IjoxNjQ3NTA2ODA3fQ.pcqeofRYGPQ0fvIIn5ZdSOkEGNyU-trFaqWcyDBOAvJyi-bHSLhqCzwOjDRDF6fJ-BzqMQkg-_IRr61Hq4baBg";
+
       return deserializer(await _getRawResponse(method, uri, queryParams: queryParams, extraHeaders: extraHeaders, body: body, deserializer: deserializer)
           as Map<String, dynamic>);
     } else {
@@ -60,6 +63,9 @@ class Network {
       Map<String, dynamic>? body,
       M Function(Map<String, dynamic>)? deserializer}) async {
     if (deserializer != null) {
+      extraHeaders ??= {};
+      extraHeaders["Authorization"]= "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBY2Nlc3NUb2tlbiIsInVzZXJfc2FmZV9pZCI6ImRlOTkyYWVkLWEyYzctNGEzZS05YzZkLTU3YmM3YTEyNWYwYyIsImV4cCI6MTY1MDA5ODgwNywiaWF0IjoxNjQ3NTA2ODA3fQ.pcqeofRYGPQ0fvIIn5ZdSOkEGNyU-trFaqWcyDBOAvJyi-bHSLhqCzwOjDRDF6fJ-BzqMQkg-_IRr61Hq4baBg";
+
       return (await _getRawResponse(method, uri, queryParams: queryParams, extraHeaders: extraHeaders, body: body, deserializer: deserializer) as List<dynamic>)
           .map((e) => deserializer(e as Map<String, dynamic>))
           .toList();
@@ -79,16 +85,16 @@ class Network {
     http.Response response;
     switch (method) {
       case HttpMethod.get:
-        response = await _client.get(uri);
+        response = await _client.get(uri,headers: extraHeaders?.map((key, value) => MapEntry(key, value.toString())));
         break;
       case HttpMethod.post:
-        response = await _client.post(uri, body: body);
+        response = await _client.post(uri, body: body, headers: extraHeaders?.map((key, value) => MapEntry(key, value.toString())));
         break;
       case HttpMethod.put:
-        response = await _client.put(uri, body: body);
+        response = await _client.put(uri, body: body, headers: extraHeaders?.map((key, value) => MapEntry(key, value.toString())));
         break;
       case HttpMethod.delete:
-        response = await _client.delete(uri, body: body);
+        response = await _client.delete(uri, body: body, headers: extraHeaders?.map((key, value) => MapEntry(key, value.toString())));
         break;
     }
     var json = jsonDecode(utf8.decode(response.bodyBytes));

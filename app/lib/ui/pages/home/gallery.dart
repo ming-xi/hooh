@@ -106,7 +106,10 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
               childAspectRatio: 1.0),
           itemCount: list.length,
           itemBuilder: (BuildContext context, int index) =>
-              GalleryImageView(list[index]),
+              GalleryImageView(list[index],(newState){
+                list[index].favorited=newState;
+                ref.refresh(galleryImagesProvider);
+              }),
         ),
       );
     }
@@ -233,9 +236,9 @@ class CategoryItemView extends ConsumerWidget {
 
 class GalleryImageView extends ConsumerStatefulWidget {
   final GalleryImage item;
-
+final Function(bool) callback;
   const GalleryImageView(
-    this.item, {
+    this.item, this.callback, {
     Key? key,
   }) : super(key: key);
 
@@ -247,10 +250,15 @@ class _GalleryImageViewState extends ConsumerState<GalleryImageView> {
   StateProvider<bool> visibleProvider = StateProvider(
     (ref) => false,
   );
+  StateProvider<bool> favoriteProvider = StateProvider(
+    (ref) => false,
+  );
 
   @override
   Widget build(BuildContext context) {
     var visible = ref.watch(visibleProvider.state).state;
+    var favorite = ref.watch(favoriteProvider.state).state;
+    // ref.read(favoriteProvider.state).state = widget.item.favorited;
 
     return Stack(
       children: [
@@ -276,14 +284,24 @@ class _GalleryImageViewState extends ConsumerState<GalleryImageView> {
           child: Container(
             width: 44,
             height: 44,
-            child: Center(
-              child: SvgPicture.asset('assets/images/collection_unselected.svg',
-                  height: 27, width: 27),
+            child:         GestureDetector(
+              child: (
+                  Center(
+                    child: SvgPicture.asset(widget.item.favorited ? 'assets/images/collection_selected.svg' : 'assets/images/collection_unselected.svg',
+                        height: 27, width: 27),
+                  )
+              ),
+              onTap: () {
+                // widget.item.favorited = !widget.item.favorited;
+                widget.callback(!widget.item.favorited);
+                // ref.read(favoriteProvider.state).state = widget.item.favorited;
+              },
             ),
           ),
           top: 0,
           right: 0,
         ),
+
         // 图片作者信息
         Positioned(
           child: GestureDetector(
