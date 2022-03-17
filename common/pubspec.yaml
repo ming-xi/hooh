@@ -15,6 +15,7 @@ dependencies:
   http: ^0.13.4
   pretty_json: ^2.0.0
   shared_preferences: ^2.0.13
+  tuple: ^2.0.0
 
 dev_dependencies:
   flutter_test:

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="28px" height="28px" viewBox="0 0 28 28" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>编组</title>
+    <g id="控件" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="icon-图库-收藏-off" transform="translate(-2.000000, -2.000000)">
+            <g id="编组" transform="translate(2.666667, 2.666667)">
+                <circle id="Oval-5备份" fill="#707070" opacity="0.3" cx="13.3333333" cy="13.3333333" r="13.3333333"></circle>
+                <path d="M17.3333333,7.33333333 C15.9026667,7.33333333 14.2295556,8.95522858 13.3333333,10 C12.4371111,8.95522858 10.764,7.33333333 9.33333333,7.33333333 C6.80088889,7.33333333 5.33333333,9.3086043 5.33333333,11.8225855 C5.33333333,14.6075285 8,17.5555556 13.3333333,20.6666667 C18.6666667,17.5555556 21.3333333,14.6666667 21.3333333,12 C21.3333333,9.48601877 19.8657778,7.33333333 17.3333333,7.33333333 Z" id="Shape" fill="#FFFFFF" fill-rule="nonzero"></path>
+            </g>
+        </g>
+    </g>
+</svg>
