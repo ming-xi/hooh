@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:common/models/gallery_category.dart';
 import 'package:common/models/gallery_image.dart';
+import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/user.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
@@ -28,7 +29,13 @@ class Network {
   late final http.Client _client;
   bool _isUsingLocalServer = false;
 
-  // Network();
+  requestAsync<T>(Future<T> request, Function(T data) onSuccess, Function(HoohApiErrorResponse error) onError) {
+    request.then(onSuccess).catchError((error) {
+      if (error is HoohApiErrorResponse) {
+        onError(error);
+      }
+    });
+  }
 
   Future<User> getUser(String userSafeId) {
     return _getResponseObject<User>(HttpMethod.get, _buildFygtUri("users/$userSafeId"), deserializer: User.fromJson);
@@ -37,8 +44,11 @@ class Network {
   Future<List<GalleryCategory>> getGalleryCategoryList() {
     return _getResponseList<GalleryCategory>(HttpMethod.get, _buildFygtUri("gallery/categoriesV4"), deserializer: GalleryCategory.fromJson);
   }
-  Future<List<GalleryImage>> getGalleryImageList(String id, int page, int width,{int size = 20}) {
-    return _getResponseList<GalleryImage>(HttpMethod.get, _buildFygtUri("gallery/categories/$id/imagesV3",params: {"page": page, "width": width, "size": size}), deserializer: GalleryImage.fromJson);
+
+  Future<List<GalleryImage>> getGalleryImageList(String id, int page, int width, {int size = 20}) {
+    return _getResponseList<GalleryImage>(
+        HttpMethod.get, _buildFygtUri("gallery/categories/$id/imagesV3", params: {"page": page, "width": width, "size": size}),
+        deserializer: GalleryImage.fromJson);
   }
 
   Future<M> _getResponseObject<M>(HttpMethod method, Uri uri,
@@ -48,10 +58,14 @@ class Network {
       M Function(Map<String, dynamic>)? deserializer}) async {
     if (deserializer != null) {
       extraHeaders ??= {};
-        extraHeaders["Authorization"]= "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBY2Nlc3NUb2tlbiIsInVzZXJfc2FmZV9pZCI6ImRlOTkyYWVkLWEyYzctNGEzZS05YzZkLTU3YmM3YTEyNWYwYyIsImV4cCI6MTY1MDA5ODgwNywiaWF0IjoxNjQ3NTA2ODA3fQ.pcqeofRYGPQ0fvIIn5ZdSOkEGNyU-trFaqWcyDBOAvJyi-bHSLhqCzwOjDRDF6fJ-BzqMQkg-_IRr61Hq4baBg";
-
-      return deserializer(await _getRawResponse(method, uri, queryParams: queryParams, extraHeaders: extraHeaders, body: body, deserializer: deserializer)
-          as Map<String, dynamic>);
+      extraHeaders["Authorization"] =
+          "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBY2Nlc3NUb2tlbiIsInVzZXJfc2FmZV9pZCI6ImRlOTkyYWVkLWEyYzctNGEzZS05YzZkLTU3YmM3YTEyNWYwYyIsImV4cCI6MTY1MDA5ODgwNywiaWF0IjoxNjQ3NTA2ODA3fQ.pcqeofRYGPQ0fvIIn5ZdSOkEGNyU-trFaqWcyDBOAvJyi-bHSLhqCzwOjDRDF6fJ-BzqMQkg-_IRr61Hq4baBg";
+      var data = await _getRawResponse(method, uri, queryParams: queryParams, extraHeaders: extraHeaders, body: body, deserializer: deserializer);
+      if (data is HoohApiErrorResponse) {
+        return Future.error(data);
+      } else {
+        return deserializer(data as Map<String, dynamic>);
+      }
     } else {
       return Future.value(null);
     }
@@ -64,7 +78,8 @@ class Network {
       M Function(Map<String, dynamic>)? deserializer}) async {
     if (deserializer != null) {
       extraHeaders ??= {};
-      extraHeaders["Authorization"]= "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBY2Nlc3NUb2tlbiIsInVzZXJfc2FmZV9pZCI6ImRlOTkyYWVkLWEyYzctNGEzZS05YzZkLTU3YmM3YTEyNWYwYyIsImV4cCI6MTY1MDA5ODgwNywiaWF0IjoxNjQ3NTA2ODA3fQ.pcqeofRYGPQ0fvIIn5ZdSOkEGNyU-trFaqWcyDBOAvJyi-bHSLhqCzwOjDRDF6fJ-BzqMQkg-_IRr61Hq4baBg";
+      extraHeaders["Authorization"] =
+          "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBY2Nlc3NUb2tlbiIsInVzZXJfc2FmZV9pZCI6ImRlOTkyYWVkLWEyYzctNGEzZS05YzZkLTU3YmM3YTEyNWYwYyIsImV4cCI6MTY1MDA5ODgwNywiaWF0IjoxNjQ3NTA2ODA3fQ.pcqeofRYGPQ0fvIIn5ZdSOkEGNyU-trFaqWcyDBOAvJyi-bHSLhqCzwOjDRDF6fJ-BzqMQkg-_IRr61Hq4baBg";
 
       return (await _getRawResponse(method, uri, queryParams: queryParams, extraHeaders: extraHeaders, body: body, deserializer: deserializer) as List<dynamic>)
           .map((e) => deserializer(e as Map<String, dynamic>))
@@ -85,7 +100,7 @@ class Network {
     http.Response response;
     switch (method) {
       case HttpMethod.get:
-        response = await _client.get(uri,headers: extraHeaders?.map((key, value) => MapEntry(key, value.toString())));
+        response = await _client.get(uri, headers: extraHeaders?.map((key, value) => MapEntry(key, value.toString())));
         break;
       case HttpMethod.post:
         response = await _client.post(uri, body: body, headers: extraHeaders?.map((key, value) => MapEntry(key, value.toString())));
@@ -97,9 +112,29 @@ class Network {
         response = await _client.delete(uri, body: body, headers: extraHeaders?.map((key, value) => MapEntry(key, value.toString())));
         break;
     }
-    var json = jsonDecode(utf8.decode(response.bodyBytes));
-    debugPrint("[RESPONSE $id] json=${prettyJson(json)}");
-    return json;
+    dynamic json;
+    try {
+      json = jsonDecode(utf8.decode(response.bodyBytes));
+      debugPrint("[RESPONSE $id] json=${prettyJson(json)}");
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+    if (response.statusCode >= 200 && response.statusCode < 400) {
+      //success
+      return json;
+    } else {
+      //failed
+      HoohApiErrorResponse hoohApiErrorResponse;
+      if (json != null) {
+        hoohApiErrorResponse = HoohApiErrorResponse.fromJson(json);
+        if (hoohApiErrorResponse.message.isEmpty) {
+          hoohApiErrorResponse.message = "<未返回错误信息>";
+        }
+      } else {
+        hoohApiErrorResponse = HoohApiErrorResponse(500, "<无法解析>", "<无法解析>");
+      }
+      return hoohApiErrorResponse;
+    }
   }
 
   Uri _buildUri(bool ssl, String host, String path, {Map<String, dynamic>? params}) {

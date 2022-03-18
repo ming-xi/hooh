@@ -176,7 +176,10 @@ class _FirstPageState extends State<FirstPage> {
                 child: Text("push")),
             ElevatedButton(
                 onPressed: () {
-                  network.getUser("283bc4ee-e489-452f-9827-a15946cf9656").then((value) {
+                  // network.getUser("283bc4ee-e489-452f-9827-a15946cf9656").catchError((error, stackTrace){
+                  network.getUser("4ee-e489-452f-9827-a15946cf9656").catchError((error, stackTrace){
+                    debugPrint(error.toString());
+                  }).then((value) {
                     showDialog(
                         context: context,
                         builder: (e) => AlertDialog(
