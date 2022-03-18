@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app/ui/pages/gallery/search.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:common/models/gallery_category.dart';
@@ -40,6 +42,8 @@ class GalleryPage extends ConsumerStatefulWidget {
 }
 
 class _GalleryPageState extends ConsumerState<GalleryPage> {
+  final RefreshController _refreshController = RefreshController(initialRefresh: false);
+
   @override
   void initState() {
     super.initState();
@@ -61,7 +65,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
     String? safeId = ref.watch(selectedCategoryProvider.state).state.galleryCategory?.safeId;
     int width = MediaQuery.of(context).size.width ~/ 3;
     Widget listWidget;
-    RefreshController _refreshController = RefreshController(initialRefresh: false);
+
 
     if (safeId == null) {
       listWidget = Container();
@@ -82,13 +86,15 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
           ref.read(galleryImagesProvider.state).state = [];
           ref.read(galleryImagesPageProvider.state).state = 1;
           ref.refresh(newGalleryImagesProvider(Tuple2(safeId, width)));
+          Timer(const Duration(milliseconds: 500), (){
           _refreshController.refreshCompleted();
-          _refreshController.loadComplete();
+          });
         },
         onLoading: () async {
           ref.read(galleryImagesPageProvider.state).state += 1;
-          _refreshController.refreshCompleted();
-          _refreshController.loadComplete();
+          Timer(const Duration(milliseconds: 500), (){
+            _refreshController.loadComplete();
+          });
         },
         controller: _refreshController,
         child: GridView.builder(
@@ -101,6 +107,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
           itemCount: list.length,
           itemBuilder: (BuildContext context, int index) => GalleryImageView(list[index], (newState) {
             list[index].favorited = newState;
+            network.setGalleryImageFavorited(list[index].safeId, newState);
             // ref.refresh(galleryImagesProvider);
             ref.read(galleryImagesProvider.state).state = [...list];
           }),
@@ -248,15 +255,10 @@ class _GalleryImageViewState extends ConsumerState<GalleryImageView> {
   StateProvider<bool> visibleProvider = StateProvider(
     (ref) => false,
   );
-  StateProvider<bool> favoriteProvider = StateProvider(
-    (ref) => false,
-  );
 
   @override
   Widget build(BuildContext context) {
     var visible = ref.watch(visibleProvider.state).state;
-    var favorite = ref.watch(favoriteProvider.state).state;
-    // ref.read(favoriteProvider.state).state = widget.item.favorited;
 
     return Stack(
       children: [
@@ -288,9 +290,7 @@ class _GalleryImageViewState extends ConsumerState<GalleryImageView> {
                     height: 27, width: 27),
               )),
               onTap: () {
-                // widget.item.favorited = !widget.item.favorited;
                 widget.callback(!widget.item.favorited);
-                // ref.read(favoriteProvider.state).state = widget.item.favorited;
               },
             ),
           ),
@@ -314,12 +314,6 @@ class _GalleryImageViewState extends ConsumerState<GalleryImageView> {
             onTapUp: (details) {
               ref.read(visibleProvider.state).state = false;
             },
-            // onLongPressStart: (details) {
-            //   ref.read(visibleProvider.state).state = true;
-            // },
-            // onLongPressEnd: (details) {
-            //   ref.read(visibleProvider.state).state = false;
-            // },
           ),
           bottom: 0,
           right: 0,

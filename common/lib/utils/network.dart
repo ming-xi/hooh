@@ -51,6 +51,10 @@ class Network {
         deserializer: GalleryImage.fromJson);
   }
 
+  Future <void> setGalleryImageFavorited(String id, bool favorited) {
+    return _getResponseObject<void>(favorited ? HttpMethod.put : HttpMethod.delete, _buildFygtUri("gallery/images/{$id}}/favorite"));
+  }
+
   Future<M> _getResponseObject<M>(HttpMethod method, Uri uri,
       {Map<String, dynamic>? extraHeaders,
       Map<String, dynamic>? queryParams,
