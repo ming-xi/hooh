@@ -127,12 +127,12 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
                   _galleryItemTouched(index);
                 },
                 child: GalleryImageView(list[index - 1], (newState) {
-                  list[index].favorited = newState;
-                  debugPrint(list[index].safeId);
+                  list[index - 1].favorited = newState;
+                  debugPrint(list[index - 1].safeId);
                   ref.read(galleryImagesProvider.state).state = [...list];
                   network.requestAsync(
                       network.setGalleryImageFavorited(
-                          list[index].safeId, newState), (data) {
+                          list[index - 1].safeId, newState), (data) {
                     var categoryName = ref
                         .read(selectedCategoryProvider.state)
                         .state
@@ -140,11 +140,11 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
                         ?.name;
                     if (categoryName == "我的常用") {
                       debugPrint("我的常用");
-                      list.removeAt(index);
+                      list.removeAt(index - 1);
                       ref.read(galleryImagesProvider.state).state = [...list];
                     }
                   }, (error) {
-                    list[index].favorited = !newState;
+                    list[index - 1].favorited = !newState;
                     ref.read(galleryImagesProvider.state).state = [...list];
                   });
                 }),
