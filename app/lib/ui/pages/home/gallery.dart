@@ -1,20 +1,21 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:app/ui/pages/gallery/search.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:common/models/gallery_category.dart';
 import 'package:common/models/gallery_image.dart';
 import 'package:common/utils/network.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:image_cropping/image_cropping.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tuple/tuple.dart';
 
-final galleryCategoriesProvider =
-    StateProvider((ref) => <GalleryCategoryItem>[]);
+final galleryCategoriesProvider = StateProvider((ref) => <GalleryCategoryItem>[]);
 final selectedCategoryProvider = StateProvider((ref) {
   return ref.watch(galleryCategoriesProvider.state).state.firstWhere(
         (element) => element.selected,
@@ -22,8 +23,7 @@ final selectedCategoryProvider = StateProvider((ref) {
       );
 });
 final galleryImagesProvider = StateProvider((ref) => <GalleryImage>[]);
-final newGalleryImagesProvider = FutureProvider.autoDispose
-    .family<List<GalleryImage>, Tuple2<String, int>>((ref, tuple) async {
+final newGalleryImagesProvider = FutureProvider.autoDispose.family<List<GalleryImage>, Tuple2<String, int>>((ref, tuple) async {
   // // Cancel the HTTP request if the user leaves the detail page before
   // // the request completes.
   // final cancelToken = CancelToken();
@@ -46,8 +46,8 @@ class GalleryPage extends ConsumerStatefulWidget {
 }
 
 class _GalleryPageState extends ConsumerState<GalleryPage> {
-  final RefreshController _refreshController =
-      RefreshController(initialRefresh: false);
+  final RefreshController _refreshController = RefreshController(initialRefresh: false);
+  Uint8List? imageBytes;
 
   @override
   void initState() {
@@ -65,20 +65,16 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
   Widget build(BuildContext context) {
     debugPrint("build page");
     final ScrollController _controller = ScrollController();
-    List<GalleryCategoryItem> categories =
-        ref.watch(galleryCategoriesProvider.state).state;
+    List<GalleryCategoryItem> categories = ref.watch(galleryCategoriesProvider.state).state;
     List<GalleryImage> images = ref.watch(galleryImagesProvider.state).state;
-    String? safeId =
-        ref.watch(selectedCategoryProvider.state).state.galleryCategory?.safeId;
+    String? safeId = ref.watch(selectedCategoryProvider.state).state.galleryCategory?.safeId;
     int width = MediaQuery.of(context).size.width ~/ 3;
     Widget listWidget;
 
     if (safeId == null) {
       listWidget = Container();
     } else {
-      List<GalleryImage> list = ref
-          .watch(newGalleryImagesProvider(Tuple2(safeId, width)))
-          .when(data: (data) {
+      List<GalleryImage> list = ref.watch(newGalleryImagesProvider(Tuple2(safeId, width))).when(data: (data) {
         images.addAll(data);
         return images;
       }, error: (obj, stack) {
@@ -115,12 +111,22 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
           itemCount: list.length + 1,
           itemBuilder: (BuildContext context, int index) {
             if (index == 0) {
+              // return GestureDetector(
+              //   child: const AddLocalImageView(),
+              //   onTap: () {
+              //     _galleryItemTouched(index);
+              //   },
+              // );
               return GestureDetector(
-                child: const AddLocalImageView(),
+                child: imageBytes == null
+                    ? const AddLocalImageView()
+                    : Image.memory(imageBytes!),
                 onTap: () {
                   _galleryItemTouched(index);
                 },
               );
+
+
             } else {
               return GestureDetector(
                 onTap: () {
@@ -130,14 +136,8 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
                   list[index - 1].favorited = newState;
                   debugPrint(list[index - 1].safeId);
                   ref.read(galleryImagesProvider.state).state = [...list];
-                  network.requestAsync(
-                      network.setGalleryImageFavorited(
-                          list[index - 1].safeId, newState), (data) {
-                    var categoryName = ref
-                        .read(selectedCategoryProvider.state)
-                        .state
-                        .galleryCategory
-                        ?.name;
+                  network.requestAsync(network.setGalleryImageFavorited(list[index - 1].safeId, newState), (data) {
+                    var categoryName = ref.read(selectedCategoryProvider.state).state.galleryCategory?.name;
                     if (categoryName == "我的常用") {
                       debugPrint("我的常用");
                       list.removeAt(index - 1);
@@ -174,27 +174,20 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
                         ),
                         child: GestureDetector(
                           onTap: () {
-                            Navigator.of(context).push(PageRouteBuilder(
-                                pageBuilder:
-                                    (context, animation, secondaryAnimation) {
+                            Navigator.of(context).push(PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) {
                               return const GallerySearchScreen();
-                            }, transitionsBuilder: (context, animation,
-                                    secondaryAnimation, child) {
+                            }, transitionsBuilder: (context, animation, secondaryAnimation, child) {
                               return child;
                             }));
                           },
                           child: Row(
                             children: [
-                              SvgPicture.asset('assets/images/icon_search.svg',
-                                  height: 24, width: 24),
+                              SvgPicture.asset('assets/images/icon_search.svg', height: 24, width: 24),
                               const SizedBox(width: 10),
                               const Expanded(
                                   child: Text(
                                 'search',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF707070)),
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF707070)),
                               ))
                             ],
                           ),
@@ -230,9 +223,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
 
                         ref.read(galleryImagesProvider.state).state = [];
                         ref.read(galleryImagesPageProvider.state).state = 1;
-                        ref.read(galleryCategoriesProvider.state).state = [
-                          ...categories
-                        ];
+                        ref.read(galleryCategoriesProvider.state).state = [...categories];
 
                         // _controller.animateTo(125, duration: Duration(milliseconds: 250), curve: Curves.ease);
                       },
@@ -257,13 +248,82 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
   Future<void> _galleryItemTouched(int index) async {
     if (index == 0) {
       debugPrint("插入图片");
-      FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image, allowCompression: false);
-      if (result != null) {
-        File file = File(result.files.single.path!);
+      // FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image, allowCompression: false);
+      // if (result != null) {
+      //   File file = File(result.files.single.path!);
+      //
+      // }
 
-      }
+      _showLocalOptionActionSheet();
     } else {
       debugPrint("进入做图");
+    }
+  }
+
+  Future<void> _showLocalOptionActionSheet() async {
+    CupertinoActionSheet actionSheet = CupertinoActionSheet(
+      actions: [
+        CupertinoActionSheetAction(
+          child: const Text('Camera'),
+          onPressed: () {
+            debugPrint("camera");
+            Navigator.pop(context);
+            openImagePicker(ImageSource.camera);
+          },
+        ),
+        CupertinoActionSheetAction(
+          child: const Text('Gallery'),
+          onPressed: () {
+            debugPrint("gallery");
+            Navigator.pop(context);
+            openImagePicker(ImageSource.gallery);
+          },
+        )
+      ],
+      cancelButton: CupertinoActionSheetAction(
+        child: const Text('Cancel'),
+        onPressed: () {
+          debugPrint("cancel");
+          Navigator.pop(context);
+        },
+      ),
+    );
+
+    /// To display an actionSheet
+    showCupertinoModalPopup(context: context, builder: (BuildContext context) => actionSheet);
+  }
+
+  /// Open image picker
+  void openImagePicker(source) async {
+    // showLoader();
+    final pickedFile = await ImagePicker()
+        .pickImage(source: source, maxWidth: 1920, maxHeight: 1920);
+    imageBytes = await pickedFile?.readAsBytes();
+
+    if (imageBytes != null) {
+      ImageCropping.cropImage(
+        context: context,
+        imageBytes: imageBytes!,
+        onImageDoneListener: (data) {
+          setState(
+                () {
+              imageBytes = data;
+              debugPrint("${imageBytes}");
+            },
+          );
+        },
+        // onImageStartLoading: showLoader,
+        // onImageEndLoading: hideLoader,
+        selectedImageRatio: ImageRatio.FREE,
+        visibleOtherAspectRatios: false,
+        squareBorderWidth: 2,
+        squareCircleColor: Colors.blueAccent,
+        defaultTextColor: Colors.black,
+        selectedTextColor: Colors.orange,
+        colorForWhiteSpace: Colors.white,
+      );
+    } else {
+      // hideLoader();
     }
   }
 }
@@ -284,8 +344,7 @@ class CategoryItemView extends ConsumerWidget {
         color: item.selected ? Colors.yellow : Colors.transparent,
       ),
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      child: Text(item.galleryCategory?.name ?? "",
-          style: const TextStyle(fontSize: 12)),
+      child: Text(item.galleryCategory?.name ?? "", style: const TextStyle(fontSize: 12)),
     );
   }
 }
@@ -367,8 +426,7 @@ class _GalleryImageViewState extends ConsumerState<GalleryImageView> {
               ),
             ),
           ),
-          placeholder: (context, url) =>
-              const Center(child: const CircularProgressIndicator()),
+          placeholder: (context, url) => const Center(child: const CircularProgressIndicator()),
           errorWidget: (context, url, error) => const Icon(Icons.error),
         ),
         // 显示作者名字
@@ -380,12 +438,8 @@ class _GalleryImageViewState extends ConsumerState<GalleryImageView> {
             height: 44,
             child: GestureDetector(
               child: (Center(
-                child: SvgPicture.asset(
-                    widget.item.favorited
-                        ? 'assets/images/collection_selected.svg'
-                        : 'assets/images/collection_unselected.svg',
-                    height: 27,
-                    width: 27),
+                child: SvgPicture.asset(widget.item.favorited ? 'assets/images/collection_selected.svg' : 'assets/images/collection_unselected.svg',
+                    height: 27, width: 27),
               )),
               onTap: () {
                 widget.callback(!widget.item.favorited);
@@ -402,8 +456,7 @@ class _GalleryImageViewState extends ConsumerState<GalleryImageView> {
               width: 44,
               height: 44,
               child: Center(
-                child: SvgPicture.asset('assets/images/image_info.svg',
-                    height: 17, width: 17),
+                child: SvgPicture.asset('assets/images/image_info.svg', height: 17, width: 17),
               ),
             ),
             onTapDown: (details) {
