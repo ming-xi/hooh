@@ -1,17 +1,20 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:app/ui/pages/gallery/search.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:common/models/gallery_category.dart';
 import 'package:common/models/gallery_image.dart';
 import 'package:common/utils/network.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tuple/tuple.dart';
 
-final galleryCategoriesProvider = StateProvider((ref) => <GalleryCategoryItem>[]);
+final galleryCategoriesProvider =
+    StateProvider((ref) => <GalleryCategoryItem>[]);
 final selectedCategoryProvider = StateProvider((ref) {
   return ref.watch(galleryCategoriesProvider.state).state.firstWhere(
         (element) => element.selected,
@@ -19,7 +22,8 @@ final selectedCategoryProvider = StateProvider((ref) {
       );
 });
 final galleryImagesProvider = StateProvider((ref) => <GalleryImage>[]);
-final newGalleryImagesProvider = FutureProvider.autoDispose.family<List<GalleryImage>, Tuple2<String, int>>((ref, tuple) async {
+final newGalleryImagesProvider = FutureProvider.autoDispose
+    .family<List<GalleryImage>, Tuple2<String, int>>((ref, tuple) async {
   // // Cancel the HTTP request if the user leaves the detail page before
   // // the request completes.
   // final cancelToken = CancelToken();
@@ -42,7 +46,8 @@ class GalleryPage extends ConsumerStatefulWidget {
 }
 
 class _GalleryPageState extends ConsumerState<GalleryPage> {
-  final RefreshController _refreshController = RefreshController(initialRefresh: false);
+  final RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
 
   @override
   void initState() {
@@ -60,17 +65,20 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
   Widget build(BuildContext context) {
     debugPrint("build page");
     final ScrollController _controller = ScrollController();
-    List<GalleryCategoryItem> categories = ref.watch(galleryCategoriesProvider.state).state;
+    List<GalleryCategoryItem> categories =
+        ref.watch(galleryCategoriesProvider.state).state;
     List<GalleryImage> images = ref.watch(galleryImagesProvider.state).state;
-    String? safeId = ref.watch(selectedCategoryProvider.state).state.galleryCategory?.safeId;
+    String? safeId =
+        ref.watch(selectedCategoryProvider.state).state.galleryCategory?.safeId;
     int width = MediaQuery.of(context).size.width ~/ 3;
     Widget listWidget;
-
 
     if (safeId == null) {
       listWidget = Container();
     } else {
-      List<GalleryImage> list = ref.watch(newGalleryImagesProvider(Tuple2(safeId, width))).when(data: (data) {
+      List<GalleryImage> list = ref
+          .watch(newGalleryImagesProvider(Tuple2(safeId, width)))
+          .when(data: (data) {
         images.addAll(data);
         return images;
       }, error: (obj, stack) {
@@ -81,36 +89,68 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
       listWidget = SmartRefresher(
         enablePullDown: true,
         enablePullUp: true,
-        header: ClassicHeader(),
+        header: const ClassicHeader(),
         onRefresh: () async {
           ref.read(galleryImagesProvider.state).state = [];
           ref.read(galleryImagesPageProvider.state).state = 1;
           ref.refresh(newGalleryImagesProvider(Tuple2(safeId, width)));
-          Timer(const Duration(milliseconds: 500), (){
-          _refreshController.refreshCompleted();
+          Timer(const Duration(milliseconds: 500), () {
+            _refreshController.refreshCompleted();
           });
         },
         onLoading: () async {
           ref.read(galleryImagesPageProvider.state).state += 1;
-          Timer(const Duration(milliseconds: 500), (){
+          Timer(const Duration(milliseconds: 500), () {
             _refreshController.loadComplete();
           });
         },
         controller: _refreshController,
         child: GridView.builder(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               //横轴元素个数
               crossAxisCount: 3,
               //子组件宽高长度比例
               childAspectRatio: 1.0),
-          itemCount: list.length,
-          itemBuilder: (BuildContext context, int index) => GalleryImageView(list[index], (newState) {
-            list[index].favorited = newState;
-            network.setGalleryImageFavorited(list[index].safeId, newState);
-            // ref.refresh(galleryImagesProvider);
-            ref.read(galleryImagesProvider.state).state = [...list];
-          }),
+          itemCount: list.length + 1,
+          itemBuilder: (BuildContext context, int index) {
+            if (index == 0) {
+              return GestureDetector(
+                child: const AddLocalImageView(),
+                onTap: () {
+                  _galleryItemTouched(index);
+                },
+              );
+            } else {
+              return GestureDetector(
+                onTap: () {
+                  _galleryItemTouched(index);
+                },
+                child: GalleryImageView(list[index - 1], (newState) {
+                  list[index].favorited = newState;
+                  debugPrint(list[index].safeId);
+                  ref.read(galleryImagesProvider.state).state = [...list];
+                  network.requestAsync(
+                      network.setGalleryImageFavorited(
+                          list[index].safeId, newState), (data) {
+                    var categoryName = ref
+                        .read(selectedCategoryProvider.state)
+                        .state
+                        .galleryCategory
+                        ?.name;
+                    if (categoryName == "我的常用") {
+                      debugPrint("我的常用");
+                      list.removeAt(index);
+                      ref.read(galleryImagesProvider.state).state = [...list];
+                    }
+                  }, (error) {
+                    list[index].favorited = !newState;
+                    ref.read(galleryImagesProvider.state).state = [...list];
+                  });
+                }),
+              );
+            }
+          },
         ),
       );
     }
@@ -119,6 +159,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
       body: Container(
         color: Colors.white,
         child: SafeArea(
+          bottom: false,
           child: Column(
             children: [
               Padding(
@@ -133,25 +174,32 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
                         ),
                         child: GestureDetector(
                           onTap: () {
-                            Navigator.of(context).push(PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) {
-                              return GallerySearchScreen();
-                            }, transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            Navigator.of(context).push(PageRouteBuilder(
+                                pageBuilder:
+                                    (context, animation, secondaryAnimation) {
+                              return const GallerySearchScreen();
+                            }, transitionsBuilder: (context, animation,
+                                    secondaryAnimation, child) {
                               return child;
                             }));
                           },
                           child: Row(
                             children: [
-                              SvgPicture.asset('assets/images/icon_search.svg', height: 24, width: 24),
+                              SvgPicture.asset('assets/images/icon_search.svg',
+                                  height: 24, width: 24),
                               const SizedBox(width: 10),
                               const Expanded(
                                   child: Text(
                                 'search',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF707070)),
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF707070)),
                               ))
                             ],
                           ),
                         ),
-                        padding: EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(10),
                       ),
                     ),
                   ],
@@ -165,7 +213,6 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
                   itemBuilder: (context, index) {
                     return GestureDetector(
                       onTap: () {
-                        print(index);
                         for (var item in categories) {
                           item.selected = false;
                         }
@@ -183,7 +230,9 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
 
                         ref.read(galleryImagesProvider.state).state = [];
                         ref.read(galleryImagesPageProvider.state).state = 1;
-                        ref.read(galleryCategoriesProvider.state).state = [...categories];
+                        ref.read(galleryCategoriesProvider.state).state = [
+                          ...categories
+                        ];
 
                         // _controller.animateTo(125, duration: Duration(milliseconds: 250), curve: Curves.ease);
                       },
@@ -202,17 +251,20 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
           ),
         ),
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   child: Icon(Icons.add),
-      //   onPressed: () {
-      //     if (safeId != null) {
-      //       ref.read(galleryImagesPageProvider.state).state += 1;
-      //       // ref.refresh(newGalleryImagesProvider(Tuple2(safeId, width)));
-      //     }
-      //   },
-      // ),
-      // floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
     );
+  }
+
+  Future<void> _galleryItemTouched(int index) async {
+    if (index == 0) {
+      debugPrint("插入图片");
+      FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image, allowCompression: false);
+      if (result != null) {
+        File file = File(result.files.single.path!);
+
+      }
+    } else {
+      debugPrint("进入做图");
+    }
   }
 }
 
@@ -232,8 +284,49 @@ class CategoryItemView extends ConsumerWidget {
         color: item.selected ? Colors.yellow : Colors.transparent,
       ),
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      child: Text(item.galleryCategory?.name ?? "", style: const TextStyle(fontSize: 12)),
+      child: Text(item.galleryCategory?.name ?? "",
+          style: const TextStyle(fontSize: 12)),
     );
+  }
+}
+
+class AddLocalImageView extends ConsumerStatefulWidget {
+  const AddLocalImageView({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  ConsumerState createState() => _AddLocalImageViewState();
+}
+
+class _AddLocalImageViewState extends ConsumerState<AddLocalImageView> {
+  @override
+  Widget build(BuildContext context) {
+    return Stack(children: [
+      Container(
+          decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        color: const Color(0xFF0167F9),
+      )),
+      Center(
+          child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: const [
+          Icon(
+            Icons.add,
+            color: Colors.white,
+            size: 36,
+          ),
+          Text(
+            "Insert picture",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+            ),
+          )
+        ],
+      )),
+    ]);
   }
 }
 
@@ -274,8 +367,9 @@ class _GalleryImageViewState extends ConsumerState<GalleryImageView> {
               ),
             ),
           ),
-          placeholder: (context, url) => Center(child: CircularProgressIndicator()),
-          errorWidget: (context, url, error) => Icon(Icons.error),
+          placeholder: (context, url) =>
+              const Center(child: const CircularProgressIndicator()),
+          errorWidget: (context, url, error) => const Icon(Icons.error),
         ),
         // 显示作者名字
         buildUploaderWidget(visible, widget.item),
@@ -286,8 +380,12 @@ class _GalleryImageViewState extends ConsumerState<GalleryImageView> {
             height: 44,
             child: GestureDetector(
               child: (Center(
-                child: SvgPicture.asset(widget.item.favorited ? 'assets/images/collection_selected.svg' : 'assets/images/collection_unselected.svg',
-                    height: 27, width: 27),
+                child: SvgPicture.asset(
+                    widget.item.favorited
+                        ? 'assets/images/collection_selected.svg'
+                        : 'assets/images/collection_unselected.svg',
+                    height: 27,
+                    width: 27),
               )),
               onTap: () {
                 widget.callback(!widget.item.favorited);
@@ -297,7 +395,6 @@ class _GalleryImageViewState extends ConsumerState<GalleryImageView> {
           top: 0,
           right: 0,
         ),
-
         // 图片作者信息
         Positioned(
           child: GestureDetector(
@@ -305,7 +402,8 @@ class _GalleryImageViewState extends ConsumerState<GalleryImageView> {
               width: 44,
               height: 44,
               child: Center(
-                child: SvgPicture.asset('assets/images/image_info.svg', height: 17, width: 17),
+                child: SvgPicture.asset('assets/images/image_info.svg',
+                    height: 17, width: 17),
               ),
             ),
             onTapDown: (details) {
