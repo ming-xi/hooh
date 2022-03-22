@@ -71,9 +71,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             currentIndex: index,
           ),
         ).frosted(
-          blur: 2.5,
+          blur: 10,
           frostColor: Colors.white,
-          frostOpacity: 0.7,
+          frostOpacity: 0.9,
         ),
       ),
     );

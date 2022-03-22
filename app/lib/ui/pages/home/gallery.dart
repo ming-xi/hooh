@@ -11,6 +11,7 @@ import 'package:common/models/gallery_image.dart';
 import 'package:common/utils/network.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -89,16 +90,17 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
         preferredSize: Size.fromHeight(totalHeight),
         child: Builder(builder: (context) {
           return AppBar(
-            toolbarHeight: padding * 5 + iconSize,
-            elevation: 0,
-            title: searchBar,
-            titleSpacing: 0,
-            bottom: PreferredSize(preferredSize: Size.fromHeight(listHeight), child: categoryBar),
-            backgroundColor: Colors.transparent,
-          ).frosted(
-            blur: 2.5,
+                  toolbarHeight: padding * 5 + iconSize,
+                  elevation: 0,
+                  title: searchBar,
+                  titleSpacing: 0,
+                  bottom: PreferredSize(preferredSize: Size.fromHeight(listHeight), child: categoryBar),
+                  backgroundColor: Colors.transparent,
+                  systemOverlayStyle: SystemUiOverlayStyle.dark)
+              .frosted(
+            blur: 10,
             frostColor: Colors.white,
-            frostOpacity: 0.7,
+            frostOpacity: 0.9,
           );
         }),
       ),
