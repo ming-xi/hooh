@@ -12,7 +12,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 final bottomBarVisibilityProvider = StateProvider((ref) => true);
 
 class HomeScreen extends ConsumerStatefulWidget {
-  final pageIndexProvider = StateProvider((ref) => 0);
+  final pageIndexProvider = StateProvider((ref) => 1);
 
   HomeScreen({
     Key? key,

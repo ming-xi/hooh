@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:app/ui/pages/creation/crop_and_scale.dart';
 import 'package:app/ui/pages/gallery/search.dart';
+import 'package:blur/blur.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:common/models/gallery_category.dart';
 import 'package:common/models/gallery_image.dart';
@@ -10,7 +13,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:image_cropping/image_cropping.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tuple/tuple.dart';
@@ -68,9 +71,50 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
     List<GalleryCategoryItem> categories = ref.watch(galleryCategoriesProvider.state).state;
     List<GalleryImage> images = ref.watch(galleryImagesProvider.state).state;
     String? safeId = ref.watch(selectedCategoryProvider.state).state.galleryCategory?.safeId;
-    int width = MediaQuery.of(context).size.width ~/ 3;
-    Widget listWidget;
+    int imageWidth = MediaQuery.of(context).size.width ~/ 3;
 
+    double safePadding = MediaQuery.of(context).padding.top;
+    debugPrint("safePadding=$safePadding");
+    double padding = 16.0;
+    double iconSize = 24.0;
+    double listHeight = 40.0;
+    double totalHeight = padding * 4 + iconSize + listHeight;
+    totalHeight += padding;
+    var searchBar = buildSearchBar(context, iconSize, padding);
+    var categoryBar = buildCategoryBar(padding, listHeight, _controller, categories);
+    Widget listWidget = buildListWidget(safeId, imageWidth, images, totalHeight + safePadding);
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(totalHeight),
+        child: Builder(builder: (context) {
+          return AppBar(
+            toolbarHeight: padding * 5 + iconSize,
+            elevation: 0,
+            title: searchBar,
+            titleSpacing: 0,
+            bottom: PreferredSize(preferredSize: Size.fromHeight(listHeight), child: categoryBar),
+            backgroundColor: Colors.transparent,
+          ).frosted(
+            blur: 2.5,
+            frostColor: Colors.white,
+            frostOpacity: 0.7,
+          );
+        }),
+      ),
+      body: Container(
+        color: Colors.white,
+        child: SafeArea(
+          top: false,
+          bottom: false,
+          child: listWidget,
+        ),
+      ),
+    );
+  }
+
+  Widget buildListWidget(String? safeId, int width, List<GalleryImage> images, double totalHeight) {
+    Widget listWidget;
     if (safeId == null) {
       listWidget = Container();
     } else {
@@ -102,7 +146,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
         },
         controller: _refreshController,
         child: GridView.builder(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
+          padding: EdgeInsets.fromLTRB(16, totalHeight, 16, 96),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               //横轴元素个数
               crossAxisCount: 3,
@@ -118,15 +162,11 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
               //   },
               // );
               return GestureDetector(
-                child: imageBytes == null
-                    ? const AddLocalImageView()
-                    : Image.memory(imageBytes!),
+                child: imageBytes == null ? const AddLocalImageView() : Image.memory(imageBytes!),
                 onTap: () {
                   _galleryItemTouched(index);
                 },
               );
-
-
             } else {
               return GestureDetector(
                 onTap: () {
@@ -154,93 +194,80 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
         ),
       );
     }
+    return listWidget;
+  }
 
-    return Scaffold(
-      body: Container(
-        color: Colors.white,
-        child: SafeArea(
-          bottom: false,
-          child: Column(
+  Widget buildCategoryBar(double padding, double listHeight, ScrollController _controller, List<GalleryCategoryItem> categories) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: padding),
+      child: SizedBox(
+        height: listHeight,
+        child: ListView.builder(
+          controller: _controller,
+          scrollDirection: Axis.horizontal,
+          itemBuilder: (context, index) {
+            return GestureDetector(
+              onTap: () {
+                for (var item in categories) {
+                  item.selected = false;
+                }
+                categories[index].selected = true;
+                // 因为categories其实还是原来的list，所以给state赋值无效。所以要构建一个新的list赋值，有3种写法：
+                // #1
+                // List<GalleryCategoryItem> newList = [];
+                // newList.addAll(categories);
+                // ref.read(galleryCategoriesProvider.state).state = newList;
+
+                // #2 这个叫联什么什么写法，就是两个点，代表要对这个对象进行后面的操作
+                // ref.read(galleryCategoriesProvider.state).state = []..addAll(categories);
+
+                // #3 dart把#2优化成了3个点的，叫spread，一个意思，语法糖
+
+                ref.read(galleryImagesProvider.state).state = [];
+                ref.read(galleryImagesPageProvider.state).state = 1;
+                ref.read(galleryCategoriesProvider.state).state = [...categories];
+
+                // _controller.animateTo(125, duration: Duration(milliseconds: 250), curve: Curves.ease);
+              },
+              child: CategoryItemView(categories[index]),
+            );
+          },
+          itemCount: categories.length,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+        ),
+      ),
+    );
+  }
+
+  Widget buildSearchBar(BuildContext context, double iconSize, double padding) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(padding, padding * 2, padding, padding),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(200),
+          color: const Color(0xFFEAEAEA),
+        ),
+        child: GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) {
+              return const GallerySearchScreen();
+            }, transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return child;
+            }));
+          },
+          child: Row(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(100),
-                          color: const Color(0xFFEAEAEA),
-                        ),
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) {
-                              return const GallerySearchScreen();
-                            }, transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                              return child;
-                            }));
-                          },
-                          child: Row(
-                            children: [
-                              SvgPicture.asset('assets/images/icon_search.svg', height: 24, width: 24),
-                              const SizedBox(width: 10),
-                              const Expanded(
-                                  child: Text(
-                                'search',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF707070)),
-                              ))
-                            ],
-                          ),
-                        ),
-                        padding: const EdgeInsets.all(10),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: 40,
-                child: ListView.builder(
-                  controller: _controller,
-                  scrollDirection: Axis.horizontal,
-                  itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () {
-                        for (var item in categories) {
-                          item.selected = false;
-                        }
-                        categories[index].selected = true;
-                        // 因为categories其实还是原来的list，所以给state赋值无效。所以要构建一个新的list赋值，有3种写法：
-                        // #1
-                        // List<GalleryCategoryItem> newList = [];
-                        // newList.addAll(categories);
-                        // ref.read(galleryCategoriesProvider.state).state = newList;
-
-                        // #2 这个叫联什么什么写法，就是两个点，代表要对这个对象进行后面的操作
-                        // ref.read(galleryCategoriesProvider.state).state = []..addAll(categories);
-
-                        // #3 dart把#2优化成了3个点的，叫spread，一个意思，语法糖
-
-                        ref.read(galleryImagesProvider.state).state = [];
-                        ref.read(galleryImagesPageProvider.state).state = 1;
-                        ref.read(galleryCategoriesProvider.state).state = [...categories];
-
-                        // _controller.animateTo(125, duration: Duration(milliseconds: 250), curve: Curves.ease);
-                      },
-                      child: CategoryItemView(categories[index]),
-                    );
-                  },
-                  itemCount: categories.length,
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                ),
-              ),
-              const SizedBox(
-                height: 16,
-              ),
-              Expanded(child: listWidget)
+              SvgPicture.asset('assets/images/icon_search.svg', height: iconSize, width: iconSize),
+              SizedBox(width: padding),
+              const Expanded(
+                  child: Text(
+                'search',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF707070)),
+              ))
             ],
           ),
         ),
+        padding: EdgeInsets.all(padding),
       ),
     );
   }
@@ -296,35 +323,57 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
   /// Open image picker
   void openImagePicker(source) async {
     // showLoader();
-    final pickedFile = await ImagePicker()
-        .pickImage(source: source, maxWidth: 1920, maxHeight: 1920);
-    imageBytes = await pickedFile?.readAsBytes();
-
-    if (imageBytes != null) {
-      ImageCropping.cropImage(
-        context: context,
-        imageBytes: imageBytes!,
-        onImageDoneListener: (data) {
-          setState(
-                () {
-              imageBytes = data;
-              debugPrint("${imageBytes}");
-            },
-          );
-        },
-        // onImageStartLoading: showLoader,
-        // onImageEndLoading: hideLoader,
-        selectedImageRatio: ImageRatio.FREE,
-        visibleOtherAspectRatios: false,
-        squareBorderWidth: 2,
-        squareCircleColor: Colors.blueAccent,
-        defaultTextColor: Colors.black,
-        selectedTextColor: Colors.orange,
-        colorForWhiteSpace: Colors.white,
-      );
-    } else {
-      // hideLoader();
+    final XFile? pickedFile = await ImagePicker().pickImage(source: source, maxWidth: 1920, maxHeight: 1920);
+    File? croppedFile = await ImageCropper().cropImage(
+        sourcePath: pickedFile!.path,
+        aspectRatioPresets: [
+          CropAspectRatioPreset.square,
+          CropAspectRatioPreset.ratio3x2,
+          CropAspectRatioPreset.original,
+          CropAspectRatioPreset.ratio4x3,
+          CropAspectRatioPreset.ratio16x9
+        ],
+        androidUiSettings: const AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: Colors.deepOrange,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false),
+        iosUiSettings: const IOSUiSettings());
+    if (croppedFile != null) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => ScaleScreen(croppedFile)));
     }
+    // imageBytes = await pickedFile?.readAsBytes();
+    //
+    // if (imageBytes != null) {
+    //   ImageCropping.cropImage(
+    //     context: context,
+    //     imageBytes: imageBytes!,
+    //     onImageDoneListener: (data) {
+    //       Navigator.push(
+    //                     context,
+    //                     MaterialPageRoute(
+    //                         builder: (context) => ScaleScreen(data)));
+    //       // setState(
+    //       //       () {
+    //       //     imageBytes = data;
+    //       //     debugPrint("${imageBytes}");
+    //       //   },
+    //       // );
+    //     },
+    //     // onImageStartLoading: showLoader,
+    //     // onImageEndLoading: hideLoader,
+    //     selectedImageRatio: ImageRatio.FREE,
+    //     visibleOtherAspectRatios: false,
+    //     squareBorderWidth: 2,
+    //     squareCircleColor: Colors.blueAccent,
+    //     defaultTextColor: Colors.black,
+    //     selectedTextColor: Colors.orange,
+    //     colorForWhiteSpace: Colors.white,
+    //   );
+    // } else {
+    //   // hideLoader();
+    // }
   }
 }
 

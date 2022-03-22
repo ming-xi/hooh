@@ -51,7 +51,7 @@ class Network {
         deserializer: GalleryImage.fromJson);
   }
 
-  Future <void> setGalleryImageFavorited(String id, bool favorited) {
+  Future<void> setGalleryImageFavorited(String id, bool favorited) {
     return _getResponseObject<void>(favorited ? HttpMethod.put : HttpMethod.delete, _buildFygtUri("gallery/images/$id/favorite"));
   }
 
