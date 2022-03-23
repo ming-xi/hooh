@@ -51,7 +51,6 @@ class GalleryPage extends ConsumerStatefulWidget {
 
 class _GalleryPageState extends ConsumerState<GalleryPage> {
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
-  Uint8List? imageBytes;
 
   @override
   void initState() {
@@ -157,14 +156,8 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
           itemCount: list.length + 1,
           itemBuilder: (BuildContext context, int index) {
             if (index == 0) {
-              // return GestureDetector(
-              //   child: const AddLocalImageView(),
-              //   onTap: () {
-              //     _galleryItemTouched(index);
-              //   },
-              // );
               return GestureDetector(
-                child: imageBytes == null ? const AddLocalImageView() : Image.memory(imageBytes!),
+                child: const AddLocalImageView(),
                 onTap: () {
                   _galleryItemTouched(index);
                 },
@@ -252,7 +245,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
         child: GestureDetector(
           onTap: () {
             Navigator.of(context).push(PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) {
-              return const GallerySearchScreen();
+              return GallerySearchScreen();
             }, transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return child;
             }));
@@ -345,37 +338,6 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
     if (croppedFile != null) {
       Navigator.push(context, MaterialPageRoute(builder: (context) => ScaleScreen(croppedFile)));
     }
-    // imageBytes = await pickedFile?.readAsBytes();
-    //
-    // if (imageBytes != null) {
-    //   ImageCropping.cropImage(
-    //     context: context,
-    //     imageBytes: imageBytes!,
-    //     onImageDoneListener: (data) {
-    //       Navigator.push(
-    //                     context,
-    //                     MaterialPageRoute(
-    //                         builder: (context) => ScaleScreen(data)));
-    //       // setState(
-    //       //       () {
-    //       //     imageBytes = data;
-    //       //     debugPrint("${imageBytes}");
-    //       //   },
-    //       // );
-    //     },
-    //     // onImageStartLoading: showLoader,
-    //     // onImageEndLoading: hideLoader,
-    //     selectedImageRatio: ImageRatio.FREE,
-    //     visibleOtherAspectRatios: false,
-    //     squareBorderWidth: 2,
-    //     squareCircleColor: Colors.blueAccent,
-    //     defaultTextColor: Colors.black,
-    //     selectedTextColor: Colors.orange,
-    //     colorForWhiteSpace: Colors.white,
-    //   );
-    // } else {
-    //   // hideLoader();
-    // }
   }
 }
 

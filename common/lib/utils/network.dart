@@ -51,6 +51,12 @@ class Network {
         deserializer: GalleryImage.fromJson);
   }
 
+  Future<List<GalleryImage>> searchGalleryImageList(String key, int page, int width, bool showFavoriteStatus, {int size = 20}) {
+    return _getResponseList<GalleryImage>(
+        HttpMethod.get, _buildFygtUri("gallery/images/query", params: {"page": page, "width": width, "size": size, "key": key, "show_favorite_status": showFavoriteStatus}),
+        deserializer: GalleryImage.fromJson);
+  }
+
   Future<void> setGalleryImageFavorited(String id, bool favorited) {
     return _getResponseObject<void>(favorited ? HttpMethod.put : HttpMethod.delete, _buildFygtUri("gallery/images/$id/favorite"));
   }
