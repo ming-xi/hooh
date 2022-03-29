@@ -1,9 +1,10 @@
 import 'dart:async';
 
+import 'package:app/ui/pages/gallery/search_view_model.dart';
 import 'package:app/ui/pages/home/gallery.dart';
 import 'package:blur/blur.dart';
 import 'package:common/models/gallery_image.dart';
-import 'package:common/utils/network.dart';
+import 'package:common/models/page_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
@@ -11,25 +12,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class GallerySearchScreen extends ConsumerStatefulWidget {
-  late final StateProvider galleryImagesProvider;
-  late final AutoDisposeFutureProviderFamily<List<GalleryImage>, int> newGalleryImagesProvider;
-  late final StateProvider galleryImagesPageProvider;
-  late final StateProvider keyProvider;
+  final StateNotifierProviderFamily<SearchPageViewModel, SearchPageModelState, int> imagesProvider =
+      StateNotifierProvider.family<SearchPageViewModel, SearchPageModelState, int>((ref, width) => SearchPageViewModel(SearchPageModelState.init(width, true)));
 
   GallerySearchScreen({
     Key? key,
-  }) : super(key: key) {
-    galleryImagesProvider = StateProvider((ref) => <GalleryImage>[]);
-    newGalleryImagesProvider = FutureProvider.autoDispose.family<List<GalleryImage>, int>((ref, width) async {
-      var page = ref.watch(galleryImagesPageProvider.state).state;
-      var key = ref.watch(keyProvider.state).state;
-      var list = await network.searchGalleryImageList(key, page, width, true);
-      debugPrint("page = $page, key = $key");
-      return list;
-    });
-    galleryImagesPageProvider = StateProvider((ref) => 1);
-    keyProvider = StateProvider((ref) => "");
-  }
+  }) : super(key: key) {}
 
   @override
   ConsumerState createState() => _GallerySearchScreenState();
@@ -37,20 +25,30 @@ class GallerySearchScreen extends ConsumerStatefulWidget {
 
 class _GallerySearchScreenState extends ConsumerState<GallerySearchScreen> {
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
+  TextEditingController controller = TextEditingController();
+  FocusNode node = FocusNode();
+  int imageWidth = 0;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
+    // safe area height
     double safePadding = MediaQuery.of(context).padding.top;
+    // common padding
     double padding = 16.0;
+    // search icon
     double iconSize = 24.0;
     double totalHeight = padding * 3 + iconSize;
     totalHeight += padding;
-    int imageWidth = MediaQuery.of(context).size.width ~/ 3;
-    List<GalleryImage> images = ref.watch(widget.galleryImagesProvider.state).state;
-    String? key = ref.watch(widget.keyProvider.state).state;
+    imageWidth = MediaQuery.of(context).size.width ~/ 3;
+    SearchPageModelState modelState = ref.watch(widget.imagesProvider(imageWidth));
 
     var searchBar = buildSearchBar(context, iconSize, padding);
-    Widget listWidget = buildListWidget(key, imageWidth, images, totalHeight + safePadding);
+    Widget listWidget = buildListWidget(modelState, totalHeight + safePadding);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -71,6 +69,10 @@ class _GallerySearchScreenState extends ConsumerState<GallerySearchScreen> {
             frostOpacity: 0.9,
           );
         }),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        child: Text(modelState.pageIndex.toString()),
       ),
       body: Container(
         color: Colors.white,
@@ -100,7 +102,9 @@ class _GallerySearchScreenState extends ConsumerState<GallerySearchScreen> {
                   padding: EdgeInsets.fromLTRB(0, padding, padding, padding)),
               Expanded(
                 child: TextField(
-                  // autofocus: true,
+                  focusNode: node,
+                  controller: controller,
+                  autofocus: true,
                   decoration: const InputDecoration(
                     hintStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -109,8 +113,9 @@ class _GallerySearchScreenState extends ConsumerState<GallerySearchScreen> {
                   ),
                   onChanged: (String value) async {
                     debugPrint("onChanged $value");
-                    ref.read(widget.galleryImagesPageProvider.state).state = 1;
-                    ref.read(widget.keyProvider.state).state = value;
+                    var viewModel = ref.read(widget.imagesProvider(imageWidth).notifier);
+                    viewModel.updateState(ref.read(widget.imagesProvider(imageWidth)).copyWith(keyword: value, pageIndex: 1));
+                    viewModel.search();
                   },
                   onSubmitted: (String value) async {
                     debugPrint("onSubmitted $value");
@@ -141,33 +146,18 @@ class _GallerySearchScreenState extends ConsumerState<GallerySearchScreen> {
     );
   }
 
-  Widget buildListWidget(String? key, int width, List<GalleryImage> images, double totalHeight) {
+  Widget buildListWidget(SearchPageModelState modelState, double totalHeight) {
     Widget listWidget;
-    if (key?.length == 0) {
+    if ([PageState.empty, PageState.inited].contains(modelState.pageState)) {
       listWidget = Container();
     } else {
-      List<GalleryImage> list = ref.watch(widget.newGalleryImagesProvider(width)).when(data: (data) {
-        images.addAll(data);
-        return images;
-      }, error: (obj, stack) {
-        return images;
-      }, loading: () {
-        return images;
-      });
+      debugPrint("images size=${modelState.images.length}");
       listWidget = SmartRefresher(
-        // enablePullDown: true,
-        enablePullUp: true,
-        // header: const ClassicHeader(),
-        // onRefresh: () async {
-        //   ref.read(galleryImagesProvider.state).state = [];
-        //   ref.read(galleryImagesPageProvider.state).state = 1;
-        //   ref.refresh(newGalleryImagesProvider(Tuple2(safeId, width)));
-        //   Timer(const Duration(milliseconds: 500), () {
-        //     _refreshController.refreshCompleted();
-        //   });
-        // },
+        enablePullDown: false,
+        enablePullUp: modelState.pageState != PageState.noMore,
         onLoading: () async {
-          ref.read(widget.galleryImagesPageProvider.state).state += 1;
+          SearchPageViewModel viewModel = ref.read(widget.imagesProvider(imageWidth).notifier);
+          viewModel.search(isRefresh: false);
           Timer(const Duration(milliseconds: 500), () {
             _refreshController.loadComplete();
           });
@@ -176,35 +166,18 @@ class _GallerySearchScreenState extends ConsumerState<GallerySearchScreen> {
         child: GridView.builder(
           padding: EdgeInsets.fromLTRB(16, totalHeight, 16, 96),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            //横轴元素个数
+              //横轴元素个数
               crossAxisCount: 3,
               //子组件宽高长度比例
               childAspectRatio: 1.0),
-          itemCount: list.length,
+          itemCount: modelState.images.length,
           itemBuilder: (BuildContext context, int index) {
-
-              return GestureDetector(
-                onTap: () {
-                  // _galleryItemTouched(index);
-                },
-                child: GalleryImageView(list[index], (newState) {
-                  list[index].favorited = newState;
-                  debugPrint(list[index].safeId);
-                  ref.read(galleryImagesProvider.state).state = [...list];
-                  network.requestAsync(network.setGalleryImageFavorited(list[index].safeId, newState), (data) {
-                    var categoryName = ref.read(selectedCategoryProvider.state).state.galleryCategory?.name;
-                    if (categoryName == "我的常用") {
-                      debugPrint("我的常用");
-                      list.removeAt(index);
-                      ref.read(galleryImagesProvider.state).state = [...list];
-                    }
-                  }, (error) {
-                    list[index].favorited = !newState;
-                    ref.read(galleryImagesProvider.state).state = [...list];
-                  });
-                }),
-              );
-
+            return GestureDetector(
+              onTap: () {
+                // _galleryItemTouched(index);
+              },
+              child: GalleryImageView(modelState.images[index], (newState) {}),
+            );
           },
         ),
       );
