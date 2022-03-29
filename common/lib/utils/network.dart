@@ -29,7 +29,7 @@ class Network {
   late final http.Client _client;
   bool _isUsingLocalServer = false;
 
-  requestAsync<T>(Future<T> request, Function(T data) onSuccess, Function(HoohApiErrorResponse error) onError) {
+  void requestAsync<T>(Future<T> request, Function(T data) onSuccess, Function(HoohApiErrorResponse error) onError) {
     request.then(onSuccess).catchError((error) {
       if (error is HoohApiErrorResponse) {
         onError(error);

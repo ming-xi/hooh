@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:app/ui/pages/creation/crop_and_scale.dart';
 import 'package:app/ui/pages/gallery/search.dart';
+import 'package:app/ui/pages/test.dart';
 import 'package:blur/blur.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:common/models/gallery_category.dart';
@@ -104,6 +104,15 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
             frostOpacity: 0.9,
           );
         }),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => TestPage()));
+        },
+        child: Icon(Icons.add),
       ),
       body: Container(
         color: Colors.white,
