@@ -111,7 +111,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
           Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => TestViewModelScreen()));
+                            builder: (context) => TestTintScreen()));
         },
         child: Icon(Icons.arrow_forward),
       ),
