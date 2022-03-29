@@ -33,14 +33,15 @@ class SearchPageModelState {
 
 class SearchPageViewModel extends StateNotifier<SearchPageModelState> {
   SearchPageViewModel(SearchPageModelState state) : super(state) {
+    // 如果需要加载时自动拉取数据，在这里调用
     // search(isRefresh: true);
   }
-  void updateState(SearchPageModelState s){
-    state=s;
-  }
-  int getxx(){
-    return state.pageIndex;
-  }
+
+  // 改为extension实现
+  // void updateState(SearchPageModelState s) {
+  //   state = s;
+  // }
+
   Future<void> search({bool isRefresh = true}) async {
     if (isRefresh) {
       if (![
@@ -59,7 +60,6 @@ class SearchPageViewModel extends StateNotifier<SearchPageModelState> {
       }
     }
     state = state.copyWith(pageState: PageState.loading);
-    debugPrint("key=${state.keyword}");
     network.requestAsync<List<GalleryImage>>(network.searchGalleryImageList(state.keyword, state.pageIndex, state.imageWidth, state.showFavoriteStatus),
         (newData) {
       if (newData.isEmpty) {
@@ -72,9 +72,9 @@ class SearchPageViewModel extends StateNotifier<SearchPageModelState> {
         page = 1;
         list = newData;
       } else {
-        page = state.pageIndex + 1;
         list = state.images..addAll(newData);
       }
+      page = state.pageIndex + 1;
       state = state.copyWith(
         pageState: PageState.dataLoaded,
         images: list,
@@ -86,3 +86,4 @@ class SearchPageViewModel extends StateNotifier<SearchPageModelState> {
     });
   }
 }
+

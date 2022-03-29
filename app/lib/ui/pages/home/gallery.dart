@@ -105,14 +105,15 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
           );
         }),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => TestPage()));
+                            builder: (context) => TestViewModelScreen()));
         },
-        child: Icon(Icons.add),
+        child: Icon(Icons.arrow_forward),
       ),
       body: Container(
         color: Colors.white,

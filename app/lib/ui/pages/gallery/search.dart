@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:app/extensions/extensions.dart';
 import 'package:app/ui/pages/gallery/search_view_model.dart';
 import 'package:app/ui/pages/home/gallery.dart';
 import 'package:blur/blur.dart';
