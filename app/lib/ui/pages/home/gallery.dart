@@ -19,6 +19,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tuple/tuple.dart';
 
+import 'dart:math' as math;
+
 final galleryCategoriesProvider = StateProvider((ref) => <GalleryCategoryItem>[]);
 final selectedCategoryProvider = StateProvider((ref) {
   return ref.watch(galleryCategoriesProvider.state).state.firstWhere(
@@ -398,6 +400,9 @@ class _AddLocalImageViewState extends ConsumerState<AddLocalImageView> {
           )
         ],
       )),
+      // Image.asset('assets/images/test_2.png'),
+      // Image.asset('assets/images/test_3.png',colorBlendMode: BlendMode.srcATop, color: Color((math.Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(0.6)),
+      // Image.asset('assets/images/test_1.png',colorBlendMode: BlendMode.srcATop, color: Color((math.Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(0.6)),
     ]);
   }
 }
