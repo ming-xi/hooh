@@ -68,68 +68,63 @@ class _SignUpPageState extends ConsumerState<SignUpScreen> {
       //     ),
       //   ),
       // ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: PhoneFormField(
-                      autofocus: true,
-                      selectorNavigator: const DraggableModalBottomSheetNavigator(),
-                      onSaved: (p) => debugPrint('saved $p'),
-                      // ignore: avoid_print
-                      onChanged: (p) {
-                        if (p != null) {
-                          // if (p.validate()) {
-                          _phoneNumber = p.countryCode + p.nsn;
-                          // }
-                        }
-                        debugPrint(_phoneNumber);
-                        debugPrint('changed $p');
-                      },
-                    ),
+      body: CustomScrollView(
+        slivers: [
+          SliverFillRemaining(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: PhoneFormField(
+                    autofocus: true,
+
+                    // selectorNavigator: const DraggableModalBottomSheetNavigator(
+                    //
+                    // ),
+                    onSaved: (p) => debugPrint('saved $p'),
+                    // ignore: avoid_print
+                    onChanged: (p) {
+                      if (p != null) {
+                        // if (p.validate()) {
+                        _phoneNumber = p.countryCode + p.nsn;
+                        // }
+                      }
+                      debugPrint(_phoneNumber);
+                      debugPrint('changed $p');
+                    },
                   ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: const Text('Agree and sign up'),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  RichText(
-                      text: TextSpan(
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 12,
-                          ),
-                          text: 'I read and agree ',
-                          children: [
-                        TextSpan(
-                          style: const TextStyle(
-                            color: Colors.blue,
-                          ),
-                          text: 'User Agreement and Privacy Policy',
-                          recognizer: _tapGestureRecognizer
-                            ..onTap = () {
-                              debugPrint("点击了隐私协议");
-                              Navigator.push(context,
-                                  MaterialPageRoute(builder: (context) => const WebViewScreen('User Agreement and Privacy Policy', 'https://www.baidu.com')));
-                            },
-                        )
-                      ]))
-                ],
-              ),
+                ),
+                ElevatedButton(
+                  onPressed: () {},
+                  child: const Text('Agree and sign up'),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                RichText(
+                    text: TextSpan(
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                        ),
+                        text: 'I read and agree ',
+                        children: [
+                      TextSpan(
+                        style: const TextStyle(
+                          color: Colors.blue,
+                        ),
+                        text: 'User Agreement and Privacy Policy',
+                        recognizer: _tapGestureRecognizer
+                          ..onTap = () {
+                            debugPrint("点击了隐私协议");
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (context) => const WebViewScreen('User Agreement and Privacy Policy', 'https://www.baidu.com')));
+                          },
+                      )
+                    ]))
+              ],
             ),
-            flex: 3,
-          ),
-          Expanded(
-            child: Container(),
-            flex: 3,
           )
         ],
       ),

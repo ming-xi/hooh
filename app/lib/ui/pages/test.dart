@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
@@ -8,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image/image.dart' as img;
-import 'package:path_provider/path_provider.dart';
 
 //test provider and view model
 class TestViewModelScreen extends ConsumerStatefulWidget {
@@ -78,21 +76,20 @@ class _TestTintPageState extends ConsumerState<TestTintScreen> {
       //测试用，正式不用setState
       setState(() {
         imageFileBytes1 = value.buffer.asUint8List();
-      debugPrint("load asset1 ${imageFileBytes1!.length}");
+        debugPrint("load asset1 ${imageFileBytes1!.length}");
       });
     });
     rootBundle.load("assets/images/2.png").then((value) {
       //测试用，正式不用setState
       setState(() {
         imageFileBytes2 = value.buffer.asUint8List();
-      debugPrint("load asset2 ${imageFileBytes2!.length}");
+        debugPrint("load asset2 ${imageFileBytes2!.length}");
       });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("build");
     var hue1 = ref.watch(widget.hue1Provider.state).state;
     var hue2 = ref.watch(widget.hue2Provider.state).state;
     return Scaffold(
@@ -119,7 +116,7 @@ class _TestTintPageState extends ConsumerState<TestTintScreen> {
                       ),
                       imageFileBytes2 != null
                           ? Image.memory(
-                              getImageBytes(imageFileBytes2!,hue2),
+                              getImageBytes(imageFileBytes2!, hue2),
                               gaplessPlayback: true,
                               fit: BoxFit.fill,
                               filterQuality: FilterQuality.none,
@@ -129,7 +126,7 @@ class _TestTintPageState extends ConsumerState<TestTintScreen> {
                           : Container(),
                       imageFileBytes1 != null
                           ? Image.memory(
-                              getImageBytes(imageFileBytes1!,hue1),
+                              getImageBytes(imageFileBytes1!, hue1),
                               gaplessPlayback: true,
                               fit: BoxFit.fill,
                               filterQuality: FilterQuality.none,
@@ -162,7 +159,7 @@ class _TestTintPageState extends ConsumerState<TestTintScreen> {
     );
   }
 
-  Uint8List getImageBytes(Uint8List fileBytes,double hue) {
+  Uint8List getImageBytes(Uint8List fileBytes, double hue) {
     img.Image? image = img.decodePng(fileBytes);
     Uint32List pixels = image!.data;
     for (int i = 0; i < pixels.length; i++) {
@@ -185,15 +182,15 @@ class _TestTintPageState extends ConsumerState<TestTintScreen> {
     return Uint8List.fromList(img.encodePng(image));
   }
 
-  // 从asset复制文件
-  // Future<File> copyAsset(String assetPath) async {
-  //   debugPrint("copyAsset");
-  //   final Directory docDir = await getApplicationSupportDirectory();
-  //   final String localPath = docDir.path;
-  //   File file = File('$localPath/${assetPath.split('/').last}');
-  //   final imageBytes = await rootBundle.load(assetPath);
-  //   final buffer = imageBytes.buffer;
-  //   await file.writeAsBytes(buffer.asUint8List(imageBytes.offsetInBytes, imageBytes.lengthInBytes));
-  //   return file;
-  // }
+// 从asset复制文件
+// Future<File> copyAsset(String assetPath) async {
+//   debugPrint("copyAsset");
+//   final Directory docDir = await getApplicationSupportDirectory();
+//   final String localPath = docDir.path;
+//   File file = File('$localPath/${assetPath.split('/').last}');
+//   final imageBytes = await rootBundle.load(assetPath);
+//   final buffer = imageBytes.buffer;
+//   await file.writeAsBytes(buffer.asUint8List(imageBytes.offsetInBytes, imageBytes.lengthInBytes));
+//   return file;
+// }
 }
