@@ -44,6 +44,7 @@ class SearchPageViewModel extends StateNotifier<SearchPageModelState> {
 
   Future<void> search({bool isRefresh = true}) async {
     if (isRefresh) {
+      state = state.copyWith(pageIndex: 1);
       if (![
         PageState.inited,
         PageState.dataLoaded,

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:app/extensions/extensions.dart';
+import 'package:app/main.dart';
 import 'package:app/ui/pages/creation/crop_and_scale.dart';
 import 'package:app/ui/pages/gallery/search.dart';
 import 'package:app/ui/pages/test.dart';
@@ -8,7 +10,7 @@ import 'package:blur/blur.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:common/models/gallery_category.dart';
 import 'package:common/models/gallery_image.dart';
-import 'package:common/utils/network.dart';
+import 'package:common/models/page_state.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,33 +19,14 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'package:tuple/tuple.dart';
 
-import 'dart:math' as math;
-
-final galleryCategoriesProvider = StateProvider((ref) => <GalleryCategoryItem>[]);
-final selectedCategoryProvider = StateProvider((ref) {
-  return ref.watch(galleryCategoriesProvider.state).state.firstWhere(
-        (element) => element.selected,
-        orElse: () => GalleryCategoryItem(null, false),
-      );
-});
-final galleryImagesProvider = StateProvider((ref) => <GalleryImage>[]);
-final newGalleryImagesProvider = FutureProvider.autoDispose.family<List<GalleryImage>, Tuple2<String, int>>((ref, tuple) async {
-  // // Cancel the HTTP request if the user leaves the detail page before
-  // // the request completes.
-  // final cancelToken = CancelToken();
-  // ref.onDispose(cancelToken.cancel);
-  var page = ref.watch(galleryImagesPageProvider.state).state;
-  var list = await network.getGalleryImageList(tuple.item1, page, tuple.item2);
-  // ref.keepAlive();
-
-  return list;
-});
-final galleryImagesPageProvider = StateProvider((ref) => 1);
+import 'gallery_view_model.dart';
 
 class GalleryPage extends ConsumerStatefulWidget {
-  const GalleryPage({
+  final StateNotifierProviderFamily<GalleryPageViewModel, GalleryPageModelState, int> imagesProvider =
+      StateNotifierProvider.family<GalleryPageViewModel, GalleryPageModelState, int>((ref, width) => GalleryPageViewModel(GalleryPageModelState.init(width)));
+
+  GalleryPage({
     Key? key,
   }) : super(key: key);
 
@@ -53,27 +36,21 @@ class GalleryPage extends ConsumerStatefulWidget {
 
 class _GalleryPageState extends ConsumerState<GalleryPage> {
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
+  final ScrollController _imageScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    network.getGalleryCategoryList().then((value) {
-      var list = value.map((e) => GalleryCategoryItem(e, false)).toList();
-      if (list.isNotEmpty) {
-        list[1].selected = true;
-      }
-      ref.read(galleryCategoriesProvider.state).state = list;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     debugPrint("build page");
     final ScrollController _controller = ScrollController();
-    List<GalleryCategoryItem> categories = ref.watch(galleryCategoriesProvider.state).state;
-    List<GalleryImage> images = ref.watch(galleryImagesProvider.state).state;
-    String? safeId = ref.watch(selectedCategoryProvider.state).state.galleryCategory?.safeId;
     int imageWidth = MediaQuery.of(context).size.width ~/ 3;
+
+    GalleryPageModelState modelState = ref.watch(widget.imagesProvider(imageWidth));
+    GalleryPageViewModel viewModel = ref.read(widget.imagesProvider(imageWidth).notifier);
 
     double safePadding = MediaQuery.of(context).padding.top;
     debugPrint("safePadding=$safePadding");
@@ -83,8 +60,8 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
     double totalHeight = padding * 4 + iconSize + listHeight;
     totalHeight += padding;
     var searchBar = buildSearchBar(context, iconSize, padding);
-    var categoryBar = buildCategoryBar(padding, listHeight, _controller, categories);
-    Widget listWidget = buildListWidget(safeId, imageWidth, images, totalHeight + safePadding);
+    var categoryBar = buildCategoryBar(padding, listHeight, _controller, viewModel, modelState);
+    Widget listWidget = modelState.selectedCategory == null ? Container() : buildListWidget(viewModel, modelState, imageWidth, totalHeight + safePadding);
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: PreferredSize(
@@ -108,12 +85,9 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => TestViewModelScreen()));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => FirstPage()));
         },
-        child: Icon(Icons.arrow_forward),
+        child: const Icon(Icons.arrow_forward),
       ),
       body: Container(
         color: Colors.white,
@@ -126,85 +100,65 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
     );
   }
 
-  Widget buildListWidget(String? safeId, int width, List<GalleryImage> images, double totalHeight) {
+  Widget buildListWidget(GalleryPageViewModel viewModel, GalleryPageModelState modelState, int width, double totalHeight) {
     Widget listWidget;
-    if (safeId == null) {
-      listWidget = Container();
-    } else {
-      List<GalleryImage> list = ref.watch(newGalleryImagesProvider(Tuple2(safeId, width))).when(data: (data) {
-        images.addAll(data);
-        return images;
-      }, error: (obj, stack) {
-        return images;
-      }, loading: () {
-        return images;
-      });
-      listWidget = SmartRefresher(
-        enablePullDown: true,
-        enablePullUp: true,
-        header: const ClassicHeader(),
-        onRefresh: () async {
-          ref.read(galleryImagesProvider.state).state = [];
-          ref.read(galleryImagesPageProvider.state).state = 1;
-          ref.refresh(newGalleryImagesProvider(Tuple2(safeId, width)));
-          Timer(const Duration(milliseconds: 500), () {
-            _refreshController.refreshCompleted();
-          });
-        },
-        onLoading: () async {
-          ref.read(galleryImagesPageProvider.state).state += 1;
-          Timer(const Duration(milliseconds: 500), () {
+
+    listWidget = SmartRefresher(
+      enablePullDown: true,
+      enablePullUp: true,
+      header: const ClassicHeader(),
+      onRefresh: () async {
+        viewModel.getImageList((state) {
+          _refreshController.refreshCompleted();
+        });
+      },
+      onLoading: () async {
+        viewModel.getImageList((state) {
+          if (state == PageState.noMore) {
+            _refreshController.loadNoData();
+            debugPrint("load no more");
+          } else {
             _refreshController.loadComplete();
-          });
+            debugPrint("load complete");
+          }
+        },isRefresh: false);
+      },
+      controller: _refreshController,
+      child: GridView.builder(
+        controller: _imageScrollController,
+        padding: EdgeInsets.fromLTRB(16, totalHeight, 16, 96),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            //横轴元素个数
+            crossAxisCount: 3,
+            //子组件宽高长度比例
+            childAspectRatio: 1.0),
+        itemCount: modelState.images.length + 1,
+        itemBuilder: (BuildContext context, int index) {
+          if (index == 0) {
+            return GestureDetector(
+              child: const AddLocalImageView(),
+              onTap: () {
+                _galleryItemTouched(index);
+              },
+            );
+          } else {
+            return GestureDetector(
+              onTap: () {
+                _galleryItemTouched(index);
+              },
+              child: GalleryImageView(modelState.images[index - 1], (newState) {
+                viewModel.setGalleryImageFavorite(index - 1, newState);
+              }),
+            );
+          }
         },
-        controller: _refreshController,
-        child: GridView.builder(
-          padding: EdgeInsets.fromLTRB(16, totalHeight, 16, 96),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              //横轴元素个数
-              crossAxisCount: 3,
-              //子组件宽高长度比例
-              childAspectRatio: 1.0),
-          itemCount: list.length + 1,
-          itemBuilder: (BuildContext context, int index) {
-            if (index == 0) {
-              return GestureDetector(
-                child: const AddLocalImageView(),
-                onTap: () {
-                  _galleryItemTouched(index);
-                },
-              );
-            } else {
-              return GestureDetector(
-                onTap: () {
-                  _galleryItemTouched(index);
-                },
-                child: GalleryImageView(list[index - 1], (newState) {
-                  list[index - 1].favorited = newState;
-                  debugPrint(list[index - 1].safeId);
-                  ref.read(galleryImagesProvider.state).state = [...list];
-                  network.requestAsync(network.setGalleryImageFavorited(list[index - 1].safeId, newState), (data) {
-                    var categoryName = ref.read(selectedCategoryProvider.state).state.galleryCategory?.name;
-                    if (categoryName == "我的常用") {
-                      debugPrint("我的常用");
-                      list.removeAt(index - 1);
-                      ref.read(galleryImagesProvider.state).state = [...list];
-                    }
-                  }, (error) {
-                    list[index - 1].favorited = !newState;
-                    ref.read(galleryImagesProvider.state).state = [...list];
-                  });
-                }),
-              );
-            }
-          },
-        ),
-      );
-    }
+      ),
+    );
+
     return listWidget;
   }
 
-  Widget buildCategoryBar(double padding, double listHeight, ScrollController _controller, List<GalleryCategoryItem> categories) {
+  Widget buildCategoryBar(double padding, double listHeight, ScrollController _controller, GalleryPageViewModel viewModel, GalleryPageModelState modelState) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: padding),
       child: SizedBox(
@@ -215,10 +169,12 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
           itemBuilder: (context, index) {
             return GestureDetector(
               onTap: () {
-                for (var item in categories) {
+                GalleryCategory selectedCategory;
+                for (var item in modelState.categories) {
                   item.selected = false;
                 }
-                categories[index].selected = true;
+                modelState.categories[index].selected = true;
+                selectedCategory = modelState.categories[index].galleryCategory!;
                 // 因为categories其实还是原来的list，所以给state赋值无效。所以要构建一个新的list赋值，有3种写法：
                 // #1
                 // List<GalleryCategoryItem> newList = [];
@@ -229,17 +185,17 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
                 // ref.read(galleryCategoriesProvider.state).state = []..addAll(categories);
 
                 // #3 dart把#2优化成了3个点的，叫spread，一个意思，语法糖
-
-                ref.read(galleryImagesProvider.state).state = [];
-                ref.read(galleryImagesPageProvider.state).state = 1;
-                ref.read(galleryCategoriesProvider.state).state = [...categories];
+                viewModel.updateState(modelState.copyWith(categories: [...modelState.categories], selectedCategory: selectedCategory));
+                viewModel.getImageList((state) => null);
+                _refreshController.resetNoData();
+                _imageScrollController.jumpTo(0);
 
                 // _controller.animateTo(125, duration: Duration(milliseconds: 250), curve: Curves.ease);
               },
-              child: CategoryItemView(categories[index]),
+              child: CategoryItemView(modelState.categories[index]),
             );
           },
-          itemCount: categories.length,
+          itemCount: modelState.categories.length,
           padding: const EdgeInsets.symmetric(horizontal: 16),
         ),
       ),
@@ -526,11 +482,4 @@ class _GalleryImageViewState extends ConsumerState<GalleryImageView> {
       ),
     );
   }
-}
-
-class GalleryCategoryItem {
-  final GalleryCategory? galleryCategory;
-  bool selected;
-
-  GalleryCategoryItem(this.galleryCategory, this.selected);
 }

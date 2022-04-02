@@ -23,13 +23,19 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  List<Widget> pages = const [
+  List<Widget> pages = [
     InputPage(),
     GalleryPage(),
     SocialPage(),
     MePage(),
   ];
   ScrollController controller = ScrollController();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -46,7 +52,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: pages[index],
       bottomNavigationBar: AnimatedSlide(
         duration: Duration(milliseconds: 250),
-        offset: Offset(0, ref.watch(bottomBarVisibilityProvider.state).state ? 0 : 1),
+        offset: Offset(
+            0, ref.watch(bottomBarVisibilityProvider.state).state ? 0 : 1),
         child: Theme(
           data: Theme.of(context).copyWith(
             canvasColor: Colors.transparent,
@@ -59,8 +66,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             items: const [
               BottomNavigationBarItem(icon: Icon(Icons.input), label: "input"),
               BottomNavigationBarItem(icon: Icon(Icons.image), label: "album"),
-              BottomNavigationBarItem(icon: Icon(Icons.explore), label: "explore"),
-              BottomNavigationBarItem(icon: Icon(Icons.person), label: "person"),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.explore), label: "explore"),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.person), label: "person"),
             ],
             selectedItemColor: Colors.blue,
             unselectedItemColor: Colors.grey,

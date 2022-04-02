@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:app/ui/pages/User/login.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/widgets/ipfs_node.dart';
 import 'package:common/utils/network.dart';
@@ -16,8 +17,8 @@ import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: MyApp()));
   await initUtils();
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 Future<void> initUtils() async {
@@ -42,11 +43,28 @@ class MyApp extends ConsumerWidget {
     return MaterialApp(
       title: 'HooH',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+          primarySwatch: Colors.blue,
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Colors.white,
+            titleTextStyle: TextStyle(color: Colors.black, fontSize: 16),
+            actionsIconTheme: IconThemeData(color: Colors.black),
+            iconTheme: IconThemeData(color: Colors.black),
+            // shadowColor: Colors.transparent,
+          )),
       // home: HomeScreen(),
-      home: HomeScreen(),
+      home: getHomepage(),
     );
+  }
+}
+
+Widget getHomepage() {
+  String hasLogin = "hasLogin";
+  String hasSkipped = "hasSkipped";
+  preferences.putBool(hasSkipped, false);
+  if (preferences.getBool(hasLogin, def: false)! || preferences.getBool(hasSkipped, def: false)!) {
+    return HomeScreen();
+  } else {
+    return const LoginScreen();
   }
 }
 
@@ -177,7 +195,7 @@ class _FirstPageState extends State<FirstPage> {
             ElevatedButton(
                 onPressed: () {
                   // network.getUser("283bc4ee-e489-452f-9827-a15946cf9656").catchError((error, stackTrace){
-                  network.getUser("4ee-e489-452f-9827-a15946cf9656").catchError((error, stackTrace){
+                  network.getUser("4ee-e489-452f-9827-a15946cf9656").catchError((error, stackTrace) {
                     debugPrint(error.toString());
                   }).then((value) {
                     showDialog(
@@ -193,7 +211,7 @@ class _FirstPageState extends State<FirstPage> {
                 onPressed: () {
                   String key = "test key";
                   if (preferences.hasKey(key)) {
-                    preferences.putString(key, "test value");
+                    preferences.putString(key, "123");
                     showDialog(
                         context: context,
                         builder: (e) => AlertDialog(

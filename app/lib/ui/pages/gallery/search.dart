@@ -29,6 +29,7 @@ class _GallerySearchScreenState extends ConsumerState<GallerySearchScreen> {
   TextEditingController controller = TextEditingController();
   FocusNode node = FocusNode();
   int imageWidth = 0;
+  ScrollController scrollController = ScrollController();
 
   @override
   void initState() {
@@ -49,6 +50,7 @@ class _GallerySearchScreenState extends ConsumerState<GallerySearchScreen> {
     SearchPageModelState modelState = ref.watch(widget.imagesProvider(imageWidth));
 
     var searchBar = buildSearchBar(context, iconSize, padding);
+
     Widget listWidget = buildListWidget(modelState, totalHeight + safePadding);
 
     return Scaffold(
@@ -114,8 +116,17 @@ class _GallerySearchScreenState extends ConsumerState<GallerySearchScreen> {
                   ),
                   onChanged: (String value) async {
                     debugPrint("onChanged $value");
+                    // // 如果不在第一页，重新加载数据的时候滚到顶部
+                    // if (scrollController.hasClients) {
+                    //   final position = scrollController.position.minScrollExtent;
+                    //   scrollController.animateTo(
+                    //     position,
+                    //     duration: Duration(milliseconds: 10),
+                    //     curve: Curves.easeOut,
+                    //   );
+                    // }
                     var viewModel = ref.read(widget.imagesProvider(imageWidth).notifier);
-                    viewModel.updateState(ref.read(widget.imagesProvider(imageWidth)).copyWith(keyword: value, pageIndex: 1));
+                    viewModel.updateState(ref.read(widget.imagesProvider(imageWidth)).copyWith(keyword: value));
                     viewModel.search();
                   },
                   onSubmitted: (String value) async {
@@ -165,6 +176,7 @@ class _GallerySearchScreenState extends ConsumerState<GallerySearchScreen> {
         },
         controller: _refreshController,
         child: GridView.builder(
+          controller: scrollController,
           padding: EdgeInsets.fromLTRB(16, totalHeight, 16, 96),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               //横轴元素个数

@@ -47,6 +47,7 @@ dependencies:
 #  image_cropping: ^0.0.11
   image_cropper: ^1.5.0
   copy_with_extension: ^4.0.0
+  phone_form_field: ^4.5.3
 
 dev_dependencies:
   flutter_test:
