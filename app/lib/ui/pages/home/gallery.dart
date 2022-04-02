@@ -85,7 +85,10 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => FirstPage()));
+          Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => TestTintScreen()));
         },
         child: const Icon(Icons.arrow_forward),
       ),
