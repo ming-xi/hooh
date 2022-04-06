@@ -1,4 +1,4 @@
-import 'package:app/ui/pages/User/verify_code.dart';
+import 'package:app/ui/pages/User/register/verify_code.dart';
 import 'package:app/ui/pages/User/web_view.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:flutter/gestures.dart';
@@ -18,6 +18,7 @@ class SignUpScreen extends ConsumerStatefulWidget {
 class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final TapGestureRecognizer _tapGestureRecognizer = TapGestureRecognizer();
   String _phoneNumber = "";
+  int _countryCode = 0;
 
   @override
   void initState() {
@@ -88,7 +89,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     onChanged: (p) {
                       if (p != null) {
                         // if (p.validate()) {
-                        _phoneNumber = p.countryCode + p.nsn;
+                        _phoneNumber = p.nsn;
+                        _countryCode = int.tryParse(p.countryCode)!;
                         // }
                       }
                       debugPrint(_phoneNumber);
@@ -98,10 +100,15 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => VerifyCodeScreen(_phoneNumber)));
+                    if (!checkMobileNumber(_phoneNumber)) {
+                      showDialog(
+                          context: context,
+                          builder: (e) => AlertDialog(
+                                content: Text("invalid mobile"),
+                              ));
+                      return;
+                    }
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => VerifyCodeScreen(_countryCode, _phoneNumber)));
                   },
                   child: const Text('Agree and sign up'),
                 ),
@@ -135,5 +142,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         ],
       ),
     );
+  }
+
+  bool checkMobileNumber(String mobile) {
+    // String? match = RegExp(r"/^(\+\d{1,3}[- ]?)?\d{10}$/").stringMatch(mobile);
+    // return match != null && match == mobile;
+    return true;
   }
 }

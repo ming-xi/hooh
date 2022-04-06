@@ -4,7 +4,7 @@ part 'gallery_image.g.dart';
 
 // enum GalleryImageType { normal, local, favorite, newest, trending, unknown }
 
-@JsonSerializable()
+@JsonSerializable(fieldRename: FieldRename.snake)
 class GalleryImage {
   @JsonKey(name: "safe_id")
   String safeId;

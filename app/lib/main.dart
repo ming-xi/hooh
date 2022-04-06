@@ -2,11 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:app/ui/pages/User/login.dart';
+import 'package:app/ui/pages/User/register/login.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/widgets/ipfs_node.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
+import 'package:common/utils/device_info.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -29,6 +30,7 @@ Future<void> initUtils() async {
 ///需要同步初始化的工具类
 Future<void> initSyncUtils() async {
   await preferences.init();
+  await deviceInfo.init();
 }
 
 ///不需要同步初始化的工具类

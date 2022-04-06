@@ -7,6 +7,8 @@ class Preferences {
   /// 顶层变量，单例模式
   Preferences._internal();
 
+  static const keyUserAccessToken = "keyUserAccessToken";
+
   Future<void> init() async {
     // SharedPreferences.getInstance().then((value) {
     //    _prefs = value;

@@ -1,4 +1,4 @@
-import 'package:app/ui/pages/User/sign_up.dart';
+import 'package:app/ui/pages/User/register/sign_up.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';

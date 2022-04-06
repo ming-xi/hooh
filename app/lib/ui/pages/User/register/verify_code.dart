@@ -1,18 +1,23 @@
-import 'package:app/extensions/extensions.dart';
-import 'package:app/ui/pages/User/verify_code_view_model.dart';
+import 'package:app/ui/pages/User/register/set_password.dart';
+import 'package:app/ui/pages/User/register/verify_code_view_model.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class VerifyCodeScreen extends ConsumerStatefulWidget {
+  final int countryCode;
   final String phoneNumber;
-  final StateNotifierProvider<VerifyCodeViewModel, VerifyCodeModelState> provider = StateNotifierProvider((ref) {
-    return VerifyCodeViewModel(VerifyCodeModelState.init());
-  });
+  late final StateNotifierProvider<VerifyCodeViewModel, VerifyCodeModelState> provider;
 
-  VerifyCodeScreen(this.phoneNumber,{
+  VerifyCodeScreen(
+    this.countryCode,
+    this.phoneNumber, {
     Key? key,
-  }) : super(key: key);
+  }) : super(key: key) {
+    provider = StateNotifierProvider((ref) {
+      return VerifyCodeViewModel(VerifyCodeModelState.init(countryCode, phoneNumber));
+    });
+  }
 
   @override
   ConsumerState createState() => _VerifyCodeScreenState();
@@ -57,13 +62,17 @@ class _VerifyCodeScreenState extends ConsumerState<VerifyCodeScreen> {
                     autofocus: true,
                     onChanged: (text) {
                       debugPrint(text);
+                      if (text.length == 6) {
+                        viewModel.validateCode(text, (token) {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => SetPasswordScreen(token)));
+                        });
+                      }
                     },
                   ),
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    viewModel.updateState(modelState.copyWith(phoneNumber: widget.phoneNumber));
-                    viewModel.sendCode(_code);
+                    viewModel.requestValidationCode();
                   },
                   child: modelState.seconds == 0 ? const Text('Send verification code') : const Text('Resend verification code'),
                 ),
@@ -79,13 +88,13 @@ class _VerifyCodeScreenState extends ConsumerState<VerifyCodeScreen> {
                           ),
                           text: '${modelState.seconds} ',
                           children: const [
-                            TextSpan(
-                              style: TextStyle(
-                                color: Colors.black,
-                              ),
-                              text: 'seconds',
-                            )
-                          ])),
+                        TextSpan(
+                          style: TextStyle(
+                            color: Colors.black,
+                          ),
+                          text: 'seconds',
+                        )
+                      ])),
                   visible: !modelState.sendCodeEnable,
                 ),
               ],
