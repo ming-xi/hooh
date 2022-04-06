@@ -1,3 +1,4 @@
+import 'package:app/ui/pages/User/verify_code.dart';
 import 'package:app/ui/pages/User/web_view.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:flutter/gestures.dart';
@@ -11,10 +12,10 @@ class SignUpScreen extends ConsumerStatefulWidget {
   }) : super(key: key);
 
   @override
-  ConsumerState createState() => _SignUpPageState();
+  ConsumerState createState() => _SignUpScreenState();
 }
 
-class _SignUpPageState extends ConsumerState<SignUpScreen> {
+class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final TapGestureRecognizer _tapGestureRecognizer = TapGestureRecognizer();
   String _phoneNumber = "";
 
@@ -96,7 +97,12 @@ class _SignUpPageState extends ConsumerState<SignUpScreen> {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => VerifyCodeScreen(_phoneNumber)));
+                  },
                   child: const Text('Agree and sign up'),
                 ),
                 const SizedBox(
