@@ -8,6 +8,9 @@ class Preferences {
   Preferences._internal();
 
   static const keyUserAccessToken = "keyUserAccessToken";
+  static const keyUserRegisterStep = "keyUserRegisterStep";
+  static const keyUserHasLogin = "keyUserHasLogin";
+  static const keyUserHasSkippedLogin = "keyUserHasSkippedLogin";
 
   Future<void> init() async {
     // SharedPreferences.getInstance().then((value) {

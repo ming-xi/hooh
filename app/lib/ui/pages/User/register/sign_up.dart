@@ -35,6 +35,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    PhoneNumber phone = PhoneNumber(isoCode: 'AS', nsn:'');
     return Scaffold(
       appBar: AppBar(
         title: const Text("Sign Up"),
@@ -89,6 +90,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     onChanged: (p) {
                       if (p != null) {
                         // if (p.validate()) {
+                        phone = p;
                         _phoneNumber = p.nsn;
                         _countryCode = int.tryParse(p.countryCode)!;
                         // }
@@ -100,7 +102,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    if (!checkMobileNumber(_phoneNumber)) {
+                    if (!phone.validate()) {
                       showDialog(
                           context: context,
                           builder: (e) => AlertDialog(

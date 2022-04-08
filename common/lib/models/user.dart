@@ -5,11 +5,11 @@ part 'user.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class User {
-  String name;
+  String name;  // 昵称
 
-  String? username;
+  DateTime? createdAt;  // 创建时间
 
-  DateTime? createdAt;
+  int? register_step;  // 注册步骤 0 完成设置密码， 1 完成设置昵称， 2 完成设置社交徽章
 
   User({required this.name});
 

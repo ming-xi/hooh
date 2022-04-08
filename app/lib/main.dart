@@ -60,10 +60,8 @@ class MyApp extends ConsumerWidget {
 }
 
 Widget getHomepage() {
-  String hasLogin = "hasLogin";
-  String hasSkipped = "hasSkipped";
-  preferences.putBool(hasSkipped, false);
-  if (preferences.getBool(hasLogin, def: false)! || preferences.getBool(hasSkipped, def: false)!) {
+  // preferences.putBool(Preferences.keyUserHasSkippedLogin, false);
+  if (preferences.getBool(Preferences.keyUserHasLogin, def: false)! || preferences.getBool(Preferences.keyUserHasSkippedLogin, def: false)!) {
     return HomeScreen();
   } else {
     return const LoginScreen();
