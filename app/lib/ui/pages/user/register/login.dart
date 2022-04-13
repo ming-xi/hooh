@@ -1,3 +1,4 @@
+import 'package:app/main.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/user/register/sign_up.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
@@ -18,6 +19,12 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        child: Text("test"),
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => TestScreen()));
+        },
+      ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

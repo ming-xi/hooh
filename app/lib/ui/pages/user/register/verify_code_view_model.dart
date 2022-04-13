@@ -39,23 +39,23 @@ class VerifyCodeViewModel extends StateNotifier<VerifyCodeModelState> {
       return;
     }
     state = state.copyWith(sendCodeEnable: false);
-    network.requestAsync<RequestValidateCodeResponse>(network.requestValidationCodeForRegister(state.countryCode, state.phoneNumber), (data) {
-      debugPrint("code=${data.code}");
-      startTimer();
-    }, (error) {
-      state = state.copyWith(sendCodeEnable: true);
-      state = state.copyWith(error: error);
-    });
+    // network.requestAsync<RequestValidateCodeResponse>(network.requestValidationCodeForRegister(state.countryCode, state.phoneNumber), (data) {
+    //   debugPrint("code=${data.code}");
+    //   startTimer();
+    // }, (error) {
+    //   state = state.copyWith(sendCodeEnable: true);
+    //   state = state.copyWith(error: error);
+    // });
   }
 
   Future<void> validateCode(String code,Function(String token) onSuccess) async {
-    network.requestAsync<ValidateAccountResponse>(network.validationCodeForRegister(state.countryCode, state.phoneNumber,code), (data) {
-      debugPrint("token=${data.token}");
-      onSuccess(data.token);
-    }, (error) {
-      state = state.copyWith(sendCodeEnable: true);
-      state = state.copyWith(error: error);
-    });
+    // network.requestAsync<ValidateAccountResponse>(network.validationCodeForRegister(state.countryCode, state.phoneNumber,code), (data) {
+    //   debugPrint("token=${data.token}");
+    //   onSuccess(data.token);
+    // }, (error) {
+    //   state = state.copyWith(sendCodeEnable: true);
+    //   state = state.copyWith(error: error);
+    // });
   }
 
   void startTimer() {

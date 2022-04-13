@@ -66,15 +66,15 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
                         debugPrint("not same password");
                         return;
                       }
-                      network.requestAsync<LoginResponse>(network.register(widget.token, password), (data) {
-                        network.setUserToken(data.jwtResponse.accessToken);
-                        preferences.putInt(Preferences.keyUserRegisterStep, 0);
-                        debugPrint("success");
-                        Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => SetNicknameScreen()));
-                      }, (error) => null);
+                      // network.requestAsync<LoginResponse>(network.register(widget.token, password), (data) {
+                      //   network.setUserToken(data.jwtResponse.accessToken);
+                      //   preferences.putInt(Preferences.keyUserRegisterStep, 0);
+                      //   debugPrint("success");
+                      //   Navigator.push(
+                      //                 context,
+                      //                 MaterialPageRoute(
+                      //                     builder: (context) => SetNicknameScreen()));
+                      // }, (error) => null);
                     },
                     child: Text("Confirm"))
               ],
