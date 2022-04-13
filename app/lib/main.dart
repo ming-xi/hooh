@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:app/ui/pages/User/register/login.dart';
+import 'package:app/ui/pages/user/register/login.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/widgets/ipfs_node.dart';
 import 'package:common/utils/network.dart';

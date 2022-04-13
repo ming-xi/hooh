@@ -1,5 +1,5 @@
-import 'package:app/ui/pages/User/register/set_password.dart';
-import 'package:app/ui/pages/User/register/verify_code_view_model.dart';
+import 'package:app/ui/pages/user/register/set_password.dart';
+import 'package:app/ui/pages/user/register/verify_code_view_model.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';

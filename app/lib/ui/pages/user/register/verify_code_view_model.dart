@@ -39,7 +39,7 @@ class VerifyCodeViewModel extends StateNotifier<VerifyCodeModelState> {
       return;
     }
     state = state.copyWith(sendCodeEnable: false);
-    network.requestAsync<ValidateCodeResponse>(network.requestValidationCodeForRegister(state.countryCode, state.phoneNumber), (data) {
+    network.requestAsync<RequestValidateCodeResponse>(network.requestValidationCodeForRegister(state.countryCode, state.phoneNumber), (data) {
       debugPrint("code=${data.code}");
       startTimer();
     }, (error) {

@@ -4,11 +4,10 @@ part 'requests.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class LoginWithPasswordRequest {
-  int countryCode;
-  String mobile;
+  String username;
   String encryptedPassword;
 
-  LoginWithPasswordRequest(this.countryCode, this.mobile, this.encryptedPassword);
+  LoginWithPasswordRequest(this.username, this.encryptedPassword);
 
   factory LoginWithPasswordRequest.fromJson(Map<String, dynamic> json) => _$LoginWithPasswordRequestFromJson(json);
 
@@ -17,10 +16,11 @@ class LoginWithPasswordRequest {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class RegisterRequest {
+  String username;
+  String email;
   String encryptedPassword;
-  String token;
 
-  RegisterRequest(this.token, this.encryptedPassword);
+  RegisterRequest(this.username, this.email, this.encryptedPassword);
 
   factory RegisterRequest.fromJson(Map<String, dynamic> json) => _$RegisterRequestFromJson(json);
 
@@ -28,28 +28,65 @@ class RegisterRequest {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-class ValidateAccountRequest {
-  int countryCode;
-  String mobile;
-  String code;
+class RequestValidationCodeRequest {
+  int type;
+  String target;
 
-  ValidateAccountRequest(this.countryCode, this.mobile, this.code);
+  RequestValidationCodeRequest(this.type, this.target);
 
-  factory ValidateAccountRequest.fromJson(Map<String, dynamic> json) => _$ValidateAccountRequestFromJson(json);
+  factory RequestValidationCodeRequest.fromJson(Map<String, dynamic> json) => _$RequestValidationCodeRequestFromJson(json);
 
-  Map<String, dynamic> toJson() => _$ValidateAccountRequestToJson(this);
+  Map<String, dynamic> toJson() => _$RequestValidationCodeRequestToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-class ValidateMobileRequest {
-  int countryCode;
-  String mobile;
+class ValidateCodeRequest {
+  String target;
+  String code;
 
-  ValidateMobileRequest(this.countryCode, this.mobile);
+  ValidateCodeRequest(this.target, this.code);
 
-  factory ValidateMobileRequest.fromJson(Map<String, dynamic> json) => _$ValidateMobileRequestFromJson(json);
+  factory ValidateCodeRequest.fromJson(Map<String, dynamic> json) => _$ValidateCodeRequestFromJson(json);
 
-  Map<String, dynamic> toJson() => _$ValidateMobileRequestToJson(this);
+  Map<String, dynamic> toJson() => _$ValidateCodeRequestToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class ResetPasswordRequest {
+  String token;
+  String encryptedPassword;
+
+  ResetPasswordRequest(this.token, this.encryptedPassword);
+
+  factory ResetPasswordRequest.fromJson(Map<String, dynamic> json) => _$ResetPasswordRequestFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ResetPasswordRequestToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class RequestUploadingFileRequest {
+  String md5;
+  String ext;
+
+  RequestUploadingFileRequest(this.md5, this.ext);
+
+  factory RequestUploadingFileRequest.fromJson(Map<String, dynamic> json) => _$RequestUploadingFileRequestFromJson(json);
+
+  Map<String, dynamic> toJson() => _$RequestUploadingFileRequestToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class ChangeUserInfoRequest {
+  String? name;
+  String? signature;
+  String? website;
+  String? avatarKey;
+
+  ChangeUserInfoRequest({this.name, this.signature, this.website, this.avatarKey});
+
+  factory ChangeUserInfoRequest.fromJson(Map<String, dynamic> json) => _$ChangeUserInfoRequestFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ChangeUserInfoRequestToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)

@@ -1,5 +1,5 @@
-import 'package:app/ui/pages/User/register/set_nickname.dart';
-import 'package:app/ui/pages/User/register/verify_code_view_model.dart';
+import 'package:app/ui/pages/user/register/set_nickname.dart';
+import 'package:app/ui/pages/user/register/verify_code_view_model.dart';
 import 'package:common/models/network/responses.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';

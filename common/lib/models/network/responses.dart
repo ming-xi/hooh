@@ -3,14 +3,13 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'responses.g.dart';
 
-
-
 @JsonSerializable(fieldRename: FieldRename.snake)
 class LoginResponse {
   User user;
   JWTResponse jwtResponse;
 
   LoginResponse(this.user, this.jwtResponse);
+
   factory LoginResponse.fromJson(Map<String, dynamic> json) => _$LoginResponseFromJson(json);
 
   Map<String, dynamic> toJson() => _$LoginResponseToJson(this);
@@ -24,6 +23,7 @@ class JWTResponse {
   int refreshTokenExpiration;
 
   JWTResponse(this.accessToken, this.refreshToken, this.accessTokenExpiration, this.refreshTokenExpiration);
+
   factory JWTResponse.fromJson(Map<String, dynamic> json) => _$JWTResponseFromJson(json);
 
   Map<String, dynamic> toJson() => _$JWTResponseToJson(this);
@@ -34,17 +34,44 @@ class ValidateAccountResponse {
   String token;
 
   ValidateAccountResponse(this.token);
+
   factory ValidateAccountResponse.fromJson(Map<String, dynamic> json) => _$ValidateAccountResponseFromJson(json);
 
   Map<String, dynamic> toJson() => _$ValidateAccountResponseToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-class ValidateCodeResponse {
+class RequestValidationCodeResponse {
+  static const typeEmail = 0;
+  static const typeMobile = 1;
   String code;
 
-  ValidateCodeResponse(this.code);
+  RequestValidationCodeResponse(this.code);
+
+  factory RequestValidationCodeResponse.fromJson(Map<String, dynamic> json) => _$RequestValidationCodeResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$RequestValidationCodeResponseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class ValidateCodeResponse {
+  String token;
+
+  ValidateCodeResponse(this.token);
+
   factory ValidateCodeResponse.fromJson(Map<String, dynamic> json) => _$ValidateCodeResponseFromJson(json);
 
   Map<String, dynamic> toJson() => _$ValidateCodeResponseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class RequestUploadingFileResponse {
+  String uploadingUrl;
+  String key;
+
+  RequestUploadingFileResponse(this.uploadingUrl, this.key);
+
+  factory RequestUploadingFileResponse.fromJson(Map<String, dynamic> json) => _$RequestUploadingFileResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$RequestUploadingFileResponseToJson(this);
 }
