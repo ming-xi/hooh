@@ -1,9 +1,11 @@
+import 'package:app/ui/pages/User/register/set_nickname.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/pages/user/web_view.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:common/models/network/responses.dart';
 import 'package:common/utils/network.dart';
+import 'package:common/utils/preferences.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -172,7 +174,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     onPressed: () {
                       network.requestAsync<LoginResponse>(network.register(usernameController.text,passwordController.text,emailController.text), (data){
                         Toast.show(context: context, message: "注册成功");
-
+                        network.setUserToken(data.jwtResponse.accessToken);
+                        preferences.putInt(Preferences.keyUserRegisterStep, data.user.register_step);
+                        Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => SetNicknameScreen()));
                       }, (error) {
                         showDialog(
                             context: context,
