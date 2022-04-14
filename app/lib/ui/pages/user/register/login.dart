@@ -1,4 +1,5 @@
 import 'package:app/main.dart';
+import 'package:app/test.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/user/register/sign_up.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
@@ -22,7 +23,7 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
       floatingActionButton: FloatingActionButton(
         child: Text("test"),
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => TestScreen()));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => TestUploadingAvatarScreen()));
         },
       ),
       body: Column(

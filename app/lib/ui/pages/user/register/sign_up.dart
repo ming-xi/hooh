@@ -30,7 +30,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   FocusNode passwordNode = FocusNode();
   FocusNode passwordConfirmNode = FocusNode();
 
-
   @override
   void dispose() {
     // TODO: implement dispose
@@ -172,9 +171,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   ElevatedButton(
                     style: RegisterStyles.flatBlackButtonStyle(),
                     onPressed: () {
-                      network.requestAsync<LoginResponse>(network.register(usernameController.text,passwordController.text,emailController.text), (data){
-                        Toast.show(context: context, message: "注册成功");
-                        network.setUserToken(data.jwtResponse.accessToken);
+                      network.requestAsync<LoginResponse>(network.register(usernameController.text, passwordController.text, emailController.text), (data) {
+                        Toast.showSnackBar(context, "注册成功");network.setUserToken(data.jwtResponse.accessToken);
                         preferences.putInt(Preferences.keyUserRegisterStep, data.user.register_step);
                         Navigator.push(
                                       context,
@@ -184,12 +182,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         showDialog(
                             context: context,
                             builder: (context) {
-                              return  AlertDialog(
+                              return AlertDialog(
                                 content: Text(error.message),
                               );
                             });
                       });
-
                     },
                     child: const Text('Agree and sign up'),
                   ),

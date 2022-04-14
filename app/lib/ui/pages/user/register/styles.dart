@@ -18,6 +18,7 @@ class RegisterStyles {
 
   static ButtonStyle flatBlackButtonStyle() => TextButton.styleFrom(
       primary: Colors.white,
+      onSurface: Colors.white.withAlpha(128),
       minimumSize: Size.fromHeight(64),
       backgroundColor: Colors.black,
       shape: const RoundedRectangleBorder(

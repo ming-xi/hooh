@@ -48,6 +48,16 @@ class Network {
     preferences.putString(Preferences.keyUserAccessToken, token);
   }
 
+  String getS3ImageKey(String? url) {
+    if (url == null) {
+      return "";
+    }
+    if (url.contains("?") && url.contains("com/")) {
+      return url.substring(url.indexOf("com/") + "com/".length, url.indexOf("?"));
+    }
+    return url;
+  }
+
   // Future<ValidateCodeResponse> requestValidationCodeForRegister(int countryCode, String mobile) {
   //   return _getResponseObject<ValidateCodeResponse>(HttpMethod.post, _buildHoohUri("users/register/request-validation-code"),
   //       body: ValidateMobileRequest(countryCode, mobile).toJson(), deserializer: ValidateCodeResponse.fromJson);
@@ -106,7 +116,7 @@ class Network {
     return _getResponseObject<User>(HttpMethod.get, _buildHoohUri("users/$userId"), deserializer: User.fromJson);
   }
 
-  Future<User> changeUserInfo(String userId, String? name, String? signature, String? website, String? avatarKey) {
+  Future<User> changeUserInfo(String userId, {String? name, String? signature, String? website, String? avatarKey}) {
     return _getResponseObject<User>(HttpMethod.put, _buildHoohUri("users/$userId"),
         body: ChangeUserInfoRequest(
           name: name,
@@ -120,6 +130,7 @@ class Network {
   Future<RequestUploadingFileResponse> requestUploadingAvatar(String userId, File file) {
     String fileMd5 = md5.convert(file.readAsBytesSync()).toString().toLowerCase();
     String ext = file.path;
+    debugPrint("upload file md5=$fileMd5 path=$ext");
     ext = ext.substring(ext.lastIndexOf(".") + 1);
     return _getResponseObject<RequestUploadingFileResponse>(HttpMethod.post, _buildHoohUri("users/$userId/request-uploading-avatar"),
         body: RequestUploadingFileRequest(fileMd5, ext).toJson(), deserializer: RequestUploadingFileResponse.fromJson);
@@ -146,8 +157,10 @@ class Network {
   }
 
   Future<bool> uploadFile(String url, Uint8List fileBytes) async {
+    int id = Random().nextInt(10000);
+    logRequest(id, HttpMethod.put, Uri.parse(url), {'data': "<file bytes>"});
     var response = await http.put(Uri.parse(url), body: fileBytes);
-    debugPrint("response code=${response.statusCode.toString()}");
+    logResponse(id, response, null);
     if (response.statusCode >= 200 && response.statusCode < 400) {
       return true;
     } else {
@@ -157,7 +170,10 @@ class Network {
 
   Future<DownloadInfo?> downloadBytes(String url, String filename) async {
     try {
+      int id = Random().nextInt(10000);
+      logRequest(id, HttpMethod.get, Uri.parse(url), null);
       final response = await http.get(Uri.parse(url));
+      logResponse(id, response, null);
       if (response.contentLength == 0) {
         return null;
       }
@@ -217,8 +233,7 @@ class Network {
   Future<dynamic> _getRawResponse<M>(HttpMethod method, Uri uri,
       {Map<String, dynamic>? extraHeaders, Map<String, dynamic>? body, M Function(Map<String, dynamic>)? deserializer}) async {
     int id = Random().nextInt(10000);
-    debugPrint(
-        "[REQUEST  $id] ${method.name.toUpperCase()} url=${uri.toString()},\n query:${"\n" + prettyJson(uri.queryParameters)},\n body:${body == null ? "" : ("\n" + prettyJson(body))}");
+    logRequest(id, method, uri, body);
     http.Response response;
     try {
       switch (method) {
@@ -242,7 +257,7 @@ class Network {
     dynamic returnedJson;
     try {
       returnedJson = jsonDecode(utf8.decode(response.bodyBytes));
-      debugPrint("[RESPONSE $id] HTTP ${response.statusCode}\njson=${prettyJson(returnedJson)}");
+      logResponse(id, response, returnedJson);
     } catch (e) {
       debugPrint(e.toString());
     }
@@ -262,6 +277,15 @@ class Network {
       }
       return hoohApiErrorResponse;
     }
+  }
+
+  void logResponse(int id, http.Response response, returnedJson) {
+    debugPrint("[RESPONSE $id] HTTP ${response.statusCode}\njson=${prettyJson(returnedJson)}");
+  }
+
+  void logRequest(int id, HttpMethod method, Uri uri, Map<String, dynamic>? body) {
+    debugPrint(
+        "[REQUEST  $id] ${method.name.toUpperCase()} url=${uri.toString()},\n query:${"\n" + prettyJson(uri.queryParameters)},\n body:${body == null ? "" : ("\n" + prettyJson(body))}");
   }
 
   Uri _buildUri(bool ssl, String host, String path, {Map<String, dynamic>? params}) {
