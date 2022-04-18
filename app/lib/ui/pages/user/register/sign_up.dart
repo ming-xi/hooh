@@ -5,12 +5,14 @@ import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/pages/user/web_view.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
+import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/network/responses.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   final StateNotifierProvider<RegisterViewModel, RegisterModelState> provider = StateNotifierProvider((ref) {
@@ -147,8 +149,15 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   ElevatedButton(
                     style: RegisterStyles.flatBlackButtonStyle(ref),
                     onPressed: () {
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return LoadingDialog(LoadingDialogController());
+                          });
                       model.register(context, usernameController.text, passwordController.text, emailController.text, onSuccess: (user) {
                         Toast.showSnackBar(context, "注册成功");
+                      }, onFailed: () {
+                        Navigator.of(context).pop();
                       });
                     },
                     child: const Text('Agree and sign up'),

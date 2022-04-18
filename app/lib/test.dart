@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:pretty_json/pretty_json.dart';
+
 import 'package:app/extensions/extensions.dart';
-import 'package:app/providers.dart';
 import 'package:app/ui/pages/test_uploading_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/ipfs_node.dart';
@@ -15,6 +14,7 @@ import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:pretty_json/pretty_json.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
@@ -197,11 +197,18 @@ class _TestScreenState extends ConsumerState<TestUploadingAvatarScreen> {
               ),
               ElevatedButton(
                 onPressed: () async {
-                  LoginResponse loginResponse = await network.login("app_test1", "123456");
-                  network.setUserToken(loginResponse.jwtResponse.accessToken);
-                  model.updateState(modelState.copyWith(imageUrl: loginResponse.user.avatarUrl));
-
-                  Toast.showSnackBar(context, "success");
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return LoadingDialog(LoadingDialogController());
+                      });
+                  Timer(Duration(seconds: 2), () async {
+                    LoginResponse loginResponse = await network.login("app_test1", "123456");
+                    network.setUserToken(loginResponse.jwtResponse.accessToken);
+                    model.updateState(modelState.copyWith(imageUrl: loginResponse.user.avatarUrl));
+                    Navigator.of(context).pop();
+                    Toast.showSnackBar(context, "success");
+                  });
                 },
                 child: Text("login"),
                 style: RegisterStyles.flatBlackButtonStyle(ref),
@@ -236,10 +243,8 @@ class _TestScreenState extends ConsumerState<TestUploadingAvatarScreen> {
                 height: 16,
               ),
               ElevatedButton(
-                onPressed: () {
-                  ref.read(globalDarkModeProvider.state).state = !ref.read(globalDarkModeProvider.state).state;
-                },
-                child: Text("toggle dark mode"),
+                onPressed: () {},
+                child: Text("loading dialog"),
                 style: RegisterStyles.flatBlackButtonStyle(ref),
               )
             ],

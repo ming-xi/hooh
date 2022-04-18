@@ -31,7 +31,7 @@ class RegisterModelState {
 class RegisterViewModel extends StateNotifier<RegisterModelState> {
   RegisterViewModel(RegisterModelState state) : super(state) {}
 
-  void register(BuildContext context, String username, String password, String email, {Function(User)? onSuccess}) {
+  void register(BuildContext context, String username, String password, String email, {Function(User)? onSuccess, Function()? onFailed}) {
     network.requestAsync<LoginResponse>(network.register(username, password, email), (data) {
       Toast.showSnackBar(context, "success");
       network.setUserToken(data.jwtResponse.accessToken);
@@ -51,6 +51,9 @@ class RegisterViewModel extends StateNotifier<RegisterModelState> {
         return;
       } else {
         updateState(state.copyWith(emailErrorText: null));
+      }
+      if (onFailed != null) {
+        onFailed();
       }
       showDialog(
           context: context,
