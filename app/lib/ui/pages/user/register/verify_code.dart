@@ -1,5 +1,6 @@
 import 'package:app/ui/pages/user/register/set_password.dart';
 import 'package:app/ui/pages/user/register/verify_code_view_model.dart';
+import 'package:app/utils/design_colors.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -82,8 +83,8 @@ class _VerifyCodeScreenState extends ConsumerState<VerifyCodeScreen> {
                 Visibility(
                   child: RichText(
                       text: TextSpan(
-                          style: const TextStyle(
-                            color: Colors.blue,
+                          style: TextStyle(
+                            color: designColors.feiyu_blue.auto(ref),
                             fontSize: 14,
                           ),
                           text: '${modelState.seconds} ',

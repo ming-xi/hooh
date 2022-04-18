@@ -8,6 +8,7 @@ import 'package:common/models/gallery_image.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/network/requests.dart';
 import 'package:common/models/network/responses.dart';
+import 'package:common/models/social_badge.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/device_info.dart';
 import 'package:common/utils/preferences.dart';
@@ -73,6 +74,9 @@ class Network {
   //   return _getResponseObject<LoginResponse>(HttpMethod.post, _buildHoohUri("users/register"),
   //       body: RegisterRequest(token, encryptedPassword).toJson(), deserializer: LoginResponse.fromJson);
   // }
+
+  //region register
+
   Future<LoginResponse> register(String username, String password, String email) {
     String encryptedPassword = sha512.convert(utf8.encode(password)).toString();
     return _getResponseObject<LoginResponse>(HttpMethod.post, _buildHoohUri("users/register"),
@@ -112,17 +116,26 @@ class Network {
         body: ValidateCodeRequest(target, code).toJson(), deserializer: ValidateCodeResponse.fromJson);
   }
 
+  //endregion
+
+  //region user
   Future<User> getUserInfo(String userId) {
     return _getResponseObject<User>(HttpMethod.get, _buildHoohUri("users/$userId"), deserializer: User.fromJson);
   }
 
-  Future<User> changeUserInfo(String userId, {String? name, String? signature, String? website, String? avatarKey}) {
+  Future<List<SocialBadgeTemplateLayer>> getRandomBadgeTemplate(String userId) {
+    return _getResponseList<SocialBadgeTemplateLayer>(HttpMethod.get, _buildHoohUri("users/$userId/random-badge"),
+        deserializer: SocialBadgeTemplateLayer.fromJson);
+  }
+
+  Future<User> changeUserInfo(String userId, {String? name, String? signature, String? website, String? avatarKey, String? badgeImageKey}) {
     return _getResponseObject<User>(HttpMethod.put, _buildHoohUri("users/$userId"),
         body: ChangeUserInfoRequest(
           name: name,
           signature: signature,
           website: website,
           avatarKey: avatarKey,
+          badgeImageKey: badgeImageKey,
         ).toJson(),
         deserializer: User.fromJson);
   }
@@ -135,6 +148,41 @@ class Network {
     return _getResponseObject<RequestUploadingFileResponse>(HttpMethod.post, _buildHoohUri("users/$userId/request-uploading-avatar"),
         body: RequestUploadingFileRequest(fileMd5, ext).toJson(), deserializer: RequestUploadingFileResponse.fromJson);
   }
+
+  Future<RequestUploadingFileResponse> requestUploadingSocialBadge(String userId, File file) {
+    String fileMd5 = md5.convert(file.readAsBytesSync()).toString().toLowerCase();
+    String ext = file.path;
+    debugPrint("upload file md5=$fileMd5 path=$ext");
+    ext = ext.substring(ext.lastIndexOf(".") + 1);
+    return _getResponseObject<RequestUploadingFileResponse>(HttpMethod.post, _buildHoohUri("users/$userId/request-uploading-badge"),
+        body: RequestUploadingFileRequest(fileMd5, ext).toJson(), deserializer: RequestUploadingFileResponse.fromJson);
+  }
+
+  Future<void> followUser(String userId) {
+    return _getResponseObject<User>(
+      HttpMethod.put,
+      _buildHoohUri("users/$userId/follow"),
+    );
+  }
+
+  Future<void> cancelFollowUser(String userId) {
+    return _getResponseObject<User>(
+      HttpMethod.delete,
+      _buildHoohUri("users/$userId/follow"),
+    );
+  }
+
+  Future<List<User>> getFollowers(String userId) {
+    return _getResponseList<User>(HttpMethod.get, _buildHoohUri("users/$userId/followers"), deserializer: User.fromJson);
+  }
+
+  Future<List<User>> getFollowings(String userId) {
+    return _getResponseList<User>(HttpMethod.get, _buildHoohUri("users/$userId/followings"), deserializer: User.fromJson);
+  }
+
+  //endregion
+
+//region old api
 
   Future<List<GalleryCategory>> getGalleryCategoryList() {
     return _getResponseList<GalleryCategory>(HttpMethod.get, _buildHoohUri("gallery/categoriesV4"), deserializer: GalleryCategory.fromJson);
@@ -155,6 +203,9 @@ class Network {
   Future<void> setGalleryImageFavorite(String id, bool favorite) {
     return _getResponseObject<void>(favorite ? HttpMethod.put : HttpMethod.delete, _buildHoohUri("gallery/images/$id/favorite"));
   }
+
+//endregion
+  //region upload and download file
 
   Future<bool> uploadFile(String url, Uint8List fileBytes) async {
     int id = Random().nextInt(10000);
@@ -183,6 +234,9 @@ class Network {
       return null;
     }
   }
+
+//endregion
+//region core
 
   Future<M> _getResponseObject<M>(HttpMethod method, Uri uri,
       {Map<String, dynamic>? extraHeaders, Map<String, dynamic>? body, M Function(Map<String, dynamic>)? deserializer}) async {
@@ -301,6 +355,7 @@ class Network {
   void _prepareHttpClient() {
     _client = http.Client();
   }
+//endregion
 //   ///准备一个可以支持Let's Encrypt证书的client
 //   void _prepareHttpClient() {
 // //     /// This is LetsEncrypt's self-signed trusted root certificate authority

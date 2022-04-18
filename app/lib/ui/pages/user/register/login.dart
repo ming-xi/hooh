@@ -1,8 +1,9 @@
-import 'package:app/main.dart';
+import 'package:app/extensions/extensions.dart';
 import 'package:app/test.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/user/register/sign_up.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
+import 'package:app/utils/design_colors.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -19,11 +20,16 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginPageState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
+    debugPrint("color=${designColors.bar90_1.auto(ref).toHex()}");
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         child: Text("test"),
-        onPressed: () {
+        onPressed: () async {
           Navigator.push(context, MaterialPageRoute(builder: (context) => TestUploadingAvatarScreen()));
+          // LoginResponse loginResponse = await network.login("app_test1", "123456");
+          // network.setUserToken(loginResponse.jwtResponse.accessToken);
+          // ref.read(globalUserInfoProvider.state).state=loginResponse.user;
+          // Navigator.push(context, MaterialPageRoute(builder: (context) => SetBadgeScreen()));
         },
       ),
       body: Column(
@@ -36,7 +42,7 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
+                    Text(
                       'Let\'s start',
                       style: TextStyle(
                         fontSize: 24,
@@ -65,7 +71,7 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
                         onPressed: () {
                           Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpScreen()));
                         },
-                        style: RegisterStyles.flatBlackButtonStyle(),
+                        style: RegisterStyles.flatBlackButtonStyle(ref),
                         child: const Text('Sign Up')),
                     const SizedBox(
                       height: 20,
@@ -73,7 +79,7 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
                     TextButton(
                       onPressed: () {},
                       child: const Text('Or Login'),
-                      style: RegisterStyles.flatWhiteButtonStyle(),
+                      style: RegisterStyles.flatWhiteButtonStyle(ref),
                     ),
                     const SizedBox(
                       height: 20,

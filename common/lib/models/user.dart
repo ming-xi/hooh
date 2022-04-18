@@ -5,6 +5,7 @@ part 'user.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class User {
+  String id;
   String name; // 昵称
   String? avatarUrl;
   String? signature;
@@ -12,9 +13,9 @@ class User {
 
   DateTime? createdAt; // 创建时间
 
-  int? register_step; // 注册步骤 0 完成设置密码， 1 完成设置昵称， 2 完成设置社交徽章
+  int? register_step;
 
-  User({required this.name});
+  User({required this.id, required this.name}); // 注册步骤 0 完成设置密码， 1 完成设置社交徽章
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 

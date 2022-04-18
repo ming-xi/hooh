@@ -81,8 +81,9 @@ class ChangeUserInfoRequest {
   String? signature;
   String? website;
   String? avatarKey;
+  String? badgeImageKey;
 
-  ChangeUserInfoRequest({this.name, this.signature, this.website, this.avatarKey});
+  ChangeUserInfoRequest({this.name, this.signature, this.website, this.avatarKey, this.badgeImageKey});
 
   factory ChangeUserInfoRequest.fromJson(Map<String, dynamic> json) => _$ChangeUserInfoRequestFromJson(json);
 
@@ -99,3 +100,4 @@ class RefreshTokenRequest {
 
   Map<String, dynamic> toJson() => _$RefreshTokenRequestToJson(this);
 }
+

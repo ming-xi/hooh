@@ -3,11 +3,15 @@ import 'dart:async';
 import 'package:app/providers.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/user/register/login.dart';
+import 'package:app/ui/widgets/toast.dart';
+import 'package:app/utils/design_colors.dart';
 import 'package:common/utils/device_info.dart';
 import 'package:common/utils/preferences.dart';
 
 // import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 void main() async {
@@ -30,12 +34,26 @@ Future<void> initSyncUtils() async {
 ///不需要同步初始化的工具类
 void initASyncUtils() {}
 
-class MyApp extends ConsumerWidget {
-  const MyApp({Key? key}) : super(key: key);
+class MyApp extends ConsumerStatefulWidget {
+  const MyApp({
+    Key? key,
+  }) : super(key: key);
 
-  // This widget is the root of your application.
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   Timer(Duration(seconds: 2), () {
+  //     addDarkModeButton();
+  //   });
+  // }
+
+  @override
+  Widget build(BuildContext context) {
     var oldThemeData = ThemeData(
         primarySwatch: Colors.blue,
         appBarTheme: const AppBarTheme(
@@ -45,43 +63,89 @@ class MyApp extends ConsumerWidget {
           iconTheme: IconThemeData(color: Colors.black),
           // shadowColor: Colors.transparent,
         ));
-    final darkTheme = ThemeData(
-      primarySwatch: Colors.grey,
-      primaryColor: Colors.black,
-      brightness: Brightness.dark,
-      backgroundColor: const Color(0xFF212121),
-      dividerColor: Colors.black12,
-    );
 
     final lightTheme = ThemeData(
-      primarySwatch: Colors.grey,
-      primaryColor: Colors.white,
+      primaryColor: designColors.bar90_1.light,
       brightness: Brightness.light,
-      backgroundColor: const Color(0xFFE5E5E5),
-      dividerColor: Colors.white54,
+      backgroundColor: designColors.light_00.light,
+      appBarTheme: AppBarTheme(
+        backgroundColor: designColors.bar90_1.light,
+        titleTextStyle: TextStyle(color: designColors.dark_01.light, fontSize: 16),
+        actionsIconTheme: IconThemeData(color: designColors.dark_01.light),
+        iconTheme: IconThemeData(color: designColors.dark_01.light),
+        // shadowColor: Colors.transparent,
+      ),
     );
+
+    final darkTheme = ThemeData(
+        primaryColor: designColors.bar90_1.dark,
+        brightness: Brightness.dark,
+        backgroundColor: designColors.light_00.dark,
+        appBarTheme: AppBarTheme(
+          backgroundColor: designColors.bar90_1.dark,
+          titleTextStyle: TextStyle(color: designColors.dark_01.dark, fontSize: 16),
+          actionsIconTheme: IconThemeData(color: designColors.dark_01.dark),
+          iconTheme: IconThemeData(color: designColors.dark_01.dark),
+          // shadowColor: Colors.transparent,
+        ));
+
     bool darkMode = ref.watch(globalDarkModeProvider.state).state;
     return MaterialApp(
       theme: lightTheme,
       darkTheme: darkTheme,
+      // /* ThemeMode.system to follow system theme,
+      //    ThemeMode.light for light theme,
+      //    ThemeMode.dark for dark theme
+      // */
       themeMode: darkMode ? ThemeMode.dark : ThemeMode.light,
-      /* ThemeMode.system to follow system theme,
-         ThemeMode.light for light theme,
-         ThemeMode.dark for dark theme
-      */
-
+      // theme:oldThemeData,
+      // darkTheme:oldThemeData,
+      localizationsDelegates: const [
+        AppLocalizations.delegate, // Add this line
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', ''),
+        Locale('zh', ''),
+      ],
       title: 'HooH',
       // home: HomeScreen(),
       home: getLandingScreen(),
+      builder: (context, child) => Scaffold(
+        body: Stack(
+          children: [
+            child!,
+            Positioned(
+              top: 8,
+              right: MediaQuery.of(context).size.width * 0.3,
+              child: ElevatedButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: designColors.light_01.auto(ref),
+                    shape: CircleBorder(),
+                  ),
+                  onPressed: () {
+                    bool dark = ref.read(globalDarkModeProvider.state).state;
+                    ref.read(globalDarkModeProvider.state).state = !dark;
+                  },
+                  child: Icon(
+                    darkMode ? Icons.light_mode : Icons.dark_mode,
+                    color: designColors.dark_01.auto(ref),
+                  )),
+            ),
+          ],
+        ),
+      ),
     );
   }
-}
 
-Widget getLandingScreen() {
-  // preferences.putBool(Preferences.keyUserHasSkippedLogin, false);
-  if (preferences.getBool(Preferences.keyUserHasLogin, def: false)! || preferences.getBool(Preferences.keyUserHasSkippedLogin, def: false)!) {
-    return HomeScreen();
-  } else {
-    return const LoginScreen();
+  Widget getLandingScreen() {
+    // preferences.putBool(Preferences.keyUserHasSkippedLogin, false);
+    if (preferences.getBool(Preferences.keyUserHasLogin, def: false)! || preferences.getBool(Preferences.keyUserHasSkippedLogin, def: false)!) {
+      return HomeScreen();
+    } else {
+      return const LoginScreen();
+    }
   }
 }

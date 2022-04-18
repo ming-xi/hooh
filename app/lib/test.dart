@@ -204,7 +204,7 @@ class _TestScreenState extends ConsumerState<TestUploadingAvatarScreen> {
                   Toast.showSnackBar(context, "success");
                 },
                 child: Text("login"),
-                style: RegisterStyles.flatBlackButtonStyle(),
+                style: RegisterStyles.flatBlackButtonStyle(ref),
               ),
               SizedBox(
                 height: 16,
@@ -230,7 +230,7 @@ class _TestScreenState extends ConsumerState<TestUploadingAvatarScreen> {
                         });
                       },
                 child: Text("select file to upload"),
-                style: RegisterStyles.flatBlackButtonStyle(),
+                style: RegisterStyles.flatBlackButtonStyle(ref),
               ),
               SizedBox(
                 height: 16,
@@ -240,7 +240,7 @@ class _TestScreenState extends ConsumerState<TestUploadingAvatarScreen> {
                   ref.read(globalDarkModeProvider.state).state = !ref.read(globalDarkModeProvider.state).state;
                 },
                 child: Text("toggle dark mode"),
-                style: RegisterStyles.flatBlackButtonStyle(),
+                style: RegisterStyles.flatBlackButtonStyle(ref),
               )
             ],
           ),

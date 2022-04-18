@@ -1,8 +1,10 @@
 import 'package:app/ui/pages/User/register/set_nickname.dart';
 import 'package:app/ui/pages/home/home.dart';
+import 'package:app/ui/pages/user/register/register_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/pages/user/web_view.dart';
 import 'package:app/ui/widgets/toast.dart';
+import 'package:app/utils/design_colors.dart';
 import 'package:common/models/network/responses.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
@@ -11,6 +13,10 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
+  final StateNotifierProvider<RegisterViewModel, RegisterModelState> provider = StateNotifierProvider((ref) {
+    return RegisterViewModel(RegisterModelState.init());
+  });
+
   SignUpScreen({
     Key? key,
   }) : super(key: key);
@@ -40,6 +46,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    RegisterModelState modelState = ref.watch(widget.provider);
+    RegisterViewModel model = ref.watch(widget.provider.notifier);
     return Scaffold(
       appBar: AppBar(
         title: const Text("Sign Up"),
@@ -52,9 +60,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     Navigator.pop(context);
                     Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
                   },
-                  child: const Text('Login',
+                  child: Text('Login',
                       style: TextStyle(
-                        color: Colors.blue,
+                        color: designColors.feiyu_blue.auto(ref),
                       ))),
             ),
           ),
@@ -84,35 +92,15 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.max,
                 children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Text(
-                        "Username",
-                        style: RegisterStyles.titleTextStyle(),
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 16,
-                  ),
                   TextField(
                     controller: usernameController,
                     focusNode: usernameNode,
-                    style: RegisterStyles.inputTextStyle(),
-                    decoration: RegisterStyles.commonInputDecoration("Enter username"),
-                  ),
-                  SizedBox(
-                    height: 24,
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Text(
-                        "Email",
-                        style: RegisterStyles.titleTextStyle(),
-                      ),
-                    ],
+                    style: RegisterStyles.inputTextStyle(ref),
+                    decoration: RegisterStyles.commonInputDecoration("Username", ref,
+                        helperText: "It cannot be modified after registration", errorText: modelState.usernameErrorText),
+                    onChanged: (text) {
+                      model.checkUsername(text);
+                    },
                   ),
                   SizedBox(
                     height: 16,
@@ -120,72 +108,47 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   TextField(
                     controller: emailController,
                     focusNode: emailNode,
-                    style: RegisterStyles.inputTextStyle(),
-                    decoration: RegisterStyles.commonInputDecoration("Enter email"),
-                  ),
-                  SizedBox(
-                    height: 24,
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Text(
-                        "Password",
-                        style: RegisterStyles.titleTextStyle(),
-                      ),
-                    ],
+                    style: RegisterStyles.inputTextStyle(ref),
+                    decoration: RegisterStyles.commonInputDecoration("Email", ref, errorText: modelState.emailErrorText),
+                    onChanged: (text) {
+                      model.checkEmail(text);
+                    },
                   ),
                   SizedBox(
                     height: 16,
                   ),
                   TextField(
-                      controller: passwordController,
-                      focusNode: passwordNode,
-                      style: RegisterStyles.inputTextStyle(),
-                      decoration: RegisterStyles.commonInputDecoration("Enter password"),
-                      obscureText: true),
-                  SizedBox(
-                    height: 24,
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Text(
-                        "Confirm Password",
-                        style: RegisterStyles.titleTextStyle(),
-                      ),
-                    ],
+                    controller: passwordController,
+                    focusNode: passwordNode,
+                    style: RegisterStyles.inputTextStyle(ref),
+                    decoration: RegisterStyles.commonInputDecoration("Enter password", ref,
+                        helperText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters", errorText: modelState.passwordErrorText),
+                    obscureText: true,
+                    onChanged: (text) {
+                      model.checkPassword(text, passwordConfirmController.text);
+                    },
                   ),
                   SizedBox(
                     height: 16,
                   ),
                   TextField(
-                      style: RegisterStyles.inputTextStyle(),
-                      controller: passwordConfirmController,
-                      focusNode: passwordConfirmNode,
-                      decoration: RegisterStyles.commonInputDecoration("Enter password again"),
-                      obscureText: true),
+                    style: RegisterStyles.inputTextStyle(ref),
+                    controller: passwordConfirmController,
+                    focusNode: passwordConfirmNode,
+                    decoration: RegisterStyles.commonInputDecoration("Confirmed password", ref, errorText: modelState.confirmPasswordErrorText),
+                    obscureText: true,
+                    onChanged: (text) {
+                      model.checkPassword(passwordController.text, text);
+                    },
+                  ),
                   SizedBox(
-                    height: 24,
+                    height: 16,
                   ),
                   ElevatedButton(
-                    style: RegisterStyles.flatBlackButtonStyle(),
+                    style: RegisterStyles.flatBlackButtonStyle(ref),
                     onPressed: () {
-                      network.requestAsync<LoginResponse>(network.register(usernameController.text, passwordController.text, emailController.text), (data) {
-                        Toast.showSnackBar(context, "注册成功");network.setUserToken(data.jwtResponse.accessToken);
-                        preferences.putInt(Preferences.keyUserRegisterStep, data.user.register_step);
-                        Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => SetNicknameScreen()));
-                      }, (error) {
-                        showDialog(
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                content: Text(error.message),
-                              );
-                            });
+                      model.register(context, usernameController.text, passwordController.text, emailController.text, onSuccess: (user) {
+                        Toast.showSnackBar(context, "注册成功");
                       });
                     },
                     child: const Text('Agree and sign up'),
@@ -195,15 +158,15 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   ),
                   RichText(
                       text: TextSpan(
-                          style: const TextStyle(
-                            color: Colors.black,
+                          style: TextStyle(
+                            color: designColors.dark_01.auto(ref),
                             fontSize: 12,
                           ),
                           text: 'I read and agree ',
                           children: [
                         TextSpan(
-                          style: const TextStyle(
-                            color: Colors.blue,
+                          style: TextStyle(
+                            color: designColors.blue_dark.auto(ref),
                           ),
                           text: 'User Agreement and Privacy Policy',
                           recognizer: _tapGestureRecognizer
