@@ -5,6 +5,7 @@ import 'package:app/ui/pages/user/register/set_badge_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image/image.dart' as img;
 
@@ -34,21 +35,23 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
   Widget build(BuildContext context) {
     SetBadgeModelState modelState = ref.watch(widget.provider);
     SetBadgeViewModel model = ref.watch(widget.provider.notifier);
+    final kGradientBoxDecoration = BoxDecoration(
+      gradient: LinearGradient(colors: [
+        Color(0xFFFFD840),
+        Color(0xFFF3ACFF),
+        Color(0xFF48E1FF),
+      ], begin: Alignment.bottomLeft, end: Alignment.topRight),
+      borderRadius: BorderRadius.circular(24),
+    );
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Set Badge"),
         actions: [
-          Center(
-            child: SizedBox(
-              width: 80,
-              child: TextButton(
-                  onPressed: () {},
-                  child: Text('OK',
-                      style: TextStyle(
-                        color: designColors.feiyu_blue.auto(ref),
-                      ))),
-            ),
-          ),
+          TextButton(
+              onPressed: () {},
+              style: RegisterStyles.appbarTextButtonStyle(ref),
+              child: Text(
+                'OK',
+              )),
           // Icon(
           //     Icons.more_vert
           // ),
@@ -58,59 +61,117 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
         slivers: [
           SliverFillRemaining(
             hasScrollBody: false,
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Text(
-                        "set badge",
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Text(
+                        "Setting your social icon",
                         style: RegisterStyles.titleTextStyle(ref),
                       ),
-                    ],
+                    )
+                  ],
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Text(
+                          "After following to each other, you can get each other's social icon. The social icon will be record of paying attention to history",
+                          style: RegisterStyles.titleTextStyle(ref).copyWith(fontSize: 14),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+                SizedBox(
+                  height: 16,
+                ),
+                SizedBox(
+                  width: 160,
+                  height: 180,
+                  child: Container(
+                    color: Colors.white,
+                    child: Stack(
+                        children: modelState.layers.map((e) {
+                      return Image.memory(
+                        getImageBytes(e.bytes, e.template.hue),
+                        gaplessPlayback: true,
+                        fit: BoxFit.fill,
+                        filterQuality: FilterQuality.none,
+                        width: 160,
+                        height: 180,
+                      );
+                    }).toList()),
                   ),
-                  SizedBox(
-                    height: 16,
-                  ),
-                  SizedBox(
-                    width: 200,
-                    height: 225,
-                    child: Container(
-                      color: Colors.white,
-                      child: Stack(
-                          children: modelState.layers.map((e) {
-                        return Image.memory(
-                          getImageBytes(e.bytes, e.template.hue),
-                          gaplessPlayback: true,
-                          fit: BoxFit.fill,
-                          filterQuality: FilterQuality.none,
-                          width: 220,
-                          height: 225,
-                        );
-                      }).toList()),
+                ),
+                SizedBox(
+                  height: 24,
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Expanded(
+                      child: TextButton.icon(
+                        style: RegisterStyles.blueButtonStyle(ref).copyWith(
+                            shape: MaterialStateProperty.all(const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(topRight: Radius.circular(22.0), bottomRight: Radius.circular(22.0)),
+                        ))),
+                        label: Text("Edit"),
+                        icon: SvgPicture.asset('assets/images/magic.svg', height: 36, width: 36),
+                        onPressed: () {},
+                      ),
+                    ),
+                    SizedBox(
+                      width: 16,
+                    ),
+                    Expanded(
+                      child: TextButton.icon(
+                        style: RegisterStyles.blueButtonStyle(ref).copyWith(
+                            shape: MaterialStateProperty.all(const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(topLeft: Radius.circular(22.0), bottomLeft: Radius.circular(22.0)),
+                        ))),
+                        label: Text("Change"),
+                        icon: SvgPicture.asset('assets/images/shuffle.svg', height: 36, width: 36),
+                        onPressed: () {},
+                      ),
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Center(
+                      child: Container(
+                        decoration: kGradientBoxDecoration,
+                        child: Padding(
+                          padding: const EdgeInsets.all(1.0),
+                          child: TextButton(
+                            style: TextButton.styleFrom(
+                                primary: designColors.dark_01.auto(ref),
+                                onSurface: designColors.dark_01.auto(ref),
+                                backgroundColor: designColors.light_01.auto(ref),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: const BorderRadius.all(Radius.circular(22.0)), side: BorderSide(color: Colors.transparent)),
+                                minimumSize: const Size.fromHeight(64),
+                                textStyle:
+                                    ref.watch(globalThemeDataProvider.state).state.textTheme.button!.copyWith(fontSize: 20, fontWeight: FontWeight.bold)),
+                            onPressed: () {},
+                            child: const Text('Create new'),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                  SizedBox(
-                    height: 24,
-                  ),
-                  ElevatedButton(
-                    style: RegisterStyles.flatBlackButtonStyle(ref),
-                    onPressed: () {},
-                    child: const Text('Create new'),
-                  ),
-                  ElevatedButton(
-                    style: RegisterStyles.flatBlackButtonStyle(ref),
-                    onPressed: () {},
-                    child: const Text('Create new'),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           )
         ],

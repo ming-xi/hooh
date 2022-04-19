@@ -1,4 +1,4 @@
-import 'package:app/ui/pages/User/register/set_nickname.dart';
+import 'package:app/providers.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/user/register/register_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
@@ -6,13 +6,9 @@ import 'package:app/ui/pages/user/web_view.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
-import 'package:common/models/network/responses.dart';
-import 'package:common/utils/network.dart';
-import 'package:common/utils/preferences.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   final StateNotifierProvider<RegisterViewModel, RegisterModelState> provider = StateNotifierProvider((ref) {
@@ -54,20 +50,15 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       appBar: AppBar(
         title: const Text("Sign Up"),
         actions: [
-          Center(
-            child: SizedBox(
-              width: 80,
-              child: TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
-                  },
-                  child: Text('Login',
-                      style: TextStyle(
-                        color: designColors.feiyu_blue.auto(ref),
-                      ))),
-            ),
-          ),
+          TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
+              },
+              style: RegisterStyles.appbarTextButtonStyle(ref),
+              child: Text(
+                'Login',
+              )),
           // Icon(
           //     Icons.more_vert
           // ),
@@ -147,7 +138,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     height: 16,
                   ),
                   ElevatedButton(
-                    style: RegisterStyles.flatBlackButtonStyle(ref),
+                    style: RegisterStyles.blackButtonStyle(ref),
                     onPressed: () {
                       showDialog(
                           context: context,

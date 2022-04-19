@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:app/extensions/extensions.dart';
+import 'package:app/providers.dart';
 import 'package:app/ui/pages/test_uploading_view_model.dart';
+import 'package:app/ui/pages/user/register/set_badge.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/ipfs_node.dart';
 import 'package:app/ui/widgets/toast.dart';
@@ -202,16 +204,16 @@ class _TestScreenState extends ConsumerState<TestUploadingAvatarScreen> {
                       builder: (context) {
                         return LoadingDialog(LoadingDialogController());
                       });
-                  Timer(Duration(seconds: 2), () async {
-                    LoginResponse loginResponse = await network.login("app_test1", "123456");
-                    network.setUserToken(loginResponse.jwtResponse.accessToken);
-                    model.updateState(modelState.copyWith(imageUrl: loginResponse.user.avatarUrl));
-                    Navigator.of(context).pop();
-                    Toast.showSnackBar(context, "success");
-                  });
+                  LoginResponse loginResponse = await network.login("app_test1", "123456");
+                  network.setUserToken(loginResponse.jwtResponse.accessToken);
+                  ref.read(globalUserInfoProvider.state).state = loginResponse.user;
+                  model.updateState(modelState.copyWith(imageUrl: loginResponse.user.avatarUrl));
+                  Navigator.of(context).pop();
+                  Toast.showSnackBar(context, "success");
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => SetBadgeScreen()));
                 },
                 child: Text("login"),
-                style: RegisterStyles.flatBlackButtonStyle(ref),
+                style: RegisterStyles.blackButtonStyle(ref),
               ),
               SizedBox(
                 height: 16,
@@ -237,7 +239,7 @@ class _TestScreenState extends ConsumerState<TestUploadingAvatarScreen> {
                         });
                       },
                 child: Text("select file to upload"),
-                style: RegisterStyles.flatBlackButtonStyle(ref),
+                style: RegisterStyles.blackButtonStyle(ref),
               ),
               SizedBox(
                 height: 16,
@@ -245,7 +247,7 @@ class _TestScreenState extends ConsumerState<TestUploadingAvatarScreen> {
               ElevatedButton(
                 onPressed: () {},
                 child: Text("loading dialog"),
-                style: RegisterStyles.flatBlackButtonStyle(ref),
+                style: RegisterStyles.blackButtonStyle(ref),
               )
             ],
           ),

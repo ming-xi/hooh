@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:app/providers.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/user/register/login.dart';
-import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:common/utils/device_info.dart';
 import 'package:common/utils/preferences.dart';
 
 // import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -64,35 +64,37 @@ class _MyAppState extends ConsumerState<MyApp> {
           // shadowColor: Colors.transparent,
         ));
 
-    final lightTheme = ThemeData(
-      primaryColor: designColors.bar90_1.light,
-      brightness: Brightness.light,
-      backgroundColor: designColors.light_00.light,
-      appBarTheme: AppBarTheme(
-        backgroundColor: designColors.bar90_1.light,
-        titleTextStyle: TextStyle(color: designColors.dark_01.light, fontSize: 16),
-        actionsIconTheme: IconThemeData(color: designColors.dark_01.light),
-        iconTheme: IconThemeData(color: designColors.dark_01.light),
-        // shadowColor: Colors.transparent,
-      ),
-    );
-
-    final darkTheme = ThemeData(
-        primaryColor: designColors.bar90_1.dark,
-        brightness: Brightness.dark,
-        backgroundColor: designColors.light_00.dark,
-        appBarTheme: AppBarTheme(
-          backgroundColor: designColors.bar90_1.dark,
-          titleTextStyle: TextStyle(color: designColors.dark_01.dark, fontSize: 16),
-          actionsIconTheme: IconThemeData(color: designColors.dark_01.dark),
-          iconTheme: IconThemeData(color: designColors.dark_01.dark),
-          // shadowColor: Colors.transparent,
-        ));
+    // final lightTheme = ThemeData(
+    //     primaryColor: designColors.bar90_1.light,
+    //     brightness: Brightness.light,
+    //     backgroundColor: designColors.light_00.light,
+    //     fontFamily: 'Linotte',
+    //     appBarTheme: AppBarTheme(
+    //       backgroundColor: designColors.bar90_1.light,
+    //       titleTextStyle: TextStyle(color: designColors.dark_01.light, fontSize: 16),
+    //       actionsIconTheme: IconThemeData(color: designColors.dark_01.light),
+    //       iconTheme: IconThemeData(color: designColors.dark_01.light),
+    //       // shadowColor: Colors.transparent,
+    //     ),
+    //     textButtonTheme: TextButtonThemeData(style: ButtonStyle(textStyle: MaterialStateProperty.all(TextStyle(fontSize: 16, fontWeight: FontWeight.bold)))));
+    //
+    // final darkTheme = ThemeData(
+    //     primaryColor: designColors.bar90_1.dark,
+    //     brightness: Brightness.dark,
+    //     backgroundColor: designColors.light_00.dark,
+    //     fontFamily: 'Linotte',
+    //     appBarTheme: AppBarTheme(
+    //       backgroundColor: designColors.bar90_1.dark,
+    //       titleTextStyle: TextStyle(color: designColors.dark_01.dark, fontSize: 16),
+    //       actionsIconTheme: IconThemeData(color: designColors.dark_01.dark),
+    //       iconTheme: IconThemeData(color: designColors.dark_01.dark),
+    //       // shadowColor: Colors.transparent,
+    //     ));
 
     bool darkMode = ref.watch(globalDarkModeProvider.state).state;
     return MaterialApp(
-      theme: lightTheme,
-      darkTheme: darkTheme,
+      theme: globalLightTheme,
+      darkTheme: globalDarkTheme,
       // /* ThemeMode.system to follow system theme,
       //    ThemeMode.light for light theme,
       //    ThemeMode.dark for dark theme
@@ -120,19 +122,21 @@ class _MyAppState extends ConsumerState<MyApp> {
             Positioned(
               top: 8,
               right: MediaQuery.of(context).size.width * 0.3,
-              child: ElevatedButton(
-                  style: TextButton.styleFrom(
-                    backgroundColor: designColors.light_01.auto(ref),
-                    shape: CircleBorder(),
-                  ),
-                  onPressed: () {
-                    bool dark = ref.read(globalDarkModeProvider.state).state;
-                    ref.read(globalDarkModeProvider.state).state = !dark;
-                  },
-                  child: Icon(
-                    darkMode ? Icons.light_mode : Icons.dark_mode,
-                    color: designColors.dark_01.auto(ref),
-                  )),
+              child: SafeArea(
+                child: ElevatedButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: designColors.light_01.auto(ref),
+                      shape: CircleBorder(),
+                    ),
+                    onPressed: () {
+                      bool dark = ref.read(globalDarkModeProvider.state).state;
+                      ref.read(globalDarkModeProvider.state).state = !dark;
+                    },
+                    child: Icon(
+                      darkMode ? Icons.light_mode : Icons.dark_mode,
+                      color: designColors.dark_01.auto(ref),
+                    )),
+              ),
             ),
           ],
         ),

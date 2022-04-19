@@ -71,7 +71,7 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
                         onPressed: () {
                           Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpScreen()));
                         },
-                        style: RegisterStyles.flatBlackButtonStyle(ref),
+                        style: RegisterStyles.blackButtonStyle(ref),
                         child: const Text('Sign Up')),
                     const SizedBox(
                       height: 20,
@@ -79,7 +79,7 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
                     TextButton(
                       onPressed: () {},
                       child: const Text('Or Login'),
-                      style: RegisterStyles.flatWhiteButtonStyle(ref),
+                      style: RegisterStyles.blackOutlineButtonStyle(ref),
                     ),
                     const SizedBox(
                       height: 20,
