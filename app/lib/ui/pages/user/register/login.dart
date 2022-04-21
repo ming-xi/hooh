@@ -1,102 +1,151 @@
-import 'package:app/extensions/extensions.dart';
-import 'package:app/test.dart';
+import 'dart:convert';
+
+import 'package:app/providers.dart';
 import 'package:app/ui/pages/home/home.dart';
-import 'package:app/ui/pages/user/register/sign_up.dart';
+import 'package:app/ui/pages/user/register/login_view_model.dart';
+import 'package:app/ui/pages/user/register/register.dart';
+import 'package:app/ui/pages/user/register/set_badge.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
+import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
+import 'package:app/utils/ui_utils.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({
+  final StateNotifierProvider<LoginViewModel, LoginModelState> provider = StateNotifierProvider((ref) {
+    return LoginViewModel(LoginModelState.init());
+  });
+
+  LoginScreen({
     Key? key,
   }) : super(key: key);
 
   @override
-  ConsumerState createState() => _LoginPageState();
+  ConsumerState createState() => _LoginScreenState();
 }
 
-class _LoginPageState extends ConsumerState<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  TextEditingController usernameController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  FocusNode usernameNode = FocusNode();
+  FocusNode passwordNode = FocusNode();
+
   @override
   Widget build(BuildContext context) {
-    debugPrint("color=${designColors.bar90_1.auto(ref).toHex()}");
+    LoginModelState modelState = ref.watch(widget.provider);
+    LoginViewModel model = ref.watch(widget.provider.notifier);
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        child: Text("test"),
-        onPressed: () async {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => TestUploadingAvatarScreen()));
-          // LoginResponse loginResponse = await network.login("app_test1", "123456");
-          // network.setUserToken(loginResponse.jwtResponse.accessToken);
-          // ref.read(globalUserInfoProvider.state).state=loginResponse.user;
-          // Navigator.push(context, MaterialPageRoute(builder: (context) => SetBadgeScreen()));
-        },
+      appBar: AppBar(
+        title: const Text(""),
+        actions: [
+          TextButton(
+              onPressed: () {
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
+              },
+              style: RegisterStyles.appbarTextButtonStyle(ref),
+              child: Text(
+                'Sign Up',
+              )),
+          // Icon(
+          //     Icons.more_vert
+          // ),
+        ],
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Container(
-              // color: Colors.red,
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Let\'s start',
-                      style: TextStyle(
-                        fontSize: 24,
-                        color: Color(0xFFF26218),
+      body: CustomScrollView(
+        slivers: [
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        "Welcome to HOOH",
+                        style: RegisterStyles.titleTextStyle(ref),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 16,
+                  ),
+                  TextField(
+                    controller: usernameController,
+                    focusNode: usernameNode,
+                    style: RegisterStyles.inputTextStyle(ref),
+                    decoration: RegisterStyles.commonInputDecoration(
+                      "Username",
+                      ref,
+                    ),
+                    onChanged: (text) {
+                      model.checkUsernameAndPassword(text, passwordController.text);
+                    },
+                  ),
+                  SizedBox(
+                    height: 16,
+                  ),
+                  TextField(
+                    controller: passwordController,
+                    focusNode: passwordNode,
+                    style: RegisterStyles.inputTextStyle(ref),
+                    decoration: RegisterStyles.commonInputDecoration(
+                      "Enter password",
+                      ref,
+                    ),
+                    obscureText: true,
+                    onChanged: (text) {
+                      model.checkUsernameAndPassword(text, usernameController.text);
+                    },
+                  ),
+                  SizedBox(
+                    height: 100,
+                  ),
+                  TextButton(
+                    style: RegisterStyles.blackButtonStyle(ref),
+                    onPressed: !modelState.loginButtonEnabled
+                        ? null
+                        : () {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return LoadingDialog(LoadingDialogController());
+                                });
+                            model.login(context, usernameController.text, passwordController.text, onSuccess: (user) {
+                              ref.read(globalUserInfoProvider.state).state = user;
+                              preferences.putString(Preferences.KEY_USER_INFO, json.encode(user.toJson()));
+                              Navigator.of(context).pop();
+                              Toast.showSnackBar(context, "登录成功");
+                              if (user.hasFinishedRegisterSteps()) {
+                                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeScreen()), (route) => false);
+                              } else {
+                                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => SetBadgeScreen()), (route) => false);
+                              }
+                            }, onFailed: () {
+                              Navigator.of(context).pop();
+                            });
+                          },
+                    child: const Text('Login'),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Toast.showSnackBar(context, "暂不支持");
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        "Forgot Password",
+                        style: TextStyle(color: designColors.blue_dark.auto(ref), decoration: TextDecoration.underline),
                       ),
                     ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    // SvgPicture.asset('assets/images/logo.svg', height: 160, width: 160)
-                    Image.asset('assets/images/logo.png', height: 160, width: 160)
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            flex: 3,
-          ),
-          Expanded(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 50.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextButton(
-                        onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpScreen()));
-                        },
-                        style: RegisterStyles.blackButtonStyle(ref),
-                        child: const Text('Sign Up')),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    TextButton(
-                      onPressed: () {},
-                      child: const Text('Or Login'),
-                      style: RegisterStyles.blackOutlineButtonStyle(ref),
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    TextButton(
-                        onPressed: () {
-                          String hasSkipped = "hasSkipped";
-                          preferences.putBool(hasSkipped, true);
-                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen()));
-                        },
-                        child: Text('Skip', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey))),
-                  ],
-                ),
-              ),
-            ),
-            flex: 2,
-          ),
+          )
         ],
       ),
     );

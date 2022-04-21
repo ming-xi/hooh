@@ -58,7 +58,7 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
                 SizedBox(
                   height: 36,
                 ),
-                ElevatedButton(
+                TextButton(
                     onPressed: () {
                       String password = passwordController.text;
                       String confirmedPassword = confirmController.text;

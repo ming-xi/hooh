@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:app/providers.dart';
 import 'package:app/ui/pages/home/home.dart';
-import 'package:app/ui/pages/user/register/login.dart';
+import 'package:app/ui/pages/splash.dart';
+import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:common/utils/device_info.dart';
 import 'package:common/utils/preferences.dart';
@@ -44,14 +45,6 @@ class MyApp extends ConsumerStatefulWidget {
 }
 
 class _MyAppState extends ConsumerState<MyApp> {
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   Timer(Duration(seconds: 2), () {
-  //     addDarkModeButton();
-  //   });
-  // }
-
   @override
   Widget build(BuildContext context) {
     var oldThemeData = ThemeData(
@@ -63,45 +56,11 @@ class _MyAppState extends ConsumerState<MyApp> {
           iconTheme: IconThemeData(color: Colors.black),
           // shadowColor: Colors.transparent,
         ));
-
-    // final lightTheme = ThemeData(
-    //     primaryColor: designColors.bar90_1.light,
-    //     brightness: Brightness.light,
-    //     backgroundColor: designColors.light_00.light,
-    //     fontFamily: 'Linotte',
-    //     appBarTheme: AppBarTheme(
-    //       backgroundColor: designColors.bar90_1.light,
-    //       titleTextStyle: TextStyle(color: designColors.dark_01.light, fontSize: 16),
-    //       actionsIconTheme: IconThemeData(color: designColors.dark_01.light),
-    //       iconTheme: IconThemeData(color: designColors.dark_01.light),
-    //       // shadowColor: Colors.transparent,
-    //     ),
-    //     textButtonTheme: TextButtonThemeData(style: ButtonStyle(textStyle: MaterialStateProperty.all(TextStyle(fontSize: 16, fontWeight: FontWeight.bold)))));
-    //
-    // final darkTheme = ThemeData(
-    //     primaryColor: designColors.bar90_1.dark,
-    //     brightness: Brightness.dark,
-    //     backgroundColor: designColors.light_00.dark,
-    //     fontFamily: 'Linotte',
-    //     appBarTheme: AppBarTheme(
-    //       backgroundColor: designColors.bar90_1.dark,
-    //       titleTextStyle: TextStyle(color: designColors.dark_01.dark, fontSize: 16),
-    //       actionsIconTheme: IconThemeData(color: designColors.dark_01.dark),
-    //       iconTheme: IconThemeData(color: designColors.dark_01.dark),
-    //       // shadowColor: Colors.transparent,
-    //     ));
-
     bool darkMode = ref.watch(globalDarkModeProvider.state).state;
     return MaterialApp(
       theme: globalLightTheme,
       darkTheme: globalDarkTheme,
-      // /* ThemeMode.system to follow system theme,
-      //    ThemeMode.light for light theme,
-      //    ThemeMode.dark for dark theme
-      // */
       themeMode: darkMode ? ThemeMode.dark : ThemeMode.light,
-      // theme:oldThemeData,
-      // darkTheme:oldThemeData,
       localizationsDelegates: const [
         AppLocalizations.delegate, // Add this line
         GlobalMaterialLocalizations.delegate,
@@ -114,14 +73,14 @@ class _MyAppState extends ConsumerState<MyApp> {
       ],
       title: 'HooH',
       // home: HomeScreen(),
-      home: getLandingScreen(),
+      home: const SplashScreen(),
       builder: (context, child) => Scaffold(
         body: Stack(
           children: [
             child!,
             Positioned(
               top: 8,
-              right: MediaQuery.of(context).size.width * 0.3,
+              left: MediaQuery.of(context).size.width * 0.3,
               child: SafeArea(
                 child: ElevatedButton(
                     style: TextButton.styleFrom(
@@ -142,14 +101,5 @@ class _MyAppState extends ConsumerState<MyApp> {
         ),
       ),
     );
-  }
-
-  Widget getLandingScreen() {
-    // preferences.putBool(Preferences.keyUserHasSkippedLogin, false);
-    if (preferences.getBool(Preferences.keyUserHasLogin, def: false)! || preferences.getBool(Preferences.keyUserHasSkippedLogin, def: false)!) {
-      return HomeScreen();
-    } else {
-      return const LoginScreen();
-    }
   }
 }

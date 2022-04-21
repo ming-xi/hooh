@@ -6,6 +6,7 @@ class Constants {
   // static const PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*d)(?=.*[@\$!%*?&])[A-Za-zd@\$!%*?&]{8,16}\$";
   static const PASSWORD_REGEX = "(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[~!@&%#_])[a-zA-Z0-9~!@&%#_]{8,16}";
 
+  static const INVALID_USERNAME_AND_PASSWORD = 20001;
   static const USERNAME_ALREADY_REGISTERED = 20008;
   static const EMAIL_ALREADY_VALIDATED = 20009;
 }

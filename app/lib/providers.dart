@@ -19,14 +19,20 @@ final globalLightTheme = ThemeData(
     backgroundColor: designColors.light_00.light,
     fontFamily: 'Linotte',
     appBarTheme: AppBarTheme(
+      elevation: 0,
       backgroundColor: designColors.bar90_1.light,
-      titleTextStyle: TextStyle(color: designColors.dark_01.light, fontFamily: 'Linotte', fontSize: 16),
+      titleTextStyle: TextStyle(color: designColors.dark_01.light, fontFamily: 'Linotte', fontWeight: FontWeight.bold, fontSize: 16),
       actionsIconTheme: IconThemeData(color: designColors.dark_01.light),
       iconTheme: IconThemeData(color: designColors.dark_01.light),
       foregroundColor: designColors.feiyu_blue.generic,
-      toolbarTextStyle: TextStyle(color: designColors.feiyu_blue.generic, fontFamily: 'Linotte', fontSize: 16),
+      toolbarTextStyle: TextStyle(color: designColors.feiyu_blue.generic, fontFamily: 'Linotte', fontWeight: FontWeight.bold, fontSize: 16),
       // shadowColor: Colors.transparent,
     ),
+    pageTransitionsTheme: const PageTransitionsTheme(builders: {
+      TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+      TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      TargetPlatform.macOS: FadeUpwardsPageTransitionsBuilder(),
+    }),
     textButtonTheme: TextButtonThemeData(
         style: ButtonStyle(
             textStyle: MaterialStateProperty.all(
@@ -38,14 +44,18 @@ final globalDarkTheme = ThemeData(
     backgroundColor: designColors.light_00.dark,
     fontFamily: 'Linotte',
     appBarTheme: AppBarTheme(
+      elevation: 0,
       backgroundColor: designColors.bar90_1.dark,
-      titleTextStyle: TextStyle(color: designColors.dark_01.dark, fontFamily: 'Linotte', fontSize: 16),
+      titleTextStyle: TextStyle(color: designColors.dark_01.dark, fontFamily: 'Linotte', fontWeight: FontWeight.bold, fontSize: 16),
       actionsIconTheme: IconThemeData(color: designColors.dark_01.dark),
       iconTheme: IconThemeData(color: designColors.dark_01.dark),
       foregroundColor: designColors.feiyu_blue.generic,
-      toolbarTextStyle: TextStyle(color: designColors.feiyu_blue.generic, fontFamily: 'Linotte', fontSize: 16),
+      toolbarTextStyle: TextStyle(color: designColors.feiyu_blue.generic, fontFamily: 'Linotte', fontWeight: FontWeight.bold, fontSize: 16),
       // shadowColor: Colors.transparent,
     ),
+    pageTransitionsTheme: const PageTransitionsTheme(builders: {
+      TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+    }),
     textButtonTheme: TextButtonThemeData(
         style: ButtonStyle(
             textStyle: MaterialStateProperty.all(

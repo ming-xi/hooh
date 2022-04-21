@@ -7,10 +7,9 @@ class Preferences {
   /// 顶层变量，单例模式
   Preferences._internal();
 
-  static const keyUserAccessToken = "keyUserAccessToken";
-  static const keyUserRegisterStep = "keyUserRegisterStep";
-  static const keyUserHasLogin = "keyUserHasLogin";
-  static const keyUserHasSkippedLogin = "keyUserHasSkippedLogin";
+  static const KEY_USER_ACCESS_TOKEN = "KEY_USER_ACCESS_TOKEN";
+  static const KEY_USER_HAS_SKIPPED_LOGIN = "KEY_USER_HAS_SKIPPED_LOGIN";
+  static const KEY_USER_INFO = "KEY_USER_INFO";
 
   Future<void> init() async {
     // SharedPreferences.getInstance().then((value) {
@@ -27,24 +26,24 @@ class Preferences {
     return _prefs.containsKey(key);
   }
 
-  String? getString(String key, {String? def}) {
+  String? getString(String key) {
     var value = _prefs.getString(key);
-    return value ?? def;
+    return value;
   }
 
-  int? getInt(String key, {int? def}) {
+  int? getInt(String key) {
     var value = _prefs.getInt(key);
-    return value ?? def;
+    return value;
   }
 
-  double? getDouble(String key, {double? def}) {
+  double? getDouble(String key) {
     var value = _prefs.getDouble(key);
-    return value ?? def;
+    return value;
   }
 
-  bool? getBool(String key, {bool? def}) {
+  bool? getBool(String key) {
     var value = _prefs.getBool(key);
-    return value ?? def;
+    return value;
   }
 
   void putString(String key, String? value) {

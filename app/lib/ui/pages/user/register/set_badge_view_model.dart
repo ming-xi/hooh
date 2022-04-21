@@ -1,6 +1,11 @@
+import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:app/utils/file_utils.dart';
+import 'package:common/models/hooh_api_error_response.dart';
+import 'package:common/models/network/responses.dart';
 import 'package:common/models/social_badge.dart';
+import 'package:common/models/user.dart';
 import 'package:common/utils/network.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/services.dart';
@@ -19,16 +24,25 @@ class LayerData {
 class SetBadgeModelState {
   final List<LayerData> layers;
 
-  SetBadgeModelState({required this.layers});
+  final bool originalColor;
+  final Uint8List? badgeImageBytes;
+
+  SetBadgeModelState({required this.layers, this.originalColor = false, this.badgeImageBytes});
 
   factory SetBadgeModelState.init() => SetBadgeModelState(layers: []);
 }
 
 class SetBadgeViewModel extends StateNotifier<SetBadgeModelState> {
-  SetBadgeViewModel(String? userId, SetBadgeModelState state) : super(state) {
+  String? userId;
+
+  SetBadgeViewModel(this.userId, SetBadgeModelState state) : super(state) {
     if (userId != null) {
-      getRandomBadge(userId);
+      getRandomBadge(userId!);
     }
+  }
+
+  void toggleOriginalColor() {
+    state = state.copyWith(originalColor: !state.originalColor);
   }
 
   void getRandomBadge(String userId) {
@@ -42,5 +56,28 @@ class SetBadgeViewModel extends StateNotifier<SetBadgeModelState> {
       }).toList());
       state = state.copyWith(layers: completedFuture);
     });
+  }
+
+  Future<dynamic> changeUserBadge() async {
+    Uint8List? bytes;
+    if (state.badgeImageBytes == null) {
+      bytes = FileUtil.combineImages(state.layers.map((e) => e.bytes).toList());
+    } else {
+      bytes = state.badgeImageBytes;
+    }
+    File tempFile = await FileUtil.writeTempFile(bytes!, "png");
+    try {
+      RequestUploadingFileResponse response = await network.requestUploadingSocialBadge(userId!, tempFile);
+      bool success = await network.uploadFile(response.uploadingUrl, bytes);
+      if (!success) {
+        return false;
+      }
+      User userInfo = await network.changeUserInfo(userId!, badgeImageKey: response.key);
+      return userInfo;
+    } catch (error) {
+      if (error is HoohApiErrorResponse) {
+        return error;
+      }
+    }
   }
 }

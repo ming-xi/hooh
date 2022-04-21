@@ -4,8 +4,9 @@ import 'dart:io';
 
 import 'package:app/extensions/extensions.dart';
 import 'package:app/providers.dart';
-import 'package:app/ui/pages/test_uploading_view_model.dart';
+import 'package:app/test_uploading_view_model.dart';
 import 'package:app/ui/pages/user/register/set_badge.dart';
+import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/ipfs_node.dart';
 import 'package:app/ui/widgets/toast.dart';
@@ -19,6 +20,50 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pretty_json/pretty_json.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
+
+class TestMenuScreen extends ConsumerWidget {
+  const TestMenuScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("test menu"),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ElevatedButton(
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => TestUploadingAvatarScreen()));
+                },
+                child: Text("upload avatar")),
+            SizedBox(
+              height: 16,
+            ),
+            ElevatedButton(
+                onPressed: () {
+                  ref.read(globalUserInfoProvider.state).state = null;
+                  preferences.putString(Preferences.KEY_USER_INFO, null);
+                  // Navigator.pushAndRemoveUntil(
+                  //   context,
+                  //   MaterialPageRoute(builder: (context) => StartScreen()),
+                  //   (route) => false,
+                  // );
+                  Navigator.pop(context);
+                },
+                child: Text("log out")),
+            SizedBox(
+              height: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class FirstPage extends StatefulWidget {
   const FirstPage({Key? key}) : super(key: key);
@@ -207,6 +252,7 @@ class _TestScreenState extends ConsumerState<TestUploadingAvatarScreen> {
                   LoginResponse loginResponse = await network.login("app_test1", "123456");
                   network.setUserToken(loginResponse.jwtResponse.accessToken);
                   ref.read(globalUserInfoProvider.state).state = loginResponse.user;
+                  preferences.putString(Preferences.KEY_USER_INFO, json.encode(loginResponse.user.toJson()));
                   model.updateState(modelState.copyWith(imageUrl: loginResponse.user.avatarUrl));
                   Navigator.of(context).pop();
                   Toast.showSnackBar(context, "success");

@@ -1,29 +1,33 @@
+import 'dart:convert';
+
 import 'package:app/providers.dart';
-import 'package:app/ui/pages/home/home.dart';
+import 'package:app/ui/pages/user/register/login.dart';
 import 'package:app/ui/pages/user/register/register_view_model.dart';
+import 'package:app/ui/pages/user/register/set_badge.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/pages/user/web_view.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
+import 'package:common/utils/preferences.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class SignUpScreen extends ConsumerStatefulWidget {
+class RegisterScreen extends ConsumerStatefulWidget {
   final StateNotifierProvider<RegisterViewModel, RegisterModelState> provider = StateNotifierProvider((ref) {
     return RegisterViewModel(RegisterModelState.init());
   });
 
-  SignUpScreen({
+  RegisterScreen({
     Key? key,
   }) : super(key: key);
 
   @override
-  ConsumerState createState() => _SignUpScreenState();
+  ConsumerState createState() => _RegisterScreenState();
 }
 
-class _SignUpScreenState extends ConsumerState<SignUpScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final TapGestureRecognizer _tapGestureRecognizer = TapGestureRecognizer();
   TextEditingController usernameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
@@ -48,12 +52,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     RegisterViewModel model = ref.watch(widget.provider.notifier);
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Sign Up"),
+        title: const Text(""),
         actions: [
           TextButton(
               onPressed: () {
-                Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginScreen()));
               },
               style: RegisterStyles.appbarTextButtonStyle(ref),
               child: Text(
@@ -85,6 +88,17 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.max,
                 children: [
+                  Row(
+                    children: [
+                      Text(
+                        "Create net account",
+                        style: RegisterStyles.titleTextStyle(ref),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 16,
+                  ),
                   TextField(
                     controller: usernameController,
                     focusNode: usernameNode,
@@ -137,20 +151,30 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   SizedBox(
                     height: 16,
                   ),
-                  ElevatedButton(
+                  TextButton(
                     style: RegisterStyles.blackButtonStyle(ref),
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return LoadingDialog(LoadingDialogController());
-                          });
-                      model.register(context, usernameController.text, passwordController.text, emailController.text, onSuccess: (user) {
-                        Toast.showSnackBar(context, "注册成功");
-                      }, onFailed: () {
-                        Navigator.of(context).pop();
-                      });
-                    },
+                    onPressed: !modelState.registerButtonEnabled
+                        ? null
+                        : () {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return LoadingDialog(LoadingDialogController());
+                                });
+                            model.register(context, usernameController.text, passwordController.text, emailController.text, onSuccess: (user) {
+                              ref.read(globalUserInfoProvider.state).state = user;
+                              preferences.putString(Preferences.KEY_USER_INFO, json.encode(user.toJson()));
+                              Navigator.of(context).pop();
+                              Toast.showSnackBar(context, "注册成功");
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(builder: (context) => SetBadgeScreen()),
+                                (route) => false,
+                              );
+                            }, onFailed: () {
+                              Navigator.of(context).pop();
+                            });
+                          },
                     child: const Text('Agree and sign up'),
                   ),
                   const SizedBox(
@@ -164,19 +188,19 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           ),
                           text: 'I read and agree ',
                           children: [
-                        TextSpan(
-                          style: TextStyle(
-                            color: designColors.blue_dark.auto(ref),
-                          ),
-                          text: 'User Agreement and Privacy Policy',
-                          recognizer: _tapGestureRecognizer
-                            ..onTap = () {
-                              debugPrint("点击了隐私协议");
-                              Navigator.push(context,
-                                  MaterialPageRoute(builder: (context) => const WebViewScreen('User Agreement and Privacy Policy', 'https://www.baidu.com')));
-                            },
-                        )
-                      ]))
+                            TextSpan(
+                              style: TextStyle(
+                                color: designColors.blue_dark.auto(ref),
+                              ),
+                              text: 'User Agreement and Privacy Policy',
+                              recognizer: _tapGestureRecognizer
+                                ..onTap = () {
+                                  debugPrint("点击了隐私协议");
+                                  Navigator.push(context,
+                                      MaterialPageRoute(builder: (context) => const WebViewScreen('User Agreement and Privacy Policy', 'https://www.baidu.com')));
+                                },
+                            )
+                          ]))
                 ],
               ),
             ),

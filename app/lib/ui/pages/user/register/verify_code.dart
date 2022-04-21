@@ -71,7 +71,7 @@ class _VerifyCodeScreenState extends ConsumerState<VerifyCodeScreen> {
                     },
                   ),
                 ),
-                ElevatedButton(
+                TextButton(
                   onPressed: () {
                     viewModel.requestValidationCode();
                   },

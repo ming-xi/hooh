@@ -61,7 +61,7 @@ class DesignColors {
     feiyu_yellow = const DayNightColor(Color(0xFFFBCC30), Color(0xFFE4BE40));
     light_00 = const DayNightColor(Color(0xFFFCFCFC), Color(0xFF151515));
     light_01 = const DayNightColor(Color(0xFFFFFFFF), Color(0xFF212121));
-    light_02 = const DayNightColor(Color(0xFF6F6F6F), Color(0xFF6F6F6F));
+    light_02 = const DayNightColor(Color(0xFFEBEBEB), Color(0xFF6F6F6F));
     light_03 = const DayNightColor(Color(0xFF6F6F6F), Color(0xFFC4C4C4));
     light_06 = const DayNightColor(Color(0xFF707070), Color(0xFFC4C4C4));
     light_20 = const DayNightColor(Color(0x33FFFFFF), Color(0x33141416));

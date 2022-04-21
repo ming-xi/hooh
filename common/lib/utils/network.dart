@@ -46,7 +46,7 @@ class Network {
   }
 
   void setUserToken(String token) {
-    preferences.putString(Preferences.keyUserAccessToken, token);
+    preferences.putString(Preferences.KEY_USER_ACCESS_TOKEN, token);
   }
 
   String getS3ImageKey(String? url) {
@@ -276,7 +276,7 @@ class Network {
 //
 // }
   void _prepareHeaders(Map<String, dynamic> headers) {
-    String? token = preferences.getString(Preferences.keyUserAccessToken);
+    String? token = preferences.getString(Preferences.KEY_USER_ACCESS_TOKEN);
     if (token != null) {
       headers["Authorization"] = "Bearer $token";
     }

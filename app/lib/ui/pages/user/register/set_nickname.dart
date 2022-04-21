@@ -46,7 +46,7 @@ class _SetNicknameScreenState extends ConsumerState<SetNicknameScreen> {
                 SizedBox(
                   height: 36,
                 ),
-                ElevatedButton(
+                TextButton(
                     onPressed: () {
                       String nickname = nicknameController.text;
                       // network.requestAsync<LoginResponse>(network.register(widget.token, password), (data) {

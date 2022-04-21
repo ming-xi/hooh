@@ -1,9 +1,14 @@
 import 'dart:typed_data';
 
 import 'package:app/providers.dart';
+import 'package:app/ui/pages/home/home.dart';
+import 'package:app/ui/pages/user/register/draw_badge.dart';
 import 'package:app/ui/pages/user/register/set_badge_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
-import 'package:app/utils/design_colors.dart';
+import 'package:app/utils/ui_utils.dart';
+import 'package:common/models/hooh_api_error_response.dart';
+import 'package:common/models/user.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -35,27 +40,62 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
   Widget build(BuildContext context) {
     SetBadgeModelState modelState = ref.watch(widget.provider);
     SetBadgeViewModel model = ref.watch(widget.provider.notifier);
-    final kGradientBoxDecoration = BoxDecoration(
-      gradient: LinearGradient(colors: [
-        Color(0xFFFFD840),
-        Color(0xFFF3ACFF),
-        Color(0xFF48E1FF),
-      ], begin: Alignment.bottomLeft, end: Alignment.topRight),
-      borderRadius: BorderRadius.circular(24),
-    );
+
+    List<TextButton> actions = [
+      TextButton(
+          onPressed: () async {
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return LoadingDialog(LoadingDialogController());
+                });
+            dynamic result = await model.changeUserBadge();
+            Navigator.pop(context);
+            if (result is HoohApiErrorResponse) {
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      content: Text(result.message),
+                    );
+                  });
+            } else if (result is bool && !result) {
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      content: Text("uploading failed"),
+                    );
+                  });
+            } else if (result is User) {
+              ref.read(globalUserInfoProvider.state).state = result;
+              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeScreen()), (route) => false);
+            }
+          },
+          style: RegisterStyles.appbarTextButtonStyle(ref),
+          child: Text(
+            'OK',
+          )),
+      // Icon(
+      //     Icons.more_vert
+      // ),
+    ];
+    if (kDebugMode) {
+      actions.insert(
+          0,
+          TextButton(
+              style: RegisterStyles.appbarTextButtonStyle(ref),
+              onPressed: () {
+                model.toggleOriginalColor();
+              },
+              child: Text(
+                modelState.originalColor ? "显示变色" : "显示原颜色",
+              )));
+    }
+    List<Uint8List> imageLayerBytes = modelState.layers.map((e) => getImageBytes(e.bytes, e.template.hue, modelState.originalColor)).toList();
     return Scaffold(
       appBar: AppBar(
-        actions: [
-          TextButton(
-              onPressed: () {},
-              style: RegisterStyles.appbarTextButtonStyle(ref),
-              child: Text(
-                'OK',
-              )),
-          // Icon(
-          //     Icons.more_vert
-          // ),
-        ],
+        actions: actions,
       ),
       body: CustomScrollView(
         slivers: [
@@ -97,20 +137,18 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
                 SizedBox(
                   width: 160,
                   height: 180,
-                  child: Container(
-                    color: Colors.white,
-                    child: Stack(
-                        children: modelState.layers.map((e) {
-                      return Image.memory(
-                        getImageBytes(e.bytes, e.template.hue),
-                        gaplessPlayback: true,
-                        fit: BoxFit.fill,
-                        filterQuality: FilterQuality.none,
-                        width: 160,
-                        height: 180,
-                      );
-                    }).toList()),
-                  ),
+                  child: Stack(
+                      children: imageLayerBytes.map((e) {
+                    return Image.memory(
+                      // getImageBytes(e.bytes, e.template.hue, modelState.originalColor),
+                      e,
+                      gaplessPlayback: true,
+                      fit: BoxFit.fill,
+                      filterQuality: FilterQuality.none,
+                      width: 160,
+                      height: 180,
+                    );
+                  }).toList()),
                 ),
                 SizedBox(
                   height: 24,
@@ -140,7 +178,10 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
                         ))),
                         label: Text("Change"),
                         icon: SvgPicture.asset('assets/images/shuffle.svg', height: 36, width: 36),
-                        onPressed: () {},
+                        onPressed: () {
+                          String? userId = ref.read(globalUserInfoProvider.state).state?.id;
+                          model.getRandomBadge(userId!);
+                        },
                       ),
                     ),
                   ],
@@ -149,25 +190,15 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20.0),
                     child: Center(
-                      child: Container(
-                        decoration: kGradientBoxDecoration,
-                        child: Padding(
-                          padding: const EdgeInsets.all(1.0),
-                          child: TextButton(
-                            style: TextButton.styleFrom(
-                                primary: designColors.dark_01.auto(ref),
-                                onSurface: designColors.dark_01.auto(ref),
-                                backgroundColor: designColors.light_01.auto(ref),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: const BorderRadius.all(Radius.circular(22.0)), side: BorderSide(color: Colors.transparent)),
-                                minimumSize: const Size.fromHeight(64),
-                                textStyle:
-                                    ref.watch(globalThemeDataProvider.state).state.textTheme.button!.copyWith(fontSize: 20, fontWeight: FontWeight.bold)),
-                            onPressed: () {},
-                            child: const Text('Create new'),
-                          ),
-                        ),
-                      ),
+                      child: RegisterStyles.rainbowButton(ref,
+                          icon: const Text('Create new'), label: SvgPicture.asset('assets/images/arrow_right_blue.svg', height: 24, width: 24), onPress: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => DrawBadgeScreen(
+                                      imageLayerBytes: imageLayerBytes,
+                                    )));
+                      }),
                     ),
                   ),
                 ),
@@ -179,7 +210,10 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
     );
   }
 
-  Uint8List getImageBytes(Uint8List fileBytes, double hue) {
+  Uint8List getImageBytes(Uint8List fileBytes, double hue, bool originalColor) {
+    if (originalColor) {
+      return fileBytes;
+    }
     img.Image? image = img.decodePng(fileBytes);
     Uint32List pixels = image!.data;
     for (int i = 0; i < pixels.length; i++) {
