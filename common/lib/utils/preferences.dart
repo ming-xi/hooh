@@ -10,6 +10,7 @@ class Preferences {
   static const KEY_USER_ACCESS_TOKEN = "KEY_USER_ACCESS_TOKEN";
   static const KEY_USER_HAS_SKIPPED_LOGIN = "KEY_USER_HAS_SKIPPED_LOGIN";
   static const KEY_USER_INFO = "KEY_USER_INFO";
+  static const KEY_DARK_MODE = "KEY_DARK_MODE";
 
   Future<void> init() async {
     // SharedPreferences.getInstance().then((value) {

@@ -92,11 +92,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     controller: passwordController,
                     focusNode: passwordNode,
                     style: RegisterStyles.inputTextStyle(ref),
-                    decoration: RegisterStyles.commonInputDecoration(
-                      "Enter password",
-                      ref,
-                    ),
-                    obscureText: true,
+                    decoration:
+                        RegisterStyles.passwordInputDecoration("Enter password", ref, passwordVisible: modelState.passwordVisible, onTogglePasswordVisible: () {
+                      model.togglePasswordVisible();
+                    }),
+                    obscureText: !modelState.passwordVisible,
                     onChanged: (text) {
                       model.checkUsernameAndPassword(text, usernameController.text);
                     },

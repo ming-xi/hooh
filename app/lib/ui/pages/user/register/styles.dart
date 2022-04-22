@@ -40,6 +40,18 @@ class RegisterStyles {
         border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(22.0))));
   }
 
+  static InputDecoration passwordInputDecoration(String hint, WidgetRef ref,
+      {String? helperText, String? errorText, bool passwordVisible = false, Function()? onTogglePasswordVisible}) {
+    return commonInputDecoration(hint, ref, helperText: helperText, errorText: errorText).copyWith(
+        suffixIcon: IconButton(
+      icon: Icon(
+        // Based on passwordVisible state choose the icon
+        passwordVisible ? Icons.visibility : Icons.visibility_off,
+      ),
+      onPressed: onTogglePasswordVisible,
+    ));
+  }
+
   static ButtonStyle blueButtonStyle(WidgetRef ref) {
     return TextButton.styleFrom(
         // primary: designColors.light_01.auto(ref),

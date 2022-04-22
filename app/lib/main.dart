@@ -13,27 +13,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await initUtils();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  // 保留开屏页
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  await _initUtils();
   runApp(const ProviderScope(child: MyApp()));
 }
 
-Future<void> initUtils() async {
-  await initSyncUtils();
-  initASyncUtils();
+Future<void> _initUtils() async {
+  await _initSyncUtils();
+  _initASyncUtils();
 }
 
 ///需要同步初始化的工具类
-Future<void> initSyncUtils() async {
+Future<void> _initSyncUtils() async {
   await preferences.init();
   await deviceInfo.init();
 }
 
 ///不需要同步初始化的工具类
-void initASyncUtils() {}
+void _initASyncUtils() {}
 
 class MyApp extends ConsumerStatefulWidget {
   const MyApp({
@@ -90,6 +93,7 @@ class _MyAppState extends ConsumerState<MyApp> {
                     onPressed: () {
                       bool dark = ref.read(globalDarkModeProvider.state).state;
                       ref.read(globalDarkModeProvider.state).state = !dark;
+                      preferences.putBool(Preferences.KEY_DARK_MODE, !dark);
                     },
                     child: Icon(
                       darkMode ? Icons.light_mode : Icons.dark_mode,

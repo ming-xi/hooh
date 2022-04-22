@@ -106,7 +106,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     decoration: RegisterStyles.commonInputDecoration("Username", ref,
                         helperText: "It cannot be modified after registration", errorText: modelState.usernameErrorText),
                     onChanged: (text) {
-                      model.checkUsername(text);
+                      model.checkAll(text, emailController.text, passwordController.text, passwordConfirmController.text);
                     },
                   ),
                   SizedBox(
@@ -118,7 +118,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     style: RegisterStyles.inputTextStyle(ref),
                     decoration: RegisterStyles.commonInputDecoration("Email", ref, errorText: modelState.emailErrorText),
                     onChanged: (text) {
-                      model.checkEmail(text);
+                      model.checkAll(usernameController.text, text, passwordController.text, passwordConfirmController.text);
                     },
                   ),
                   SizedBox(
@@ -128,11 +128,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     controller: passwordController,
                     focusNode: passwordNode,
                     style: RegisterStyles.inputTextStyle(ref),
-                    decoration: RegisterStyles.commonInputDecoration("Enter password", ref,
-                        helperText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters", errorText: modelState.passwordErrorText),
-                    obscureText: true,
+                    decoration: RegisterStyles.passwordInputDecoration("Enter password", ref,
+                        helperText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters",
+                        errorText: modelState.passwordErrorText,
+                        passwordVisible: modelState.passwordVisible, onTogglePasswordVisible: () {
+                      model.togglePasswordVisible();
+                    }),
+                    obscureText: !modelState.passwordVisible,
                     onChanged: (text) {
-                      model.checkPassword(text, passwordConfirmController.text);
+                      model.checkAll(usernameController.text, emailController.text, text, passwordConfirmController.text);
                     },
                   ),
                   SizedBox(
@@ -142,10 +146,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     style: RegisterStyles.inputTextStyle(ref),
                     controller: passwordConfirmController,
                     focusNode: passwordConfirmNode,
-                    decoration: RegisterStyles.commonInputDecoration("Confirmed password", ref, errorText: modelState.confirmPasswordErrorText),
-                    obscureText: true,
+                    decoration: RegisterStyles.passwordInputDecoration("Confirmed password", ref,
+                        errorText: modelState.confirmPasswordErrorText, passwordVisible: modelState.confirmPasswordVisible, onTogglePasswordVisible: () {
+                      model.toggleConfirmPasswordVisible();
+                    }),
+                    obscureText: !modelState.confirmPasswordVisible,
                     onChanged: (text) {
-                      model.checkPassword(passwordController.text, text);
+                      model.checkAll(usernameController.text, emailController.text, passwordController.text, text);
                     },
                   ),
                   SizedBox(
@@ -188,19 +195,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           ),
                           text: 'I read and agree ',
                           children: [
-                            TextSpan(
-                              style: TextStyle(
-                                color: designColors.blue_dark.auto(ref),
-                              ),
-                              text: 'User Agreement and Privacy Policy',
-                              recognizer: _tapGestureRecognizer
-                                ..onTap = () {
-                                  debugPrint("点击了隐私协议");
-                                  Navigator.push(context,
-                                      MaterialPageRoute(builder: (context) => const WebViewScreen('User Agreement and Privacy Policy', 'https://www.baidu.com')));
-                                },
-                            )
-                          ]))
+                        TextSpan(
+                          style: TextStyle(
+                            color: designColors.blue_dark.auto(ref),
+                          ),
+                          text: 'User Agreement and Privacy Policy',
+                          recognizer: _tapGestureRecognizer
+                            ..onTap = () {
+                              debugPrint("点击了隐私协议");
+                              Navigator.push(context,
+                                  MaterialPageRoute(builder: (context) => const WebViewScreen('User Agreement and Privacy Policy', 'https://www.baidu.com')));
+                            },
+                        )
+                      ]))
                 ],
               ),
             ),
