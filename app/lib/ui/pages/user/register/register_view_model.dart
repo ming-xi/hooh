@@ -1,5 +1,6 @@
 import 'package:app/extensions/extensions.dart';
 import 'package:app/utils/constants.dart';
+import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/network/responses.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/network.dart';
@@ -42,7 +43,7 @@ class RegisterViewModel extends StateNotifier<RegisterModelState> {
     updateState(state.copyWith(confirmPasswordVisible: !state.confirmPasswordVisible));
   }
 
-  void register(BuildContext context, String username, String password, String email, {Function(User)? onSuccess, Function()? onFailed}) {
+  void register(BuildContext context, String username, String password, String email, {Function(User)? onSuccess, Function(HoohApiErrorResponse)? onFailed}) {
     network.requestAsync<LoginResponse>(network.register(username, password, email), (data) {
       network.setUserToken(data.jwtResponse.accessToken);
       if (onSuccess != null) {
@@ -51,18 +52,24 @@ class RegisterViewModel extends StateNotifier<RegisterModelState> {
     }, (error) {
       if (error.errorCode == Constants.USERNAME_ALREADY_REGISTERED) {
         updateState(state.copyWith(usernameErrorText: error.message));
+        if (onFailed != null) {
+          onFailed(error);
+        }
         return;
       } else {
         updateState(state.copyWith(usernameErrorText: null));
       }
       if (error.errorCode == Constants.EMAIL_ALREADY_VALIDATED) {
         updateState(state.copyWith(emailErrorText: error.message));
+        if (onFailed != null) {
+          onFailed(error);
+        }
         return;
       } else {
         updateState(state.copyWith(emailErrorText: null));
-      }
-      if (onFailed != null) {
-        onFailed();
+        if (onFailed != null) {
+          onFailed(error);
+        }
       }
       showDialog(
           context: context,
@@ -75,7 +82,10 @@ class RegisterViewModel extends StateNotifier<RegisterModelState> {
   }
 
   void checkAll(String username, String email, String password, String confirmPassword) {
-    if (_checkUsername(username) && _checkEmail(email) && _checkPassword(password, confirmPassword)) {
+    bool isUsernameOk = _checkUsername(username);
+    bool isEmailOk = _checkEmail(email);
+    bool isPasswordOk = _checkPassword(password, confirmPassword);
+    if (isUsernameOk && isEmailOk && isPasswordOk) {
       updateState(state.copyWith(registerButtonEnabled: true));
     } else {
       updateState(state.copyWith(registerButtonEnabled: false));
@@ -105,35 +115,41 @@ class RegisterViewModel extends StateNotifier<RegisterModelState> {
   bool _checkPassword(String password, String confirmPassword) {
     password = password.trim();
     confirmPassword = confirmPassword.trim();
-    if (password.length < 8) {
-      debugPrint("len");
-      updateState(state.copyWith(passwordErrorText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters"));
-      return false;
-    }
-    if (password.length > 16) {
-      debugPrint("len");
-      updateState(state.copyWith(passwordErrorText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters"));
-      return false;
-    }
-    if (!password.contains(RegExp("[A-Za-z]"))) {
-      debugPrint("[A-Za-z]");
-      updateState(state.copyWith(passwordErrorText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters"));
-      return false;
-    }
-    // if (!password.contains(RegExp("[a-z]"))) {
-    //   debugPrint("[a-z]");
+    // if (password.length < 8) {
+    //   debugPrint("len");
     //   updateState(state.copyWith(passwordErrorText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters"));
-    //   return;
+    //   return false;
     // }
-    if (!password.contains(RegExp("[0-9]"))) {
-      debugPrint("[0-9]");
+    // if (password.length > 16) {
+    //   debugPrint("len");
+    //   updateState(state.copyWith(passwordErrorText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters"));
+    //   return false;
+    // }
+    // if (!password.contains(RegExp("[A-Za-z]"))) {
+    //   debugPrint("[A-Za-z]");
+    //   updateState(state.copyWith(passwordErrorText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters"));
+    //   return false;
+    // }
+    // // if (!password.contains(RegExp("[a-z]"))) {
+    // //   debugPrint("[a-z]");
+    // //   updateState(state.copyWith(passwordErrorText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters"));
+    // //   return;
+    // // }
+    // if (!password.contains(RegExp("[0-9]"))) {
+    //   debugPrint("[0-9]");
+    //   updateState(state.copyWith(passwordErrorText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters"));
+    //   return false;
+    // }
+    // if (!password.contains(RegExp("[!@#\$&*~,.]"))) {
+    //   debugPrint("special char");
+    //   updateState(state.copyWith(passwordErrorText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters"));
+    //   return false;
+    // }
+    var stringMatch = RegExp(Constants.PASSWORD_REGEX).stringMatch(password);
+    debugPrint("stringMatch=$stringMatch");
+    if (stringMatch != password) {
       updateState(state.copyWith(passwordErrorText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters"));
-      return false;
-    }
-    if (!password.contains(RegExp("[!@#\$&*~,.]"))) {
-      debugPrint("special char");
-      updateState(state.copyWith(passwordErrorText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters"));
-      return false;
+      return true;
     }
     updateState(state.copyWith(passwordErrorText: null));
     if (password != confirmPassword) {

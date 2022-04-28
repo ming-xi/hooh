@@ -75,3 +75,15 @@ class RequestUploadingFileResponse {
 
   Map<String, dynamic> toJson() => _$RequestUploadingFileResponseToJson(this);
 }
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class RecommendedTag {
+  String name;
+  int? type;
+
+  RecommendedTag(this.name, this.type);
+
+  factory RecommendedTag.fromJson(Map<String, dynamic> json) => _$RecommendedTagFromJson(json);
+
+  Map<String, dynamic> toJson() => _$RecommendedTagToJson(this);
+}

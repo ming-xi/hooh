@@ -5,7 +5,6 @@ import 'package:app/utils/design_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-///断面绘制控件
 class DrawBadgeView extends ConsumerStatefulWidget {
   final ui.Image? image;
   Color paintColor;
@@ -41,7 +40,7 @@ class _DrawBadgeViewState extends ConsumerState<DrawBadgeView> {
           },
           child: CustomPaint(
             willChange: willChange,
-            painter: CanvasPainter(ref, widget.image, pointer),
+            painter: _CanvasPainter(ref, widget.image, pointer),
           ),
         ),
       ),
@@ -49,7 +48,7 @@ class _DrawBadgeViewState extends ConsumerState<DrawBadgeView> {
   }
 }
 
-class CanvasPainter extends CustomPainter {
+class _CanvasPainter extends CustomPainter {
   static const CANVAS_PIXEL_WIDTH = 20;
   static const CANVAS_PIXEL_HEIGHT = 20;
   late final Color darkerGridColor;
@@ -59,7 +58,7 @@ class CanvasPainter extends CustomPainter {
   final Paint p = Paint();
   Offset? pointer;
 
-  CanvasPainter(WidgetRef ref, this.image, this.pointer) {
+  _CanvasPainter(WidgetRef ref, this.image, this.pointer) {
     darkerGridColor = designColors.light_02.auto(ref);
     gridColor = designColors.light_01.auto(ref);
     backgroundColor = designColors.light_03.auto(ref);
@@ -130,7 +129,7 @@ class CanvasPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(CanvasPainter oldDelegate) {
+  bool shouldRepaint(_CanvasPainter oldDelegate) {
     return this != oldDelegate;
   }
 }

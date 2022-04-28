@@ -92,7 +92,8 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
                 modelState.originalColor ? "显示变色" : "显示原颜色",
               )));
     }
-    List<Uint8List> imageLayerBytes = modelState.layers.map((e) => getImageBytes(e.bytes, e.template.hue, modelState.originalColor)).toList();
+    List<Uint8List> imageLayerBytes =
+        modelState.layers.map((e) => getImageBytes(e.bytes, double.tryParse(e.template.hue) ?? 0, modelState.originalColor)).toList();
     return Scaffold(
       appBar: AppBar(
         actions: actions,
@@ -163,7 +164,7 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
                           borderRadius: BorderRadius.only(topRight: Radius.circular(22.0), bottomRight: Radius.circular(22.0)),
                         ))),
                         label: Text("Edit"),
-                        icon: SvgPicture.asset('assets/images/magic.svg', height: 36, width: 36),
+                        icon: HoohIcon('assets/images/magic.svg', height: 36, width: 36),
                         onPressed: () {},
                       ),
                     ),
@@ -177,7 +178,7 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
                           borderRadius: BorderRadius.only(topLeft: Radius.circular(22.0), bottomLeft: Radius.circular(22.0)),
                         ))),
                         label: Text("Change"),
-                        icon: SvgPicture.asset('assets/images/shuffle.svg', height: 36, width: 36),
+                        icon: HoohIcon('assets/images/shuffle.svg', height: 36, width: 36),
                         onPressed: () {
                           String? userId = ref.read(globalUserInfoProvider.state).state?.id;
                           model.getRandomBadge(userId!);
@@ -191,7 +192,7 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 20.0),
                     child: Center(
                       child: RegisterStyles.rainbowButton(ref,
-                          icon: const Text('Create new'), label: SvgPicture.asset('assets/images/arrow_right_blue.svg', height: 24, width: 24), onPress: () {
+                          icon: const Text('Create new'), label: HoohIcon('assets/images/arrow_right_blue.svg', height: 24, width: 24), onPress: () {
                         Navigator.push(
                             context,
                             MaterialPageRoute(

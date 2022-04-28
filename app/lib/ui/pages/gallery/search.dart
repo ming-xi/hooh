@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:app/extensions/extensions.dart';
 import 'package:app/ui/pages/gallery/search_view_model.dart';
-import 'package:app/ui/pages/home/gallery.dart';
+import 'package:app/ui/pages/home/templates.dart';
+import 'package:app/utils/ui_utils.dart';
 import 'package:blur/blur.dart';
-import 'package:common/models/gallery_image.dart';
 import 'package:common/models/page_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -73,10 +73,6 @@ class _GallerySearchScreenState extends ConsumerState<GallerySearchScreen> {
           );
         }),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Text(modelState.pageIndex.toString()),
-      ),
       body: Container(
         color: Colors.white,
         child: SafeArea(
@@ -101,7 +97,7 @@ class _GallerySearchScreenState extends ConsumerState<GallerySearchScreen> {
           child: Row(
             children: [
               Container(
-                  child: SvgPicture.asset('assets/images/icon_search.svg', height: iconSize, width: iconSize),
+                  child: HoohIcon('assets/images/icon_search.svg', height: iconSize, width: iconSize),
                   padding: EdgeInsets.fromLTRB(0, padding, padding, padding)),
               Expanded(
                 child: TextField(
@@ -189,7 +185,7 @@ class _GallerySearchScreenState extends ConsumerState<GallerySearchScreen> {
               onTap: () {
                 // _galleryItemTouched(index);
               },
-              child: GalleryImageView(modelState.images[index], (newState) {}),
+              child: TemplateView(modelState.images[index], (newState) {}),
             );
           },
         ),

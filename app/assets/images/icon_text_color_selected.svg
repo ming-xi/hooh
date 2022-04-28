@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width = "36px"
+     height = "36px"
+     viewBox = "0 0 36 36"
+     version = "1.1"
+     xmlns = "http://www.w3.org/2000/svg"
+     xmlns:xlink = "http://www.w3.org/1999/xlink">
+	<title>icon-上色-on</title>
+	<g id = "icon-上色-on"
+	   stroke = "none"
+	   stroke-width = "1"
+	   fill = "none"
+	   fill-rule = "evenodd">
+		<rect id = "bound"
+		      x = "0"
+		      y = "0"
+		      width = "36"
+		      height = "36"></rect>
+		<path d = "M10.5,21 C10.5,25.1421356 13.8578644,28.5 18,28.5 C22.1421356,28.5 25.5,25.1421356 25.5,21 C25.5,18.5613244 23.0554369,14.8027923 18,10.0488447 C12.9445631,14.8027923 10.5,18.5613244 10.5,21 Z M18,31.5 C12.2010101,31.5 7.5,26.7989899 7.5,21 C7.5,17.1340068 11,12.1340068 18,6 C25,12.1340068 28.5,17.1340068 28.5,21 C28.5,26.7989899 23.7989899,31.5 18,31.5 Z"
+		      id = "Oval-2"
+		      fill = "#212121"
+		      fill-rule = "nonzero"
+		      opacity = "0.5"></path>
+		<path d = "M18,6 C25,12.1340068 28.5,17.1340068 28.5,21 C28.5,26.7989899 23.7989899,31.5 18,31.5 L18,31.5 Z"
+		      id = "Combined-Shape"
+		      fill = "#212121"></path>
+	</g>
+</svg>

@@ -1,6 +1,7 @@
-import 'package:common/models/gallery_image.dart';
+import 'package:common/utils/date_util.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/page_state.dart';
+import 'package:common/models/template.dart';
 import 'package:common/utils/network.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/material.dart';
@@ -10,9 +11,9 @@ part 'search_view_model.g.dart';
 
 @CopyWith()
 class SearchPageModelState {
-  final List<GalleryImage> images;
+  final List<Template> images;
   final String keyword;
-  final int pageIndex;
+  final DateTime? lastTimestamp;
   final int imageWidth;
   final PageState pageState;
   final bool showFavoriteStatus;
@@ -21,14 +22,14 @@ class SearchPageModelState {
   SearchPageModelState(
       {required this.images,
       required this.keyword,
-      required this.pageIndex,
+      required this.lastTimestamp,
       required this.imageWidth,
       required this.pageState,
       required this.showFavoriteStatus,
       required this.error});
 
   factory SearchPageModelState.init(int imageWidth, bool showFavoriteStatus) => SearchPageModelState(
-      images: [], keyword: "", pageIndex: 1, imageWidth: imageWidth, pageState: PageState.inited, showFavoriteStatus: showFavoriteStatus, error: null);
+      images: [], keyword: "", lastTimestamp: null, imageWidth: imageWidth, pageState: PageState.inited, showFavoriteStatus: showFavoriteStatus, error: null);
 }
 
 class SearchPageViewModel extends StateNotifier<SearchPageModelState> {
@@ -44,7 +45,7 @@ class SearchPageViewModel extends StateNotifier<SearchPageModelState> {
 
   Future<void> search({bool isRefresh = true}) async {
     if (isRefresh) {
-      state = state.copyWith(pageIndex: 1);
+      state = state.copyWith(lastTimestamp: null);
       if (![
         PageState.inited,
         PageState.dataLoaded,
@@ -61,25 +62,22 @@ class SearchPageViewModel extends StateNotifier<SearchPageModelState> {
       }
     }
     state = state.copyWith(pageState: PageState.loading);
-    network.requestAsync<List<GalleryImage>>(network.searchGalleryImageList(state.keyword, state.pageIndex, state.imageWidth, state.showFavoriteStatus),
-        (newData) {
+    DateTime date = state.lastTimestamp ?? DateUtil.getCurrentUtcDate();
+    network.requestAsync<List<Template>>(network.searchTemplatesByTag(state.keyword, date), (newData) {
       if (newData.isEmpty) {
         state = state.copyWith(pageState: isRefresh ? PageState.empty : PageState.noMore);
         return;
       }
-      int page;
-      List<GalleryImage> list;
+      List<Template> list;
       if (isRefresh) {
-        page = 1;
         list = newData;
       } else {
         list = state.images..addAll(newData);
       }
-      page = state.pageIndex + 1;
       state = state.copyWith(
         pageState: PageState.dataLoaded,
         images: list,
-        pageIndex: page,
+        lastTimestamp: list.isEmpty ? null : list.last.featuredAt,
       );
     }, (error) {
       state = state.copyWith(error: error);
@@ -87,4 +85,3 @@ class SearchPageViewModel extends StateNotifier<SearchPageModelState> {
     });
   }
 }
-

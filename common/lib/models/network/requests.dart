@@ -91,6 +91,30 @@ class ChangeUserInfoRequest {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
+class CreateTemplateRequest {
+  String frameHeight;
+  String frameWidth;
+  String frameX;
+  String frameY;
+  List<String>? tags;
+  String imageKey;
+  String textColor;
+
+  CreateTemplateRequest(
+      {required this.frameHeight,
+      required this.frameWidth,
+      required this.frameX,
+      required this.frameY,
+      this.tags,
+      required this.imageKey,
+      required this.textColor});
+
+  factory CreateTemplateRequest.fromJson(Map<String, dynamic> json) => _$CreateTemplateRequestFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CreateTemplateRequestToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
 class RefreshTokenRequest {
   String refreshToken;
 
@@ -100,4 +124,3 @@ class RefreshTokenRequest {
 
   Map<String, dynamic> toJson() => _$RefreshTokenRequestToJson(this);
 }
-

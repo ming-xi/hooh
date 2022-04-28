@@ -1,15 +1,14 @@
 import 'dart:async';
 
 import 'package:app/providers.dart';
-import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/splash.dart';
-import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:common/utils/device_info.dart';
 import 'package:common/utils/preferences.dart';
 
 // import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -21,7 +20,9 @@ void main() async {
   // 保留开屏页
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await _initUtils();
-  runApp(const ProviderScope(child: MyApp()));
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
+    runApp(const ProviderScope(child: HoohApp()));
+  });
 }
 
 Future<void> _initUtils() async {
@@ -38,8 +39,8 @@ Future<void> _initSyncUtils() async {
 ///不需要同步初始化的工具类
 void _initASyncUtils() {}
 
-class MyApp extends ConsumerStatefulWidget {
-  const MyApp({
+class HoohApp extends ConsumerStatefulWidget {
+  const HoohApp({
     Key? key,
   }) : super(key: key);
 
@@ -47,7 +48,7 @@ class MyApp extends ConsumerStatefulWidget {
   ConsumerState createState() => _MyAppState();
 }
 
-class _MyAppState extends ConsumerState<MyApp> {
+class _MyAppState extends ConsumerState<HoohApp> {
   @override
   Widget build(BuildContext context) {
     var oldThemeData = ThemeData(

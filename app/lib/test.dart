@@ -5,8 +5,9 @@ import 'dart:io';
 import 'package:app/extensions/extensions.dart';
 import 'package:app/providers.dart';
 import 'package:app/test_uploading_view_model.dart';
+import 'package:app/ui/pages/creation/template_add_tag.dart';
+import 'package:app/ui/pages/creation/template_text_setting.dart';
 import 'package:app/ui/pages/user/register/set_badge.dart';
-import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/ipfs_node.dart';
 import 'package:app/ui/widgets/toast.dart';
@@ -21,11 +22,26 @@ import 'package:pretty_json/pretty_json.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
-class TestMenuScreen extends ConsumerWidget {
-  const TestMenuScreen({Key? key}) : super(key: key);
+class TestMenuScreen extends ConsumerStatefulWidget {
+  const TestMenuScreen({
+    Key? key,
+  }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState createState() => _TestMenuScreenState();
+}
+
+class _TestMenuScreenState extends ConsumerState<TestMenuScreen> {
+  late int networkType;
+
+  @override
+  void initState() {
+    super.initState();
+    networkType = preferences.getInt(Preferences.KEY_SERVER) ?? Network.TYPE_PRODUCTION;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text("test menu"),
@@ -35,6 +51,14 @@ class TestMenuScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            ElevatedButton(
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => TemplateAddTagScreen()));
+                },
+                child: Text("test screen")),
+            SizedBox(
+              height: 16,
+            ),
             ElevatedButton(
                 onPressed: () {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => TestUploadingAvatarScreen()));
@@ -58,6 +82,41 @@ class TestMenuScreen extends ConsumerWidget {
             SizedBox(
               height: 16,
             ),
+            ElevatedButton(
+                onPressed: () {
+                  preferences.remove(Preferences.KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED);
+                  Toast.showSnackBar(context, "cleared");
+                },
+                child: Text("clear onboarding record")),
+            SizedBox(
+              height: 16,
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: Text("choose server:"),
+                ),
+                DropdownButton<int>(
+                  value: networkType,
+                  items: [Network.TYPE_LOCAL, Network.TYPE_STAGING, Network.TYPE_PRODUCTION]
+                      .map((e) => DropdownMenuItem<int>(
+                            child: Text(Network.SERVER_HOST_NAMES[e]!),
+                            value: e,
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    if (value == null) {
+                      return;
+                    }
+                    preferences.putInt(Preferences.KEY_SERVER, value);
+                    network.reloadServerType();
+                    setState(() {
+                      networkType = value;
+                    });
+                  },
+                ),
+              ],
+            )
           ],
         ),
       ),
@@ -237,7 +296,8 @@ class _TestScreenState extends ConsumerState<TestUploadingAvatarScreen> {
             children: [
               HoohImage(
                 imageUrl: imageUrl,
-                size: 100,
+                width: 100,
+                height: 100,
               ),
               SizedBox(
                 height: 24,
@@ -259,6 +319,16 @@ class _TestScreenState extends ConsumerState<TestUploadingAvatarScreen> {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => SetBadgeScreen()));
                 },
                 child: Text("login"),
+                style: RegisterStyles.blackButtonStyle(ref),
+              ),
+              SizedBox(
+                height: 16,
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => SetBadgeScreen()));
+                },
+                child: Text("change badge"),
                 style: RegisterStyles.blackButtonStyle(ref),
               ),
               SizedBox(

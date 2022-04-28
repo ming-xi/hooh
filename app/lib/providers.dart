@@ -33,6 +33,19 @@ final globalLightTheme = ThemeData(
       TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
       TargetPlatform.macOS: FadeUpwardsPageTransitionsBuilder(),
     }),
+    dialogTheme: DialogTheme(
+      backgroundColor: designColors.light_01.light,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(24))),
+    ),
+    checkboxTheme: CheckboxThemeData(
+        checkColor: MaterialStateProperty.all(designColors.light_01.light),
+        fillColor: MaterialStateProperty.all(designColors.dark_01.light),
+        side: BorderSide(color: designColors.dark_01.light, width: 1),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+            Radius.circular(4),
+          ),
+        )),
     textButtonTheme: TextButtonThemeData(
         style: ButtonStyle(
             textStyle: MaterialStateProperty.all(
@@ -56,6 +69,19 @@ final globalDarkTheme = ThemeData(
     pageTransitionsTheme: const PageTransitionsTheme(builders: {
       TargetPlatform.android: CupertinoPageTransitionsBuilder(),
     }),
+    dialogTheme: DialogTheme(
+      backgroundColor: designColors.light_01.dark,
+      shape: const RoundedRectangleBorder(borderRadius: const BorderRadius.all(Radius.circular(24))),
+    ),
+    checkboxTheme: CheckboxThemeData(
+        checkColor: MaterialStateProperty.all(designColors.light_01.dark),
+        fillColor: MaterialStateProperty.all(designColors.dark_01.dark),
+        side: BorderSide(color: designColors.dark_01.dark, width: 1),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+            Radius.circular(4),
+          ),
+        )),
     textButtonTheme: TextButtonThemeData(
         style: ButtonStyle(
             textStyle: MaterialStateProperty.all(

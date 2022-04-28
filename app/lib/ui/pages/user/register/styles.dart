@@ -3,6 +3,74 @@ import 'package:app/utils/design_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+class MainStyles {
+  static BoxDecoration gradientBlueButtonDecoration({double cornerRadius = 24}) {
+    return BoxDecoration(
+      gradient: const LinearGradient(colors: [
+        Color(0xFF0167F9),
+        Color(0xFF20E0C2),
+      ], begin: Alignment.topLeft, end: Alignment.bottomRight),
+      borderRadius: BorderRadius.circular(cornerRadius),
+    );
+  }
+
+  static Widget gradientButton(WidgetRef ref, String text, Function() onPressed, {double cornerRadius = 24}) {
+    return Ink(
+      decoration: gradientBlueButtonDecoration(cornerRadius: cornerRadius),
+      child: InkWell(
+        borderRadius: BorderRadius.all(Radius.circular(cornerRadius)),
+        onTap: onPressed,
+        child: Container(
+          constraints: BoxConstraints(minHeight: 64),
+          child: Center(
+              child: Text(
+            text,
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+          )),
+        ),
+      ),
+    );
+  }
+
+  static Widget outlinedButton(WidgetRef ref, String text, Function() onPressed) {
+    return TextButton(
+      onPressed: onPressed,
+      child: Text(text),
+      style: outlineButtonStyle(ref),
+    );
+  }
+
+  static ButtonStyle outlineButtonStyle(WidgetRef ref) {
+    return ButtonStyle(
+        backgroundColor: MaterialStateProperty.resolveWith<Color>((states) {
+          if (states.contains(MaterialState.disabled)) {
+            return designColors.light_01.auto(ref).withOpacity(0.5);
+          } else {
+            return designColors.light_01.auto(ref);
+          }
+        }),
+        foregroundColor: MaterialStateProperty.resolveWith<Color>((states) {
+          if (states.contains(MaterialState.disabled)) {
+            return designColors.light_06.auto(ref).withOpacity(0.5);
+          } else {
+            return designColors.light_06.auto(ref);
+          }
+        }),
+        overlayColor: MaterialStateProperty.all(designColors.dark_01.auto(ref).withOpacity(0.2)),
+        shape: MaterialStateProperty.resolveWith<OutlinedBorder>((states) {
+          if (states.contains(MaterialState.disabled)) {
+            return RoundedRectangleBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(22.0)), side: BorderSide(color: designColors.light_06.auto(ref).withOpacity(0.5)));
+          } else {
+            return RoundedRectangleBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(22.0)), side: BorderSide(color: designColors.light_06.auto(ref)));
+          }
+        }),
+        minimumSize: MaterialStateProperty.all(const Size.fromHeight(64)),
+        textStyle: MaterialStateProperty.all(ref.watch(globalThemeDataProvider.state).state.textTheme.button!.copyWith(fontSize: 20)));
+  }
+}
+
 class RegisterStyles {
   static TextStyle titleTextStyle(WidgetRef ref) {
     return ref

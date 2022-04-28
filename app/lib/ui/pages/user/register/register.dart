@@ -7,6 +7,7 @@ import 'package:app/ui/pages/user/register/set_badge.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/pages/user/web_view.dart';
 import 'package:app/ui/widgets/toast.dart';
+import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/utils/preferences.dart';
@@ -178,8 +179,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 MaterialPageRoute(builder: (context) => SetBadgeScreen()),
                                 (route) => false,
                               );
-                            }, onFailed: () {
+                            }, onFailed: (error) {
                               Navigator.of(context).pop();
+                              if (error.errorCode == Constants.USERNAME_ALREADY_REGISTERED) {
+                                usernameNode.requestFocus();
+                              } else if (error.errorCode == Constants.EMAIL_ALREADY_VALIDATED) {
+                                emailNode.requestFocus();
+                              }
                             });
                           },
                     child: const Text('Agree and sign up'),
@@ -215,11 +221,5 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         ],
       ),
     );
-  }
-
-  bool checkMobileNumber(String mobile) {
-    // String? match = RegExp(r"/^(\+\d{1,3}[- ]?)?\d{10}$/").stringMatch(mobile);
-    // return match != null && match == mobile;
-    return true;
   }
 }

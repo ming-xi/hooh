@@ -80,8 +80,7 @@ class _StartScreenState extends ConsumerState<StartScreen> {
                     ),
                     TextButton(
                         onPressed: () {
-                          String hasSkipped = "hasSkipped";
-                          preferences.putBool(hasSkipped, true);
+                          preferences.putBool(Preferences.KEY_USER_HAS_SKIPPED_LOGIN, true);
                           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen()));
                         },
                         child: Text('Skip', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey))),

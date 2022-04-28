@@ -3,17 +3,18 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:common/models/gallery_category.dart';
-import 'package:common/models/gallery_image.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/network/requests.dart';
 import 'package:common/models/network/responses.dart';
 import 'package:common/models/social_badge.dart';
+import 'package:common/models/template.dart';
 import 'package:common/models/user.dart';
+import 'package:common/utils/date_util.dart';
 import 'package:common/utils/device_info.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:pretty_json/pretty_json.dart';
 
@@ -28,11 +29,29 @@ class Network {
     _prepareHttpClient();
   }
 
-  // static const host = "api.fygtapp.cn";
-  static const host = "stgapi.hooh.zone";
+  static const HOST_LOCAL = "192.168.31.136:8080";
+  static const HOST_STAGING = "stgapi.hooh.zone";
+  static const HOST_PRODUCTION = "api.hooh.zone";
+  static const SERVER_HOSTS = {
+    TYPE_LOCAL: HOST_LOCAL,
+    TYPE_STAGING: HOST_STAGING,
+    TYPE_PRODUCTION: HOST_PRODUCTION,
+  };
+  static const SERVER_HOST_NAMES = {
+    TYPE_LOCAL: "LOCAL",
+    TYPE_STAGING: "STAGING",
+    TYPE_PRODUCTION: "PRODUCTION",
+  };
 
-  // static const serverPathPrefix = "v2/";
-  static const serverPathPrefix = "";
+  static const TYPE_LOCAL = 0;
+  static const TYPE_STAGING = 1;
+  static const TYPE_PRODUCTION = 2;
+
+  static const SERVER_PATH_PREFIX = "";
+  static const DEFAULT_PAGE_SIZE = 20;
+  static const DEFAULT_PAGE = 1;
+
+  late int serverType;
 
   late final http.Client _client;
   bool _isUsingLocalServer = false;
@@ -47,6 +66,10 @@ class Network {
 
   void setUserToken(String token) {
     preferences.putString(Preferences.KEY_USER_ACCESS_TOKEN, token);
+  }
+
+  void reloadServerType() {
+    serverType = preferences.getInt(Preferences.KEY_SERVER) ?? TYPE_PRODUCTION;
   }
 
   String getS3ImageKey(String? url) {
@@ -159,14 +182,14 @@ class Network {
   }
 
   Future<void> followUser(String userId) {
-    return _getResponseObject<User>(
+    return _getResponseObject<void>(
       HttpMethod.put,
       _buildHoohUri("users/$userId/follow"),
     );
   }
 
   Future<void> cancelFollowUser(String userId) {
-    return _getResponseObject<User>(
+    return _getResponseObject<void>(
       HttpMethod.delete,
       _buildHoohUri("users/$userId/follow"),
     );
@@ -182,29 +205,97 @@ class Network {
 
   //endregion
 
-//region old api
+  //region template
+  static const SEARCH_TEMPLATE_TYPE_RECENT = 0;
+  static const SEARCH_TEMPLATE_TYPE_TRENDING = 1;
+  static const SEARCH_TEMPLATE_TYPE_FAVORITED = 2;
+  static const SEARCH_TEMPLATE_TYPES = [
+    SEARCH_TEMPLATE_TYPE_RECENT,
+    SEARCH_TEMPLATE_TYPE_TRENDING,
+    SEARCH_TEMPLATE_TYPE_FAVORITED,
+  ];
 
-  Future<List<GalleryCategory>> getGalleryCategoryList() {
-    return _getResponseList<GalleryCategory>(HttpMethod.get, _buildHoohUri("gallery/categoriesV4"), deserializer: GalleryCategory.fromJson);
+  Future<List<Template>> searchTemplatesByTag(String tag, DateTime date, {int size = DEFAULT_PAGE_SIZE}) {
+    Map<String, dynamic> params = {
+      "tag": tag,
+      "timestamp": DateUtil.getUtcDateString(date),
+      "size": size,
+    };
+    return _getResponseList<Template>(HttpMethod.get, _buildHoohUri("templates/search", params: params), deserializer: Template.fromJson);
   }
 
-  Future<List<GalleryImage>> getGalleryImageList(String id, int page, int width, {int size = 20}) {
-    return _getResponseList<GalleryImage>(
-        HttpMethod.get, _buildHoohUri("gallery/categories/$id/imagesV3", params: {"page": page, "width": width, "size": size}),
-        deserializer: GalleryImage.fromJson);
+  Future<List<Template>> searchTemplatesByType(int type, {DateTime? date, int page = 1, int size = DEFAULT_PAGE_SIZE}) {
+    if (!SEARCH_TEMPLATE_TYPES.contains(type)) {
+      throw Exception("invalid type: $type");
+    }
+    Map<String, dynamic> params = {
+      "type": type,
+      "size": size,
+    };
+    if (type == SEARCH_TEMPLATE_TYPE_TRENDING) {
+      params["page"] = page;
+    } else {
+      params["timestamp"] = DateUtil.getUtcDateString(date!);
+    }
+    return _getResponseList<Template>(HttpMethod.get, _buildHoohUri("templates/search", params: params), deserializer: Template.fromJson);
   }
 
-  Future<List<GalleryImage>> searchGalleryImageList(String key, int page, int width, bool showFavoriteStatus, {int size = 20}) {
-    return _getResponseList<GalleryImage>(HttpMethod.get,
-        _buildHoohUri("gallery/images/query", params: {"page": page, "width": width, "size": size, "key": key, "show_favorite_status": showFavoriteStatus}),
-        deserializer: GalleryImage.fromJson);
+  Future<List<RecommendedTag>> getRecommendedTags() {
+    return _getResponseList(HttpMethod.get, _buildHoohUri("templates/recommended-tags"), deserializer: RecommendedTag.fromJson);
   }
 
-  Future<void> setGalleryImageFavorite(String id, bool favorite) {
-    return _getResponseObject<void>(favorite ? HttpMethod.put : HttpMethod.delete, _buildHoohUri("gallery/images/$id/favorite"));
+  Future<RequestUploadingFileResponse> requestUploadingTemplate(File file) {
+    String fileMd5 = md5.convert(file.readAsBytesSync()).toString().toLowerCase();
+    String ext = file.path;
+    debugPrint("upload file md5=$fileMd5 path=$ext");
+    ext = ext.substring(ext.lastIndexOf(".") + 1);
+    return _getResponseObject<RequestUploadingFileResponse>(HttpMethod.post, _buildHoohUri("templates/request-uploading-template"),
+        body: RequestUploadingFileRequest(fileMd5, ext).toJson(), deserializer: RequestUploadingFileResponse.fromJson);
   }
 
-//endregion
+  Future<Template> createTemplate(CreateTemplateRequest request) {
+    return _getResponseObject<Template>(HttpMethod.post, _buildHoohUri("templates/create"), body: request.toJson(), deserializer: Template.fromJson);
+  }
+
+  Future<void> favoriteTemplate(String templateId) {
+    return _getResponseObject<void>(
+      HttpMethod.put,
+      _buildHoohUri("templates/$templateId/favorite"),
+    );
+  }
+
+  Future<void> cancelFavoriteTemplate(String templateId) {
+    return _getResponseObject<void>(
+      HttpMethod.delete,
+      _buildHoohUri("templates/$templateId/favorite"),
+    );
+  }
+
+  //endregion
+//
+//   //region old api
+//
+//   Future<List<GalleryCategory>> getGalleryCategoryList() {
+//     return _getResponseList<GalleryCategory>(HttpMethod.get, _buildHoohUri("gallery/categoriesV4"), deserializer: GalleryCategory.fromJson);
+//   }
+//
+//   Future<List<GalleryImage>> getGalleryImageList(String id, int page, int width, {int size = 20}) {
+//     return _getResponseList<GalleryImage>(
+//         HttpMethod.get, _buildHoohUri("gallery/categories/$id/imagesV3", params: {"page": page, "width": width, "size": size}),
+//         deserializer: GalleryImage.fromJson);
+//   }
+//
+//   Future<List<GalleryImage>> searchGalleryImageList(String key, int page, int width, bool showFavoriteStatus, {int size = 20}) {
+//     return _getResponseList<GalleryImage>(HttpMethod.get,
+//         _buildHoohUri("gallery/images/query", params: {"page": page, "width": width, "size": size, "key": key, "show_favorite_status": showFavoriteStatus}),
+//         deserializer: GalleryImage.fromJson);
+//   }
+//
+//   Future<void> setGalleryImageFavorite(String id, bool favorite) {
+//     return _getResponseObject<void>(favorite ? HttpMethod.put : HttpMethod.delete, _buildHoohUri("gallery/images/$id/favorite"));
+//   }
+//
+// //endregion
   //region upload and download file
 
   Future<bool> uploadFile(String url, Uint8List fileBytes) async {
@@ -306,11 +397,17 @@ class Network {
       }
     } catch (e) {
       print(e);
-      return;
+      rethrow;
     }
     dynamic returnedJson;
     try {
-      returnedJson = jsonDecode(utf8.decode(response.bodyBytes));
+      if (response.bodyBytes.isNotEmpty) {
+        returnedJson = jsonDecode(utf8.decode(response.bodyBytes));
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+    try {
       logResponse(id, response, returnedJson);
     } catch (e) {
       debugPrint(e.toString());
@@ -333,13 +430,13 @@ class Network {
     }
   }
 
-  void logResponse(int id, http.Response response, returnedJson) {
-    debugPrint("[RESPONSE $id] HTTP ${response.statusCode}\njson=${prettyJson(returnedJson)}");
+  void logResponse(int id, http.Response response, dynamic returnedJson) {
+    debugPrint("[RESPONSE $id] HTTP ${response.statusCode}\njson=${returnedJson == null ? "null" : prettyJson(returnedJson)}");
   }
 
   void logRequest(int id, HttpMethod method, Uri uri, Map<String, dynamic>? body) {
     debugPrint(
-        "[REQUEST  $id] ${method.name.toUpperCase()} url=${uri.toString()},\n query:${"\n" + prettyJson(uri.queryParameters)},\n body:${body == null ? "" : ("\n" + prettyJson(body))}");
+        "[REQUEST  $id] ${method.name.toUpperCase()} url=${uri.toString()},\n query:${"\n" + prettyJson(uri.queryParameters)},\n body:${body == null ? "null" : ("\n" + prettyJson(body))}");
   }
 
   Uri _buildUri(bool ssl, String host, String path, {Map<String, dynamic>? params}) {
@@ -348,11 +445,12 @@ class Network {
   }
 
   Uri _buildHoohUri(String path, {bool hasPrefix = true, Map<String, dynamic>? params}) {
-    var unencodedPath = (hasPrefix ? serverPathPrefix : "") + path;
-    return _buildUri(true, host, unencodedPath, params: params);
+    String unencodedPath = (hasPrefix ? SERVER_PATH_PREFIX : "") + path;
+    return _buildUri(serverType != TYPE_LOCAL, SERVER_HOSTS[serverType] ?? HOST_PRODUCTION, unencodedPath, params: params);
   }
 
   void _prepareHttpClient() {
+    reloadServerType();
     _client = http.Client();
   }
 //endregion

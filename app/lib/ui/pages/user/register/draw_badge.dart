@@ -5,6 +5,7 @@ import 'package:app/ui/pages/user/register/draw_badge_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/draw_badge_view.dart';
 import 'package:app/utils/design_colors.dart';
+import 'package:app/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -97,11 +98,11 @@ class _DrawBadgeScreenState extends ConsumerState<DrawBadgeScreen> {
         mainAxisSize: MainAxisSize.max,
         children: [
           Spacer(flex: 2),
-          RegisterStyles.rainbowButton(ref, icon: SvgPicture.asset('assets/images/badge_clear.svg', height: 30), onPress: () {}),
+          RegisterStyles.rainbowButton(ref, icon: HoohIcon('assets/images/badge_clear.svg', height: 30), onPress: () {}),
           SizedBox(
             width: 24,
           ),
-          RegisterStyles.rainbowButton(ref, icon: SvgPicture.asset('assets/images/badge_revert.svg', height: 28), onPress: () {}),
+          RegisterStyles.rainbowButton(ref, icon: HoohIcon('assets/images/badge_revert.svg', height: 28), onPress: () {}),
           Spacer(
             flex: 1,
           ),
@@ -172,17 +173,17 @@ class _DrawBadgeScreenState extends ConsumerState<DrawBadgeScreen> {
     // );
   }
 
-  Uint8List? combineLayers(List<Uint8List>? fileBytes) {
-    if (fileBytes == null) {
-      return null;
-    }
-    img.Image first = img.decodePng(fileBytes[0])!;
-    for (int i = 1; i < fileBytes.length; i++) {
-      img.Image image = img.decodePng(fileBytes[i])!;
-      img.copyInto(first, image);
-    }
-    return Uint8List.fromList(img.encodePng(first));
-  }
+  // Uint8List? combineLayers(List<Uint8List>? fileBytes) {
+  //   if (fileBytes == null) {
+  //     return null;
+  //   }
+  //   img.Image first = img.decodePng(fileBytes[0])!;
+  //   for (int i = 1; i < fileBytes.length; i++) {
+  //     img.Image image = img.decodePng(fileBytes[i])!;
+  //     img.copyInto(first, image);
+  //   }
+  //   return Uint8List.fromList(img.encodePng(first));
+  // }
 
   Widget buildGridView(DrawBadgeModelState modelState, DrawBadgeViewModel model) {
     BorderRadius borderRadius = BorderRadius.circular(16);

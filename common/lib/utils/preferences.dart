@@ -11,6 +11,8 @@ class Preferences {
   static const KEY_USER_HAS_SKIPPED_LOGIN = "KEY_USER_HAS_SKIPPED_LOGIN";
   static const KEY_USER_INFO = "KEY_USER_INFO";
   static const KEY_DARK_MODE = "KEY_DARK_MODE";
+  static const KEY_SERVER = "KEY_SERVER";
+  static const KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED = "KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED";
 
   Future<void> init() async {
     // SharedPreferences.getInstance().then((value) {
@@ -47,35 +49,39 @@ class Preferences {
     return value;
   }
 
-  void putString(String key, String? value) {
+  void putString(String key, String? value) async {
     if (value == null) {
-      _prefs.remove(key);
+      await _prefs.remove(key);
       return;
     }
-    _prefs.setString(key, value);
+    await _prefs.setString(key, value);
   }
 
   void putInt(String key, int? value) async {
     if (value == null) {
-      _prefs.remove(key);
+      await _prefs.remove(key);
       return;
     }
-    _prefs.setInt(key, value);
+    await _prefs.setInt(key, value);
   }
 
   void putDouble(String key, double? value) async {
     if (value == null) {
-      _prefs.remove(key);
+      await _prefs.remove(key);
       return;
     }
-    _prefs.setDouble(key, value);
+    await _prefs.setDouble(key, value);
   }
 
   void putBool(String key, bool? value) async {
     if (value == null) {
-      _prefs.remove(key);
+      await _prefs.remove(key);
       return;
     }
-    _prefs.setBool(key, value);
+    await _prefs.setBool(key, value);
+  }
+
+  void remove(String key) async {
+    await _prefs.remove(key);
   }
 }

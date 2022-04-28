@@ -11,7 +11,7 @@ class SocialBadgeTemplateLayer {
 
   bool mutable;
 
-  double hue;
+  String hue;
 
   SocialBadgeTemplateLayer(this.layerIndex, this.imageUrl, this.mutable, this.hue);
 
