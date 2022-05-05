@@ -92,6 +92,7 @@ class _TemplateTextSettingScreenState extends ConsumerState<TemplateTextSettingS
     TemplateTextSettingPageModelState modelState = ref.watch(widget.provider);
     TemplateTextSettingPageViewModel model = ref.watch(widget.provider.notifier);
     TemplateTextSettingViewModel textSettingModel = ref.watch(widget.textSettingProvider.notifier);
+    TemplateTextSettingModelState textSettingModelState = ref.watch(widget.textSettingProvider);
     return Scaffold(
       appBar: AppBar(
         title: Text("text setting"),
@@ -103,6 +104,9 @@ class _TemplateTextSettingScreenState extends ConsumerState<TemplateTextSettingS
                     MaterialPageRoute(
                         builder: (context) => TemplateAddTagScreen(
                               imageFile: widget.imageFile,
+                              textSettingProvider: StateNotifierProvider((ref) {
+                                return TemplateTextSettingViewModel(textSettingModelState.copyWith(frameLocked: true));
+                              }),
                             )));
               },
               icon: Icon(Icons.arrow_forward))

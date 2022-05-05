@@ -4,11 +4,19 @@ part 'user.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class User {
+  // 注册步骤 0 完成设置密码， 1 完成设置社交徽章
   static const REGISTER_STEP_SET_SOCIAL_ICON = 0;
   static const REGISTER_STEP_COMPLETED = 1;
 
   String id;
   String name; // 昵称
+  String? username;
+  String? followerCount;
+  String? followingCount;
+  String? postCount;
+  String? publicPostCount;
+  String? likeCount;
+  String? commentCount;
   String? avatarUrl;
   String? signature;
   String? website;
@@ -17,7 +25,8 @@ class User {
 
   int? register_step;
 
-  User({required this.id, required this.name}); // 注册步骤 0 完成设置密码， 1 完成设置社交徽章
+  User(this.id, this.name, this.username, this.avatarUrl, this.signature, this.website, this.createdAt, this.register_step);
+
   bool hasFinishedRegisterSteps() {
     return register_step! == REGISTER_STEP_COMPLETED;
   }

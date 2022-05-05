@@ -34,6 +34,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint("_LoginScreenState build");
     LoginModelState modelState = ref.watch(widget.provider);
     LoginViewModel model = ref.watch(widget.provider.notifier);
     return Scaffold(
@@ -93,7 +94,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     focusNode: passwordNode,
                     style: RegisterStyles.inputTextStyle(ref),
                     decoration:
-                        RegisterStyles.passwordInputDecoration("Enter password", ref, passwordVisible: modelState.passwordVisible, onTogglePasswordVisible: () {
+                    RegisterStyles.passwordInputDecoration("Enter password", ref, passwordVisible: modelState.passwordVisible, onTogglePasswordVisible: () {
                       model.togglePasswordVisible();
                     }),
                     obscureText: !modelState.passwordVisible,
@@ -109,25 +110,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     onPressed: !modelState.loginButtonEnabled
                         ? null
                         : () {
-                            showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return LoadingDialog(LoadingDialogController());
-                                });
-                            model.login(context, usernameController.text, passwordController.text, onSuccess: (user) {
-                              ref.read(globalUserInfoProvider.state).state = user;
-                              preferences.putString(Preferences.KEY_USER_INFO, json.encode(user.toJson()));
-                              Navigator.of(context).pop();
-                              Toast.showSnackBar(context, "登录成功");
-                              if (user.hasFinishedRegisterSteps()) {
-                                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeScreen()), (route) => false);
-                              } else {
-                                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => SetBadgeScreen()), (route) => false);
-                              }
-                            }, onFailed: () {
-                              Navigator.of(context).pop();
-                            });
-                          },
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return LoadingDialog(LoadingDialogController());
+                          });
+                      model.login(context, usernameController.text, passwordController.text, onSuccess: (user) {
+                        ref.read(globalUserInfoProvider.state).state = user;
+                        preferences.putString(Preferences.KEY_USER_INFO, json.encode(user.toJson()));
+                        Navigator.of(context).pop();
+                        Toast.showSnackBar(context, "登录成功");
+                        if (user.hasFinishedRegisterSteps()) {
+                          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeScreen()), (route) => false);
+                        } else {
+                          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => SetBadgeScreen()), (route) => false);
+                        }
+                      }, onFailed: () {
+                        Navigator.of(context).pop();
+                      });
+                    },
                     child: const Text('Login'),
                   ),
                   GestureDetector(

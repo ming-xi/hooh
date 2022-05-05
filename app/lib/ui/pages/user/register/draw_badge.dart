@@ -90,7 +90,7 @@ class _DrawBadgeScreenState extends ConsumerState<DrawBadgeScreen> {
         child: Center(
           child: Text(
             "scroll blablablabla",
-            style: ref.read(globalThemeDataProvider.state).state.textTheme.bodyText1!.copyWith(color: designColors.light_06.auto(ref), fontSize: 16),
+            style: TextStyle(color: designColors.light_06.auto(ref), fontSize: 16),
           ),
         ),
       ),

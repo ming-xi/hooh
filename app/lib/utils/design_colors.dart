@@ -1,5 +1,6 @@
 import 'package:app/providers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 abstract class DesignColor {
@@ -27,7 +28,18 @@ class DayNightColor extends DesignColor {
 
   @override
   Color auto(WidgetRef ref) {
-    return ref.watch(globalDarkModeProvider.state).state ? dark : light;
+    int darkMode = ref.watch(globalDarkModeProvider.state).state;
+    switch (darkMode) {
+      case DARK_MODE_LIGHT:
+        return light;
+      case DARK_MODE_DARK:
+        return dark;
+      case DARK_MODE_SYSTEM:
+      default:
+        Brightness brightness = SchedulerBinding.instance!.window.platformBrightness;
+        // debugPrint("DesignColor brightness=$brightness");
+        return brightness == Brightness.light ? light : dark;
+    }
   }
 }
 

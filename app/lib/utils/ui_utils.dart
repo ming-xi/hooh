@@ -26,41 +26,54 @@ class HoohImage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return CachedNetworkImage(
+    var networkImage = CachedNetworkImage(
       width: width,
       fit: BoxFit.cover,
       height: height,
       cacheKey: network.getS3ImageKey(imageUrl),
-      imageBuilder: (context, imageProvider) => Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(cornerRadius),
-          image: DecorationImage(
-            image: imageProvider,
-            // colorFilter: ColorFilter.mode(Colors.red, BlendMode.colorBurn)
-          ),
-        ),
-      ),
       imageUrl: imageUrl,
-      progressIndicatorBuilder: (context, url, downloadProgress) => Center(
-          child: SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                value: downloadProgress.progress,
-                strokeWidth: 2,
-                color: designColors.feiyu_blue.auto(ref),
-              ))),
       errorWidget: errorWidget ??
-          (context, url, error) => Container(
-                color: Colors.white.withOpacity(0.5),
+          (context, url, error) {
+            var color = designColors.light_06.auto(ref);
+            return Container(
+              color: Colors.white.withOpacity(0.5),
+              child: SizedBox(
+                width: width,
+                height: height,
                 child: Center(
                   child: Column(
-                    children: [Icon(Icons.error), Text("error")],
+                    children: [
+                      Icon(
+                        Icons.error,
+                        color: color,
+                      ),
+                      Text(
+                        "error",
+                        style: TextStyle(color: color),
+                      )
+                    ],
                   ),
                 ),
               ),
-      placeholder: placeholderWidget,
+            );
+          },
+      placeholder: (context, url) {
+        return HoohIcon(
+          "assets/images/image_placeholder.png",
+          width: width,
+          height: height,
+        );
+        // return Container(color: Colors.red,);
+      },
     );
+    if (cornerRadius != null) {
+      return ClipRRect(
+        child: networkImage,
+        borderRadius: BorderRadius.circular(cornerRadius),
+      );
+    } else {
+      return networkImage;
+    }
   }
 }
 
@@ -74,12 +87,21 @@ class HoohIcon extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return SvgPicture.asset(
-      assetName,
-      width: width,
-      height: height,
-      color: color,
-    );
+    if (assetName.endsWith(".svg")) {
+      return SvgPicture.asset(
+        assetName,
+        width: width,
+        height: height,
+        color: color,
+      );
+    } else {
+      return Image.asset(
+        assetName,
+        width: width,
+        height: height,
+        color: color,
+      );
+    }
   }
 }
 

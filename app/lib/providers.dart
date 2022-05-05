@@ -4,15 +4,22 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 final StateProvider<User?> globalUserInfoProvider = StateProvider<User?>((ref) => null);
-
-final StateProvider<bool> globalDarkModeProvider = StateProvider((ref) {
-  return false;
+const DARK_MODE_SYSTEM = 0;
+const DARK_MODE_LIGHT = 1;
+const DARK_MODE_DARK = 2;
+const DARK_MODE_VALUES = [
+  DARK_MODE_SYSTEM,
+  DARK_MODE_LIGHT,
+  DARK_MODE_DARK,
+];
+final StateProvider<int> globalDarkModeProvider = StateProvider((ref) {
+  return DARK_MODE_SYSTEM;
 });
-final StateProvider<ThemeData> globalThemeDataProvider = StateProvider((ref) {
-  bool darkMode = ref.watch(globalDarkModeProvider.state).state;
-
-  return darkMode ? globalDarkTheme : globalLightTheme;
-});
+// final StateProvider<ThemeData> globalThemeDataProvider = StateProvider((ref) {
+//   int darkMode = ref.watch(globalDarkModeProvider.state).state;
+//
+//   return darkMode ? globalDarkTheme : globalLightTheme;
+// });
 final globalLightTheme = ThemeData(
     primaryColor: designColors.bar90_1.light,
     brightness: Brightness.light,

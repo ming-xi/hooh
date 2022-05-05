@@ -2,20 +2,22 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:app/extensions/extensions.dart';
+import 'package:app/providers.dart';
 import 'package:app/ui/pages/creation/template_adjust.dart';
 import 'package:app/ui/pages/gallery/search.dart';
 import 'package:app/ui/pages/home/home_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
+import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:blur/blur.dart';
 import 'package:common/models/page_state.dart';
 import 'package:common/models/template.dart';
+import 'package:common/models/user.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -89,7 +91,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
               showUploadDialog();
               return;
             } else {
-              goToCreateTemplateScreen();
+              _showLocalOptionActionSheet();
             }
           },
           backgroundColor: Colors.transparent,
@@ -272,13 +274,23 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
       //
       // }
 
-      _showLocalOptionActionSheet();
+      if (!(preferences.getBool(Preferences.KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED) ?? false)) {
+        showUploadDialog();
+        return;
+      } else {
+        _showLocalOptionActionSheet();
+      }
     } else {
       debugPrint("进入做图");
     }
   }
 
   Future<void> _showLocalOptionActionSheet() async {
+    User? user = ref.read(globalUserInfoProvider.state).state;
+    if (user == null) {
+      Toast.showSnackBar(context, "must login first");
+      return;
+    }
     if (Platform.isIOS || Platform.isMacOS) {
       CupertinoActionSheet actionSheet = CupertinoActionSheet(
         actions: [
@@ -314,25 +326,25 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
       showModalBottomSheet(
           context: context,
           builder: (context) => Wrap(
-                children: [
-                  ListTile(
-                    leading: Icon(Icons.camera),
-                    title: Text("Camera"),
-                    onTap: () {
-                      Navigator.pop(context);
-                      openImagePicker(ImageSource.camera);
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.image),
-                    title: Text("Gallery"),
-                    onTap: () {
-                      Navigator.pop(context);
-                      openImagePicker(ImageSource.gallery);
-                    },
-                  ),
-                ],
-              ));
+            children: [
+              ListTile(
+                leading: Icon(Icons.camera),
+                title: Text("Camera"),
+                onTap: () {
+                  Navigator.pop(context);
+                  openImagePicker(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.image),
+                title: Text("Gallery"),
+                onTap: () {
+                  Navigator.pop(context);
+                  openImagePicker(ImageSource.gallery);
+                },
+              ),
+            ],
+          ));
     }
   }
 
@@ -359,10 +371,6 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
     if (croppedFile != null) {
       Navigator.push(context, MaterialPageRoute(builder: (context) => AdjustTemplatePositionScreen(croppedFile)));
     }
-  }
-
-  void goToCreateTemplateScreen() {
-    _showLocalOptionActionSheet();
   }
 
   void showUploadDialog() {
@@ -455,9 +463,9 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
                             ),
                             Expanded(
                               child: MainStyles.gradientButton(ref, "Confirm", () {
-                                preferences.putBool(Preferences.KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED, true);
+                                preferences.putBool(Preferences.KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED, modelState.agreementChecked);
                                 Navigator.pop(context);
-                                goToCreateTemplateScreen();
+                                _showLocalOptionActionSheet();
                               }),
                             ),
                           ],

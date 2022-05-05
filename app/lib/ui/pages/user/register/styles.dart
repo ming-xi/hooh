@@ -4,19 +4,23 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class MainStyles {
-  static BoxDecoration gradientBlueButtonDecoration({double cornerRadius = 24}) {
+  static BoxDecoration gradientBlueButtonDecoration({double cornerRadius = 24, bool enabled = true}) {
+    var colors = [
+      Color(0xFF0167F9),
+      Color(0xFF20E0C2),
+    ];
+    if (!enabled) {
+      colors = colors.map((e) => e.withOpacity(0.5)).toList();
+    }
     return BoxDecoration(
-      gradient: const LinearGradient(colors: [
-        Color(0xFF0167F9),
-        Color(0xFF20E0C2),
-      ], begin: Alignment.topLeft, end: Alignment.bottomRight),
+      gradient: LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight),
       borderRadius: BorderRadius.circular(cornerRadius),
     );
   }
 
-  static Widget gradientButton(WidgetRef ref, String text, Function() onPressed, {double cornerRadius = 24}) {
+  static Widget gradientButton(WidgetRef ref, String text, Function()? onPressed, {double cornerRadius = 24}) {
     return Ink(
-      decoration: gradientBlueButtonDecoration(cornerRadius: cornerRadius),
+      decoration: gradientBlueButtonDecoration(cornerRadius: cornerRadius, enabled: onPressed != null),
       child: InkWell(
         borderRadius: BorderRadius.all(Radius.circular(cornerRadius)),
         onTap: onPressed,
@@ -29,6 +33,17 @@ class MainStyles {
           )),
         ),
       ),
+    );
+  }
+
+  static Widget blueButton(WidgetRef ref, String text, Function()? onPressed, {double? cornerRadius}) {
+    return TextButton(
+      onPressed: onPressed,
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      ),
+      style: RegisterStyles.blueButtonStyle(ref, cornerRadius: cornerRadius),
     );
   }
 
@@ -67,34 +82,29 @@ class MainStyles {
           }
         }),
         minimumSize: MaterialStateProperty.all(const Size.fromHeight(64)),
-        textStyle: MaterialStateProperty.all(ref.watch(globalThemeDataProvider.state).state.textTheme.button!.copyWith(fontSize: 20)));
+        textStyle: MaterialStateProperty.all(TextStyle(fontSize: 20)));
   }
 }
 
 class RegisterStyles {
   static TextStyle titleTextStyle(WidgetRef ref) {
-    return ref
-        .watch(globalThemeDataProvider.state)
-        .state
-        .textTheme
-        .bodyText1!
-        .copyWith(fontSize: 16, color: designColors.dark_01.auto(ref), fontWeight: FontWeight.bold);
+    return TextStyle(fontSize: 16, color: designColors.dark_01.auto(ref), fontWeight: FontWeight.bold);
   }
 
   static TextStyle inputTextStyle(WidgetRef ref) {
-    return ref.watch(globalThemeDataProvider.state).state.textTheme.bodyText1!.copyWith(fontSize: 16, color: designColors.dark_01.auto(ref));
+    return TextStyle(fontSize: 16, color: designColors.dark_01.auto(ref));
   }
 
   static TextStyle hintTextStyle(WidgetRef ref) {
-    return ref.watch(globalThemeDataProvider.state).state.textTheme.bodyText1!.copyWith(fontSize: 16, color: designColors.dark_03.auto(ref));
+    return TextStyle(fontSize: 16, color: designColors.dark_03.auto(ref));
   }
 
   static TextStyle descriptionTextStyle(WidgetRef ref) {
-    return ref.watch(globalThemeDataProvider.state).state.textTheme.bodyText1!.copyWith(fontSize: 16, color: designColors.feiyu_blue.auto(ref));
+    return TextStyle(fontSize: 16, color: designColors.feiyu_blue.auto(ref));
   }
 
   static TextStyle errorTextStyle(WidgetRef ref) {
-    return ref.watch(globalThemeDataProvider.state).state.textTheme.bodyText1!.copyWith(fontSize: 16, color: designColors.orange.auto(ref));
+    return TextStyle(fontSize: 16, color: designColors.orange.auto(ref));
   }
 
   static InputDecoration commonInputDecoration(String hint, WidgetRef ref, {String? helperText, String? errorText}) {
@@ -120,15 +130,20 @@ class RegisterStyles {
     ));
   }
 
-  static ButtonStyle blueButtonStyle(WidgetRef ref) {
+  static ButtonStyle blueButtonStyle(WidgetRef ref, {double? cornerRadius}) {
     return TextButton.styleFrom(
         // primary: designColors.light_01.auto(ref),
         // onSurface: designColors.light_01.auto(ref),
+        shape: cornerRadius == null
+            ? null
+            : RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(cornerRadius)),
+              ),
         primary: Colors.white,
         onSurface: Colors.white,
         minimumSize: const Size.fromHeight(64),
         backgroundColor: designColors.feiyu_blue.auto(ref),
-        textStyle: ref.watch(globalThemeDataProvider.state).state.textTheme.bodyText1!.copyWith(fontSize: 16));
+        textStyle: TextStyle(fontSize: 16));
   }
 
   static ButtonStyle appbarTextButtonStyle(WidgetRef ref) {
@@ -136,10 +151,12 @@ class RegisterStyles {
         primary: designColors.feiyu_blue.auto(ref),
         onSurface: designColors.feiyu_blue.auto(ref),
         backgroundColor: Colors.transparent,
-        textStyle: ref.watch(globalThemeDataProvider.state).state.textTheme.bodyText1!.copyWith(fontSize: 16));
+        textStyle: TextStyle(fontSize: 16));
   }
 
   static ButtonStyle blackButtonStyle(WidgetRef ref) {
+    var color = MaterialStateProperty.all(designColors.light_01.auto(ref));
+    debugPrint("blackButtonStyle result=$color");
     return ButtonStyle(
         backgroundColor: MaterialStateProperty.resolveWith<Color>((states) {
           if (states.contains(MaterialState.disabled)) {
@@ -148,14 +165,13 @@ class RegisterStyles {
             return designColors.dark_01.auto(ref);
           }
         }),
-        foregroundColor: MaterialStateProperty.all(designColors.light_01.auto(ref)),
+        foregroundColor: color,
         overlayColor: MaterialStateProperty.all(designColors.light_01.auto(ref).withOpacity(0.2)),
         shape: MaterialStateProperty.all(const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(22.0)),
         )),
         minimumSize: MaterialStateProperty.all(const Size.fromHeight(64)),
-        textStyle:
-            MaterialStateProperty.all(ref.watch(globalThemeDataProvider.state).state.textTheme.button!.copyWith(fontSize: 20, fontWeight: FontWeight.bold)));
+        textStyle: MaterialStateProperty.all(TextStyle(fontSize: 20, fontWeight: FontWeight.bold)));
 
     // return TextButton.styleFrom(
     //     primary: designColors.light_01.auto(ref),
@@ -165,10 +181,12 @@ class RegisterStyles {
     //     shape: const RoundedRectangleBorder(
     //       borderRadius: BorderRadius.all(Radius.circular(22.0)),
     //     ),
-    //     textStyle: ref.watch(globalThemeDataProvider.state).state.textTheme.button!.copyWith(fontSize: 20, fontWeight: FontWeight.bold));
+    //     textStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold));
   }
 
   static ButtonStyle blackOutlineButtonStyle(WidgetRef ref) {
+    var color = MaterialStateProperty.all(designColors.light_01.auto(ref));
+    debugPrint("blackOutlineButtonStyle result=$color");
     // return TextButton.styleFrom(
     //     primary: designColors.dark_01.auto(ref),
     //     onSurface: designColors.dark_01.auto(ref),
@@ -176,7 +194,7 @@ class RegisterStyles {
     //     shape: RoundedRectangleBorder(borderRadius: const BorderRadius.all(Radius.circular(22.0)), side: BorderSide(color: designColors.dark_01.auto(ref))),
     //     minimumSize: const Size.fromHeight(64),
     //     side: BorderSide(width: 1, color: designColors.dark_01.auto(ref)),
-    //     textStyle: ref.watch(globalThemeDataProvider.state).state.textTheme.button!.copyWith(fontSize: 20, fontWeight: FontWeight.bold));
+    //     textStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold));
     return ButtonStyle(
         backgroundColor: MaterialStateProperty.resolveWith<Color>((states) {
           if (states.contains(MaterialState.disabled)) {
@@ -201,8 +219,7 @@ class RegisterStyles {
           }
         }),
         minimumSize: MaterialStateProperty.all(const Size.fromHeight(64)),
-        textStyle:
-            MaterialStateProperty.all(ref.watch(globalThemeDataProvider.state).state.textTheme.button!.copyWith(fontSize: 20, fontWeight: FontWeight.bold)));
+        textStyle: MaterialStateProperty.all(TextStyle(fontSize: 20, fontWeight: FontWeight.bold)));
   }
 
   static ButtonStyle rainbowOutlineButtonStyle(WidgetRef ref) {
@@ -212,7 +229,7 @@ class RegisterStyles {
         backgroundColor: designColors.light_01.auto(ref),
         shape: RoundedRectangleBorder(borderRadius: const BorderRadius.all(Radius.circular(22.0)), side: BorderSide(color: Colors.transparent)),
         minimumSize: const Size.fromHeight(64),
-        textStyle: ref.watch(globalThemeDataProvider.state).state.textTheme.button!.copyWith(fontSize: 20, fontWeight: FontWeight.bold));
+        textStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold));
   }
 
   static Widget rainbowButton(WidgetRef ref, {Widget? label, Widget? icon, Function()? onPress}) {
@@ -230,7 +247,7 @@ class RegisterStyles {
         backgroundColor: designColors.light_01.auto(ref),
         shape: RoundedRectangleBorder(borderRadius: const BorderRadius.all(Radius.circular(22.0)), side: BorderSide(color: Colors.transparent)),
         minimumSize: const Size.fromHeight(64),
-        textStyle: ref.watch(globalThemeDataProvider.state).state.textTheme.button!.copyWith(fontSize: 20, fontWeight: FontWeight.bold));
+        textStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold));
     Widget button;
 
     if (icon != null) {

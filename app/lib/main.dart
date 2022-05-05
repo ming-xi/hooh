@@ -8,6 +8,7 @@ import 'package:common/utils/preferences.dart';
 
 // import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -50,6 +51,15 @@ class HoohApp extends ConsumerStatefulWidget {
 
 class _MyAppState extends ConsumerState<HoohApp> {
   @override
+  void initState() {
+    super.initState();
+    // SchedulerBinding.instance!.window.onPlatformBrightnessChanged=(){
+    //   Brightness brightness = SchedulerBinding.instance!.window.platformBrightness;
+    //
+    // };
+  }
+
+  @override
   Widget build(BuildContext context) {
     var oldThemeData = ThemeData(
         primarySwatch: Colors.blue,
@@ -60,11 +70,13 @@ class _MyAppState extends ConsumerState<HoohApp> {
           iconTheme: IconThemeData(color: Colors.black),
           // shadowColor: Colors.transparent,
         ));
-    bool darkMode = ref.watch(globalDarkModeProvider.state).state;
+    int darkMode = ref.watch(globalDarkModeProvider.state).state;
+    Brightness brightness = SchedulerBinding.instance!.window.platformBrightness;
+    // debugPrint("DesignColor brightness=$brightness");
     return MaterialApp(
       theme: globalLightTheme,
       darkTheme: globalDarkTheme,
-      themeMode: darkMode ? ThemeMode.dark : ThemeMode.light,
+      themeMode: getThemeMode(darkMode),
       localizationsDelegates: const [
         AppLocalizations.delegate, // Add this line
         GlobalMaterialLocalizations.delegate,
@@ -92,12 +104,13 @@ class _MyAppState extends ConsumerState<HoohApp> {
                       shape: CircleBorder(),
                     ),
                     onPressed: () {
-                      bool dark = ref.read(globalDarkModeProvider.state).state;
-                      ref.read(globalDarkModeProvider.state).state = !dark;
-                      preferences.putBool(Preferences.KEY_DARK_MODE, !dark);
+                      int darkMode = ref.watch(globalDarkModeProvider.state).state;
+                      darkMode = cycleDarkMode(darkMode);
+                      ref.read(globalDarkModeProvider.state).state = darkMode;
+                      preferences.putInt(Preferences.KEY_DARK_MODE, darkMode);
                     },
                     child: Icon(
-                      darkMode ? Icons.light_mode : Icons.dark_mode,
+                      getIcon(darkMode),
                       color: designColors.dark_01.auto(ref),
                     )),
               ),
@@ -106,5 +119,37 @@ class _MyAppState extends ConsumerState<HoohApp> {
         ),
       ),
     );
+  }
+
+  IconData getIcon(int darkModeValue) {
+    switch (darkModeValue) {
+      case DARK_MODE_LIGHT:
+        return Icons.light_mode;
+      case DARK_MODE_DARK:
+        return Icons.dark_mode;
+      case DARK_MODE_SYSTEM:
+      default:
+        return Icons.brightness_medium;
+    }
+  }
+
+  ThemeMode getThemeMode(int darkModeValue) {
+    switch (darkModeValue) {
+      case DARK_MODE_LIGHT:
+        return ThemeMode.light;
+      case DARK_MODE_DARK:
+        return ThemeMode.dark;
+      case DARK_MODE_SYSTEM:
+      default:
+        return ThemeMode.system;
+    }
+  }
+
+  int cycleDarkMode(int current) {
+    current += 1;
+    if (current >= DARK_MODE_VALUES.length) {
+      current = 0;
+    }
+    return current;
   }
 }

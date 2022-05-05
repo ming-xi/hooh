@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class StartScreen extends ConsumerStatefulWidget {
-  const StartScreen({
+   StartScreen({
     Key? key,
   }) : super(key: key);
 
@@ -21,7 +21,7 @@ class StartScreen extends ConsumerStatefulWidget {
 class _StartScreenState extends ConsumerState<StartScreen> {
   @override
   Widget build(BuildContext context) {
-    debugPrint("color=${designColors.bar90_1.auto(ref).toHex()}");
+    debugPrint("_StartScreenState build");
     return Scaffold(
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,

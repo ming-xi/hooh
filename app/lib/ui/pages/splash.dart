@@ -29,7 +29,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         Duration(milliseconds: 0),
         () {
           String? jsonString = preferences.getString(Preferences.KEY_USER_INFO);
-          bool darkMode = preferences.getBool(Preferences.KEY_DARK_MODE) ?? false;
+          int darkMode = preferences.getInt(Preferences.KEY_DARK_MODE) ?? DARK_MODE_SYSTEM;
           ref.read(globalDarkModeProvider.state).state = darkMode;
           User? user;
           if (jsonString != null) {
@@ -40,7 +40,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             if (preferences.getBool(Preferences.KEY_USER_HAS_SKIPPED_LOGIN) ?? false) {
               Navigator.pushReplacement(context, pageRouteBuilder(HomeScreen()));
             } else {
-              Navigator.pushReplacement(context, pageRouteBuilder(const StartScreen()));
+              Navigator.pushReplacement(context, pageRouteBuilder(StartScreen()));
             }
           } else {
             if (user.hasFinishedRegisterSteps()) {

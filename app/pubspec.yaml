@@ -83,8 +83,8 @@ flutter_icons:
 
 flutter_native_splash:
   color: "#FFFFFF"
-  color_dark: "#000000"
-  image: assets/images/logo.png
+  color_dark: "#212121"
+  image: assets/images/splash_logo.png
 # The following section is specific to Flutter.
 flutter:
   generate: true # Add this line

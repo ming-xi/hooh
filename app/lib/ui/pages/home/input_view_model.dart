@@ -28,4 +28,6 @@ class InputPageViewModel extends StateNotifier<InputPageModelState> {
   InputPageViewModel(InputPageModelState state) : super(state) {
     // 如果需要加载时自动拉取数据，在这里调用
   }
+
+  void getBackgroundImage() {}
 }

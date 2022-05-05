@@ -6,6 +6,7 @@ import 'package:app/extensions/extensions.dart';
 import 'package:app/providers.dart';
 import 'package:app/test_uploading_view_model.dart';
 import 'package:app/ui/pages/creation/template_add_tag.dart';
+import 'package:app/ui/pages/creation/template_done.dart';
 import 'package:app/ui/pages/creation/template_text_setting.dart';
 import 'package:app/ui/pages/user/register/set_badge.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
@@ -53,7 +54,7 @@ class _TestMenuScreenState extends ConsumerState<TestMenuScreen> {
           children: [
             ElevatedButton(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => TemplateAddTagScreen()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => TemplateDoneScreen()));
                 },
                 child: Text("test screen")),
             SizedBox(
