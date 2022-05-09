@@ -1,3 +1,6 @@
 {
-  "helloWorld": "你好，世界"
+  "helloWorld": "你好，世界",
+  "me_follower": "粉丝",
+  "me_following": "关注",
+  "me_personal_socoal_icon": "个人社交徽章"
 }

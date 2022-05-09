@@ -46,26 +46,31 @@ class HoohImage extends ConsumerWidget {
       errorWidget: errorWidget ??
           (context, url, error) {
             var color = designColors.light_06.auto(ref);
-            return Container(
-              color: Colors.white.withOpacity(0.5),
-              child: SizedBox(
-                width: width,
-                height: height,
-                child: Center(
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.error,
-                        color: color,
-                      ),
-                      Text(
-                        "error",
-                        style: TextStyle(color: color),
-                      )
-                    ],
-                  ),
-                ),
-              ),
+            // return Container(
+            //   color: Colors.white.withOpacity(0.5),
+            //   child: SizedBox(
+            //     width: width,
+            //     height: height,
+            //     child: Center(
+            //       child: Column(
+            //         children: [
+            //           Icon(
+            //             Icons.error,
+            //             color: color,
+            //           ),
+            //           Text(
+            //             "error",
+            //             style: TextStyle(color: color),
+            //           )
+            //         ],
+            //       ),
+            //     ),
+            //   ),
+            // );
+            return HoohIcon(
+              "assets/images/image_placeholder.png",
+              width: width,
+              height: height,
             );
           },
       placeholder: (context, url) {

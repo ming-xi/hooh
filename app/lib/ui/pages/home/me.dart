@@ -3,9 +3,12 @@ import 'package:app/ui/pages/user/register/login.dart';
 import 'package:app/ui/pages/user/register/register.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/utils/design_colors.dart';
+import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/user.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class MePage extends ConsumerStatefulWidget {
   const MePage({
@@ -97,7 +100,97 @@ class _UserCenterPageState extends ConsumerState<UserCenterPage> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+              onPressed: () {},
+              icon: HoohIcon(
+                "assets/images/icon_me_message.svg",
+                width: 24,
+                height: 24,
+                color: designColors.dark_01.auto(ref),
+              ))
+        ],
+        leading: IconButton(
+            onPressed: () {},
+            icon: HoohIcon(
+              "assets/images/icon_me_setting.svg",
+              width: 24,
+              height: 24,
+              color: designColors.dark_01.auto(ref),
+            )),
         centerTitle: true,
+      ),
+      body: CustomScrollView(
+        slivers: [
+          SliverFillRemaining(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 17,),
+                SizedBox(
+                  height: 72,
+                  child: Row(
+                    children: [
+                      const SizedBox(
+                        width: 24,
+                      ),
+                      HoohImage(
+                        imageUrl: widget.user.avatarUrl ?? "",
+                        cornerRadius: 36,
+                        width: 72,
+                        height: 72,
+                      ),
+                      const Spacer(),
+                      Center(
+                          child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            AppLocalizations.of(context)!.me_follower,
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref)),
+                          ),
+                          Text(
+                            '30000',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: designColors.dark_01.auto(ref)),
+                          ),
+                        ],
+                      )),
+                      const Spacer(),
+                      Center(
+                          child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            AppLocalizations.of(context)!.me_following,
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref)),
+                          ),
+                          Text(
+                            '30000',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: designColors.dark_01.auto(ref)),
+                          ),
+                        ],
+                      )),
+                      const Spacer(),
+                      const SizedBox(
+                        width: 17,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20,),
+                SizedBox(height: 40,
+                child: Row(
+                  children: [const SizedBox(width: 20,),
+                    Text(
+                      AppLocalizations.of(context)!.me_personal_socoal_icon,
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: designColors.dark_01.auto(ref)),
+                    )],
+                ),)
+
+              ],
+            ),
+          )
+        ],
       ),
     );
   }
