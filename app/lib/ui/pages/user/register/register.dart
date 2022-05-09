@@ -50,7 +50,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     RegisterModelState modelState = ref.watch(widget.provider);
-    RegisterViewModel model = ref.watch(widget.provider.notifier);
+    RegisterViewModel model = ref.read(widget.provider.notifier);
     return Scaffold(
       appBar: AppBar(
         title: const Text(""),
@@ -166,6 +166,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         : () {
                             showDialog(
                                 context: context,
+                                barrierDismissible: false,
                                 builder: (context) {
                                   return LoadingDialog(LoadingDialogController());
                                 });

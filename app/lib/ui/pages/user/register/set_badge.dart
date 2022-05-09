@@ -39,7 +39,7 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
   @override
   Widget build(BuildContext context) {
     SetBadgeModelState modelState = ref.watch(widget.provider);
-    SetBadgeViewModel model = ref.watch(widget.provider.notifier);
+    SetBadgeViewModel model = ref.read(widget.provider.notifier);
 
     List<TextButton> actions = [
       TextButton(

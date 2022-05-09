@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:app/providers.dart';
 import 'package:app/ui/pages/splash.dart';
+import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
+import 'package:app/utils/file_utils.dart';
 import 'package:common/utils/device_info.dart';
 import 'package:common/utils/preferences.dart';
 
@@ -38,7 +40,11 @@ Future<void> _initSyncUtils() async {
 }
 
 ///不需要同步初始化的工具类
-void _initASyncUtils() {}
+void _initASyncUtils() {
+  FileUtil.loadUiImageFromAsset("assets/images/icon_template_text_frame_scale.png").then((image) {
+    scaleButtonImage = image;
+  });
+}
 
 class HoohApp extends ConsumerStatefulWidget {
   const HoohApp({

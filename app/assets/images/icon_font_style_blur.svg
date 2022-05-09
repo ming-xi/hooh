@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width = "36px"
+     height = "36px"
+     viewBox = "0 0 36 36"
+     version = "1.1"
+     xmlns = "http://www.w3.org/2000/svg"
+     xmlns:xlink = "http://www.w3.org/1999/xlink">
+	<title>编组</title>
+	<g id = "控件"
+	   stroke = "none"
+	   stroke-width = "1"
+	   fill = "none"
+	   fill-rule = "evenodd">
+		<g id = "编组"
+		   fill = "#212121">
+			<path d = "M17.5882353,26 C21.2268172,26 24.1764706,23.0503466 24.1764706,19.4117647 C24.1764706,16.9860435 21.9803922,13.8487885 17.5882353,10 C13.1960784,13.8487885 11,16.9860435 11,19.4117647 C11,23.0503466 13.9496534,26 17.5882353,26 Z"
+			      id = "Oval-2"></path>
+		</g>
+	</g>
+</svg>

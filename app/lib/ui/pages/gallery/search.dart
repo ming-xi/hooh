@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:app/extensions/extensions.dart';
+import 'package:app/ui/pages/creation/edit_post_view_model.dart';
 import 'package:app/ui/pages/gallery/search_view_model.dart';
 import 'package:app/ui/pages/home/templates.dart';
+import 'package:app/ui/widgets/template_compose_view.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:blur/blur.dart';
 import 'package:common/models/page_state.dart';
@@ -185,7 +187,7 @@ class _GallerySearchScreenState extends ConsumerState<GallerySearchScreen> {
               onTap: () {
                 // _galleryItemTouched(index);
               },
-              child: TemplateView(modelState.images[index], (newState) {}),
+              child: TemplateView(PostImageSetting.withTemplate(modelState.images[index]), onFavoriteChange: (newState) {}),
             );
           },
         ),

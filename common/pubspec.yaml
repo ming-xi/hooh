@@ -10,23 +10,24 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  json_serializable: ^6.1.5
-  json_annotation: ^4.4.0
+  json_serializable: ^6.2.0
+  json_annotation: ^4.5.0
   http: ^0.13.4
   pretty_json: ^2.0.0
   shared_preferences: ^2.0.13
   tuple: ^2.0.0
-  crypto: ^3.0.1
-  device_info_plus: ^3.2.2
+  crypto: ^3.0.2
+  device_info_plus: ^3.2.3
   package_info_plus: ^1.4.2
   intl: ^0.17.0
+  sprintf: ^6.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^1.0.0
+  flutter_lints: ^1.0.4
 
-  build_runner: ^2.0.0
+  build_runner: ^2.1.10
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

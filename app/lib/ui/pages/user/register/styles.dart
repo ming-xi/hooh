@@ -1,13 +1,14 @@
-import 'package:app/providers.dart';
 import 'package:app/utils/design_colors.dart';
+import 'package:app/utils/ui_utils.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class MainStyles {
   static BoxDecoration gradientBlueButtonDecoration({double cornerRadius = 24, bool enabled = true}) {
     var colors = [
-      Color(0xFF0167F9),
-      Color(0xFF20E0C2),
+      const Color(0xFF0167F9),
+      const Color(0xFF20E0C2),
     ];
     if (!enabled) {
       colors = colors.map((e) => e.withOpacity(0.5)).toList();
@@ -19,18 +20,26 @@ class MainStyles {
   }
 
   static Widget gradientButton(WidgetRef ref, String text, Function()? onPressed, {double cornerRadius = 24}) {
-    return Ink(
-      decoration: gradientBlueButtonDecoration(cornerRadius: cornerRadius, enabled: onPressed != null),
-      child: InkWell(
-        borderRadius: BorderRadius.all(Radius.circular(cornerRadius)),
-        onTap: onPressed,
-        child: Container(
-          constraints: BoxConstraints(minHeight: 64),
-          child: Center(
-              child: Text(
-            text,
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
-          )),
+    return Material(
+      type: MaterialType.transparency,
+      child: Ink(
+        decoration: onPressed != null
+            ? gradientBlueButtonDecoration(cornerRadius: cornerRadius, enabled: true)
+            : BoxDecoration(
+                color: designColors.dark_03.auto(ref),
+                borderRadius: BorderRadius.circular(cornerRadius),
+              ),
+        child: InkWell(
+          borderRadius: BorderRadius.all(Radius.circular(cornerRadius)),
+          onTap: onPressed,
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 64),
+            child: Center(
+                child: Text(
+              text,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+            )),
+          ),
         ),
       ),
     );
@@ -41,21 +50,70 @@ class MainStyles {
       onPressed: onPressed,
       child: Text(
         text,
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
       ),
       style: RegisterStyles.blueButtonStyle(ref, cornerRadius: cornerRadius),
     );
   }
 
-  static Widget outlinedButton(WidgetRef ref, String text, Function() onPressed) {
+  static Widget outlinedTextButton(WidgetRef ref, String text, Function() onPressed) {
     return TextButton(
       onPressed: onPressed,
       child: Text(text),
-      style: outlineButtonStyle(ref),
+      style: outlineTextButtonStyle(ref),
     );
   }
 
-  static ButtonStyle outlineButtonStyle(WidgetRef ref) {
+  static Widget outlinedIconButton(WidgetRef ref, String iconAssetName, double iconSize, bool checked, Function() onPressed) {
+    return Material(
+      type: MaterialType.transparency,
+      child: Ink(
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          border: Border.all(
+            color: checked ? designColors.feiyu_blue.auto(ref) : designColors.dark_03.auto(ref),
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+          onTap: onPressed,
+          child: HoohIcon(
+            iconAssetName,
+            width: iconSize,
+            height: iconSize,
+            color: designColors.dark_01.auto(ref),
+          ),
+        ),
+      ),
+    );
+  }
+
+  static ButtonStyle outlineIconButtonStyle(WidgetRef ref) {
+    return ButtonStyle(
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        backgroundColor: MaterialStateProperty.resolveWith<Color>((states) {
+          if (states.contains(MaterialState.disabled)) {
+            return designColors.light_01.auto(ref).withOpacity(0.5);
+          } else {
+            return designColors.light_01.auto(ref);
+          }
+        }),
+        overlayColor: MaterialStateProperty.all(designColors.dark_03.auto(ref).withOpacity(0.2)),
+        shape: MaterialStateProperty.resolveWith<OutlinedBorder>((states) {
+          if (states.contains(MaterialState.disabled)) {
+            return RoundedRectangleBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(12.0)), side: BorderSide(color: designColors.dark_03.auto(ref).withOpacity(0.5)));
+          } else {
+            return RoundedRectangleBorder(borderRadius: const BorderRadius.all(Radius.circular(12.0)), side: BorderSide(color: designColors.dark_03.auto(ref)));
+          }
+        }),
+        padding: MaterialStateProperty.all(EdgeInsets.zero),
+        minimumSize: MaterialStateProperty.all(const Size.square(36)),
+        textStyle: MaterialStateProperty.all(const TextStyle(fontSize: 20)));
+  }
+
+  static ButtonStyle outlineTextButtonStyle(WidgetRef ref) {
     return ButtonStyle(
         backgroundColor: MaterialStateProperty.resolveWith<Color>((states) {
           if (states.contains(MaterialState.disabled)) {
@@ -71,7 +129,7 @@ class MainStyles {
             return designColors.light_06.auto(ref);
           }
         }),
-        overlayColor: MaterialStateProperty.all(designColors.dark_01.auto(ref).withOpacity(0.2)),
+        overlayColor: MaterialStateProperty.all(designColors.dark_03.auto(ref).withOpacity(0.2)),
         shape: MaterialStateProperty.resolveWith<OutlinedBorder>((states) {
           if (states.contains(MaterialState.disabled)) {
             return RoundedRectangleBorder(
@@ -82,7 +140,7 @@ class MainStyles {
           }
         }),
         minimumSize: MaterialStateProperty.all(const Size.fromHeight(64)),
-        textStyle: MaterialStateProperty.all(TextStyle(fontSize: 20)));
+        textStyle: MaterialStateProperty.all(const TextStyle(fontSize: 20)));
   }
 }
 
@@ -143,7 +201,7 @@ class RegisterStyles {
         onSurface: Colors.white,
         minimumSize: const Size.fromHeight(64),
         backgroundColor: designColors.feiyu_blue.auto(ref),
-        textStyle: TextStyle(fontSize: 16));
+        textStyle: const TextStyle(fontSize: 16));
   }
 
   static ButtonStyle appbarTextButtonStyle(WidgetRef ref) {
@@ -151,7 +209,7 @@ class RegisterStyles {
         primary: designColors.feiyu_blue.auto(ref),
         onSurface: designColors.feiyu_blue.auto(ref),
         backgroundColor: Colors.transparent,
-        textStyle: TextStyle(fontSize: 16));
+        textStyle: const TextStyle(fontSize: 16));
   }
 
   static ButtonStyle blackButtonStyle(WidgetRef ref) {
@@ -171,7 +229,7 @@ class RegisterStyles {
           borderRadius: BorderRadius.all(Radius.circular(22.0)),
         )),
         minimumSize: MaterialStateProperty.all(const Size.fromHeight(64)),
-        textStyle: MaterialStateProperty.all(TextStyle(fontSize: 20, fontWeight: FontWeight.bold)));
+        textStyle: MaterialStateProperty.all(const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)));
 
     // return TextButton.styleFrom(
     //     primary: designColors.light_01.auto(ref),
@@ -219,7 +277,7 @@ class RegisterStyles {
           }
         }),
         minimumSize: MaterialStateProperty.all(const Size.fromHeight(64)),
-        textStyle: MaterialStateProperty.all(TextStyle(fontSize: 20, fontWeight: FontWeight.bold)));
+        textStyle: MaterialStateProperty.all(const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)));
   }
 
   static ButtonStyle rainbowOutlineButtonStyle(WidgetRef ref) {
@@ -227,9 +285,9 @@ class RegisterStyles {
         primary: designColors.feiyu_blue.auto(ref),
         onSurface: designColors.feiyu_blue.auto(ref),
         backgroundColor: designColors.light_01.auto(ref),
-        shape: RoundedRectangleBorder(borderRadius: const BorderRadius.all(Radius.circular(22.0)), side: BorderSide(color: Colors.transparent)),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(22.0)), side: BorderSide(color: Colors.transparent)),
         minimumSize: const Size.fromHeight(64),
-        textStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold));
+        textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold));
   }
 
   static Widget rainbowButton(WidgetRef ref, {Widget? label, Widget? icon, Function()? onPress}) {
@@ -245,9 +303,9 @@ class RegisterStyles {
         primary: designColors.feiyu_blue.auto(ref),
         onSurface: designColors.feiyu_blue.auto(ref),
         backgroundColor: designColors.light_01.auto(ref),
-        shape: RoundedRectangleBorder(borderRadius: const BorderRadius.all(Radius.circular(22.0)), side: BorderSide(color: Colors.transparent)),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(22.0)), side: BorderSide(color: Colors.transparent)),
         minimumSize: const Size.fromHeight(64),
-        textStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold));
+        textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold));
     Widget button;
 
     if (icon != null) {
@@ -261,7 +319,7 @@ class RegisterStyles {
       } else {
         // button = IconButton(onPressed: onPress, icon: icon,color: designColors.feiyu_blue.auto(ref),);
         button = TextButton(
-          style: buttonStyle.copyWith(minimumSize: MaterialStateProperty.all(Size.square(64))),
+          style: buttonStyle.copyWith(minimumSize: MaterialStateProperty.all(const Size.square(64))),
           onPressed: onPress,
           child: icon,
         );

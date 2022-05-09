@@ -87,3 +87,14 @@ class RecommendedTag {
 
   Map<String, dynamic> toJson() => _$RecommendedTagToJson(this);
 }
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class HomepageBackgroundImageResponse {
+  String imageUrl;
+
+  HomepageBackgroundImageResponse(this.imageUrl);
+
+  factory HomepageBackgroundImageResponse.fromJson(Map<String, dynamic> json) => _$HomepageBackgroundImageResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$HomepageBackgroundImageResponseToJson(this);
+}

@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:app/ui/widgets/template_text_setting_view_model.dart';
+import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/file_utils.dart';
 import 'package:flutter/material.dart';
@@ -29,16 +30,16 @@ class _TemplateTextSettingViewState extends ConsumerState<TemplateTextSettingVie
   @override
   void initState() {
     super.initState();
-    FileUtil.loadUiImageFromAsset("assets/images/icon_template_text_frame_scale.png").then((image) {
-      TemplateTextSettingViewModel model = ref.read(widget.provider.notifier);
-      model.setButtonImage(image);
-    });
+    // FileUtil.loadUiImageFromAsset("assets/images/icon_template_text_frame_scale.png").then((image) {
+    //   TemplateTextSettingViewModel model = ref.read(widget.provider.notifier);
+    //   model.setButtonImage(image);
+    // });
   }
 
   @override
   Widget build(BuildContext context) {
     TemplateTextSettingModelState modelState = ref.watch(widget.provider);
-    TemplateTextSettingViewModel model = ref.watch(widget.provider.notifier);
+    TemplateTextSettingViewModel model = ref.read(widget.provider.notifier);
     return Container(
       decoration: BoxDecoration(border: Border.all(color: designColors.dark_03.auto(ref))),
       child: LayoutBuilder(
@@ -121,7 +122,6 @@ class _TemplateTextSettingViewState extends ConsumerState<TemplateTextSettingVie
                   frameW: modelState.frameW,
                   frameH: modelState.frameH,
                   textColor: modelState.textColor,
-                  buttonImage: modelState.buttonImage,
                   frameLocked: modelState.frameLocked),
             ),
           );
@@ -139,7 +139,7 @@ class _CanvasPainter extends CustomPainter {
   final Color frameColor = Color(0xFFDBDBDB);
   final double textPadding = 8;
 
-  final ui.Image? buttonImage;
+  final ui.Image buttonImage = scaleButtonImage;
   final double frameX;
   final double frameY;
   final double frameW;
@@ -152,7 +152,6 @@ class _CanvasPainter extends CustomPainter {
 
   _CanvasPainter(
     WidgetRef ref, {
-    required this.buttonImage,
     required this.frameX,
     required this.frameY,
     required this.frameW,
@@ -182,9 +181,9 @@ class _CanvasPainter extends CustomPainter {
     if (buttonImage == null || frameLocked) {
       return;
     }
-    ui.Rect src = Rect.fromLTWH(0, 0, buttonImage!.width.toDouble(), buttonImage!.height.toDouble());
+    ui.Rect src = Rect.fromLTWH(0, 0, buttonImage.width.toDouble(), buttonImage.height.toDouble());
     ui.Rect dst = Rect.fromCenter(center: Offset(translate(frameX + frameW, size.width), translate(frameY + frameH, size.height)), width: 24, height: 24);
-    canvas.drawImageRect(buttonImage!, src, dst, p);
+    canvas.drawImageRect(buttonImage, src, dst, p);
   }
 
   void drawText(Canvas canvas, Size size) {

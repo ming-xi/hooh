@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/network/requests.dart';
 import 'package:common/models/network/responses.dart';
+import 'package:common/models/post.dart';
 import 'package:common/models/social_badge.dart';
 import 'package:common/models/template.dart';
 import 'package:common/models/user.dart';
@@ -15,6 +16,7 @@ import 'package:common/utils/preferences.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:pretty_json/pretty_json.dart';
 
@@ -57,7 +59,10 @@ class Network {
   bool _isUsingLocalServer = false;
 
   void requestAsync<T>(Future<T> request, Function(T data) onSuccess, Function(HoohApiErrorResponse error) onError) {
-    request.then(onSuccess).catchError((error) {
+    request.then((data) {
+      onSuccess(data);
+    }).catchError((Object error, StackTrace stackTrace) {
+      debugPrintStack(stackTrace: stackTrace);
       if (error is HoohApiErrorResponse) {
         onError(error);
       }
@@ -269,6 +274,33 @@ class Network {
       HttpMethod.delete,
       _buildHoohUri("templates/$templateId/favorite"),
     );
+  }
+
+  Future<List<Template>> getRecommendedTemplates(List<String> contents) {
+    return _getResponseList(HttpMethod.post, _buildHoohUri("templates/recommend-for-creation"),
+        body: GetRecommendedTemplatesForCreationRequest(contents).toJson(), deserializer: Template.fromJson);
+  }
+
+  //endregion
+  //region post
+  Future<RequestUploadingFileResponse> requestUploadingPostImage(File file) {
+    String fileMd5 = md5.convert(file.readAsBytesSync()).toString().toLowerCase();
+    String ext = file.path;
+    debugPrint("upload file md5=$fileMd5 path=$ext");
+    ext = ext.substring(ext.lastIndexOf(".") + 1);
+    return _getResponseObject<RequestUploadingFileResponse>(HttpMethod.post, _buildHoohUri("posts/request-uploading-post-image"),
+        body: RequestUploadingFileRequest(fileMd5, ext).toJson(), deserializer: RequestUploadingFileResponse.fromJson);
+  }
+
+  Future<Post> createPost(CreatePostRequest request) {
+    return _getResponseObject<Post>(HttpMethod.post, _buildHoohUri("posts/create"), body: request.toJson(), deserializer: Post.fromJson);
+  }
+
+  //endregion
+  //region misc
+
+  Future<HomepageBackgroundImageResponse> getHomepageRandomBackground() {
+    return _getResponseObject(HttpMethod.get, _buildHoohUri("app/random-homepage-background-image"), deserializer: HomepageBackgroundImageResponse.fromJson);
   }
 
   //endregion

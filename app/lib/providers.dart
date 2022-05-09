@@ -1,7 +1,16 @@
 import 'package:app/utils/design_colors.dart';
 import 'package:common/models/user.dart';
+import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+void handleUserLogout({WidgetRef? ref}) {
+  if (ref != null) {
+    ref.read(globalUserInfoProvider.state).state = null;
+  }
+  preferences.remove(Preferences.KEY_USER_INFO);
+  // preferences.remove(Preferences.KEY_USER_DRAFT);
+}
 
 final StateProvider<User?> globalUserInfoProvider = StateProvider<User?>((ref) => null);
 const DARK_MODE_SYSTEM = 0;
@@ -15,11 +24,7 @@ const DARK_MODE_VALUES = [
 final StateProvider<int> globalDarkModeProvider = StateProvider((ref) {
   return DARK_MODE_SYSTEM;
 });
-// final StateProvider<ThemeData> globalThemeDataProvider = StateProvider((ref) {
-//   int darkMode = ref.watch(globalDarkModeProvider.state).state;
-//
-//   return darkMode ? globalDarkTheme : globalLightTheme;
-// });
+
 final globalLightTheme = ThemeData(
     primaryColor: designColors.bar90_1.light,
     brightness: Brightness.light,

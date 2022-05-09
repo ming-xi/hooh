@@ -61,7 +61,7 @@ class _DrawBadgeScreenState extends ConsumerState<DrawBadgeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    DrawBadgeViewModel model = ref.watch(widget.provider.notifier);
+    DrawBadgeViewModel model = ref.read(widget.provider.notifier);
     DrawBadgeModelState modelState = ref.watch(widget.provider);
     debugPrint("modelState.paletteItems.length=${modelState.paletteItems.length}");
 

@@ -53,11 +53,11 @@ class TemplateTextSettingScreen extends ConsumerStatefulWidget {
     Color(0xFFFF14D9),
   ];
   final File? imageFile;
-  final StateNotifierProvider<TemplateTextSettingPageViewModel, TemplateTextSettingPageModelState> provider = StateNotifierProvider((ref) {
+  final StateNotifierProvider<TemplateTextSettingScreenViewModel, TemplateTextSettingScreenModelState> provider = StateNotifierProvider((ref) {
     List<PaletteItem> list =
         PALETTE_COLORS.map((e) => PaletteItem(color: e, type: PALETTE_COLORS.indexOf(e) < 2 ? PaletteItem.TYPE_OUTLINED : PaletteItem.TYPE_NORMAL)).toList();
     list[2].selected = true;
-    return TemplateTextSettingPageViewModel(TemplateTextSettingPageModelState.init(list));
+    return TemplateTextSettingScreenViewModel(TemplateTextSettingScreenModelState.init(list));
   });
   final StateNotifierProvider<TemplateTextSettingViewModel, TemplateTextSettingModelState> textSettingProvider = StateNotifierProvider((ref) {
     return TemplateTextSettingViewModel(TemplateTextSettingModelState.init(PALETTE_COLORS[2]));
@@ -80,7 +80,7 @@ class _TemplateTextSettingScreenState extends ConsumerState<TemplateTextSettingS
     super.initState();
     tabController = TabController(length: 2, vsync: this);
     tabController.addListener(() {
-      TemplateTextSettingPageViewModel model = ref.read(widget.provider.notifier);
+      TemplateTextSettingScreenViewModel model = ref.read(widget.provider.notifier);
       model.changeTab(tabController.index);
       TemplateTextSettingViewModel textSettingModel = ref.read(widget.textSettingProvider.notifier);
       textSettingModel.setFrameLocked(tabController.index != 0);
@@ -89,9 +89,9 @@ class _TemplateTextSettingScreenState extends ConsumerState<TemplateTextSettingS
 
   @override
   Widget build(BuildContext context) {
-    TemplateTextSettingPageModelState modelState = ref.watch(widget.provider);
-    TemplateTextSettingPageViewModel model = ref.watch(widget.provider.notifier);
-    TemplateTextSettingViewModel textSettingModel = ref.watch(widget.textSettingProvider.notifier);
+    TemplateTextSettingScreenModelState modelState = ref.watch(widget.provider);
+    TemplateTextSettingScreenViewModel model = ref.read(widget.provider.notifier);
+    TemplateTextSettingViewModel textSettingModel = ref.read(widget.textSettingProvider.notifier);
     TemplateTextSettingModelState textSettingModelState = ref.watch(widget.textSettingProvider);
     return Scaffold(
       appBar: AppBar(
@@ -167,6 +167,7 @@ class _TemplateTextSettingScreenState extends ConsumerState<TemplateTextSettingS
                   rowCount = 3;
                 }
                 BorderRadius borderRadius = BorderRadius.circular(16);
+                BorderRadius outlineBorderRadius = BorderRadius.circular(18);
                 double padding = (constraints.maxHeight - itemSize * rowCount - spacing * (rowCount - 1)) / 2;
                 return GridView.builder(
                   padding: EdgeInsets.symmetric(horizontal: 40, vertical: padding),
@@ -217,7 +218,7 @@ class _TemplateTextSettingScreenState extends ConsumerState<TemplateTextSettingS
                         width: itemSize,
                         height: itemSize,
                         padding: EdgeInsets.all(2),
-                        decoration: BoxDecoration(border: selectedBorder, borderRadius: BorderRadius.circular(18)),
+                        decoration: BoxDecoration(border: selectedBorder, borderRadius: outlineBorderRadius),
                         child: res);
                   },
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: rowCount, crossAxisSpacing: spacing, mainAxisSpacing: spacing),

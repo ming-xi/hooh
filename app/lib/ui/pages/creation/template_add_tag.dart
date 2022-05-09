@@ -41,7 +41,7 @@ class _TemplateAddTagScreenState extends ConsumerState<TemplateAddTagScreen> wit
   @override
   Widget build(BuildContext context) {
     TemplateAddTagPageModelState modelState = ref.watch(widget.provider);
-    TemplateAddTagPageViewModel model = ref.watch(widget.provider.notifier);
+    TemplateAddTagPageViewModel model = ref.read(widget.provider.notifier);
     return Scaffold(
       appBar: AppBar(
         title: Text("add tag"),

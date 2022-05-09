@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:app/extensions/extensions.dart';
 import 'package:app/ui/widgets/template_text_setting_view.dart';
+import 'package:app/utils/constants.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -16,7 +17,8 @@ class TemplateTextSettingModelState {
   final double frameW;
   final double frameH;
   final material.Color textColor;
-  final Image? buttonImage;
+
+  // final Image buttonImage=scaleButtonImage;
   final bool frameLocked;
 
   TemplateTextSettingModelState(
@@ -25,7 +27,6 @@ class TemplateTextSettingModelState {
       required this.frameW,
       required this.frameH,
       required this.textColor,
-      this.buttonImage,
       this.frameLocked = false});
 
   factory TemplateTextSettingModelState.init(material.Color textColor) => TemplateTextSettingModelState(
@@ -40,9 +41,9 @@ class TemplateTextSettingModelState {
 class TemplateTextSettingViewModel extends StateNotifier<TemplateTextSettingModelState> {
   TemplateTextSettingViewModel(TemplateTextSettingModelState state) : super(state) {}
 
-  void setButtonImage(Image image) {
-    updateState(state.copyWith(buttonImage: image));
-  }
+  // void setButtonImage(Image image) {
+  //   updateState(state.copyWith(buttonImage: image));
+  // }
 
   void setSelectedColor(material.Color color) {
     updateState(state.copyWith(textColor: color));

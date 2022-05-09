@@ -3,10 +3,12 @@ import 'dart:io';
 
 import 'package:app/extensions/extensions.dart';
 import 'package:app/providers.dart';
+import 'package:app/ui/pages/creation/edit_post_view_model.dart';
 import 'package:app/ui/pages/creation/template_adjust.dart';
 import 'package:app/ui/pages/gallery/search.dart';
 import 'package:app/ui/pages/home/home_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
+import 'package:app/ui/widgets/template_compose_view.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
@@ -56,7 +58,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
     int imageWidth = MediaQuery.of(context).size.width ~/ 3;
 
     TemplatesPageModelState modelState = ref.watch(widget.templatesProvider);
-    TemplatesPageViewModel model = ref.watch(widget.templatesProvider.notifier);
+    TemplatesPageViewModel model = ref.read(widget.templatesProvider.notifier);
 
     double safePadding = MediaQuery.of(context).padding.top;
     debugPrint("safePadding=$safePadding");
@@ -176,7 +178,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
               onTap: () {
                 _galleryItemTouched(index);
               },
-              child: TemplateView(modelState.templates[index - 1], (newState) {
+              child: TemplateView(PostImageSetting.withTemplate(modelState.templates[index - 1]), onFavoriteChange: (newState) {
                 debugPrint("newState=$newState index=${index - 1}");
                 viewModel.setFavorite(index - 1, newState);
               }),
@@ -352,24 +354,27 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
   void openImagePicker(source) async {
     // showLoader();
     final XFile? pickedFile = await ImagePicker().pickImage(source: source, maxWidth: 1920, maxHeight: 1920);
-    File? croppedFile = await ImageCropper().cropImage(
-        sourcePath: pickedFile!.path,
-        aspectRatioPresets: [
-          CropAspectRatioPreset.square,
-          CropAspectRatioPreset.ratio3x2,
-          CropAspectRatioPreset.original,
-          CropAspectRatioPreset.ratio4x3,
-          CropAspectRatioPreset.ratio16x9
-        ],
-        androidUiSettings: const AndroidUiSettings(
+    CroppedFile? croppedFile = await ImageCropper().cropImage(
+      sourcePath: pickedFile!.path,
+      aspectRatioPresets: [
+        CropAspectRatioPreset.square,
+        CropAspectRatioPreset.ratio3x2,
+        CropAspectRatioPreset.original,
+        CropAspectRatioPreset.ratio4x3,
+        CropAspectRatioPreset.ratio16x9
+      ],
+      uiSettings: [
+        AndroidUiSettings(
             toolbarTitle: 'Cropper',
             toolbarColor: Colors.deepOrange,
             toolbarWidgetColor: Colors.white,
             initAspectRatio: CropAspectRatioPreset.original,
             lockAspectRatio: false),
-        iosUiSettings: const IOSUiSettings());
+        IOSUiSettings()
+      ],
+    );
     if (croppedFile != null) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => AdjustTemplatePositionScreen(croppedFile)));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => AdjustTemplatePositionScreen(File(croppedFile.path))));
     }
   }
 
@@ -454,7 +459,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
                           mainAxisSize: MainAxisSize.max,
                           children: [
                             Expanded(
-                              child: MainStyles.outlinedButton(ref, "Cancel", () {
+                              child: MainStyles.outlinedTextButton(ref, "Cancel", () {
                                 Navigator.pop(context);
                               }),
                             ),
@@ -549,105 +554,3 @@ class _AddLocalImageViewState extends ConsumerState<AddLocalImageView> {
   }
 }
 
-class TemplateView extends ConsumerStatefulWidget {
-  final Template item;
-  final Function(bool) callback;
-
-  const TemplateView(
-    this.item,
-    this.callback, {
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  ConsumerState createState() => _TemplateViewState();
-}
-
-class _TemplateViewState extends ConsumerState<TemplateView> {
-  StateProvider<bool> visibleProvider = StateProvider(
-    (ref) => false,
-  );
-
-  @override
-  Widget build(BuildContext context) {
-    var visible = ref.watch(visibleProvider.state).state;
-
-    return Stack(
-      children: [
-        HoohImage(
-          imageUrl: widget.item.imageUrl,
-          cornerRadius: 20,
-        ),
-        // 显示作者名字
-        buildUploaderWidget(visible, widget.item),
-        // 收藏按钮
-        Positioned(
-          child: Container(
-            width: 44,
-            height: 44,
-            child: GestureDetector(
-              child: (Center(
-                child: HoohIcon(widget.item.favorited ? 'assets/images/collection_selected.svg' : 'assets/images/collection_unselected.svg',
-                    height: 27, width: 27),
-              )),
-              onTap: () {
-                widget.callback(!widget.item.favorited);
-              },
-            ),
-          ),
-          top: 0,
-          right: 0,
-        ),
-        // 图片作者信息
-        Positioned(
-          child: GestureDetector(
-            child: Container(
-              width: 44,
-              height: 44,
-              child: Center(
-                child: HoohIcon('assets/images/image_info.svg', height: 17, width: 17),
-              ),
-            ),
-            onTapCancel: () {
-              ref.read(visibleProvider.state).state = false;
-            },
-            onTapDown: (details) {
-              ref.read(visibleProvider.state).state = true;
-            },
-            onTapUp: (details) {
-              ref.read(visibleProvider.state).state = false;
-            },
-          ),
-          bottom: 0,
-          right: 0,
-        ),
-      ],
-    );
-  }
-
-  Widget buildUploaderWidget(bool visible, Template item) {
-    return Visibility(
-      visible: visible,
-      child: Stack(
-        children: [
-          Container(
-              decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            color: Colors.black.withAlpha(40),
-          )),
-          Padding(
-              padding: const EdgeInsets.all(10),
-              child: Center(
-                child: Text(
-                  '图片由 @${item.authorName} 作者上传',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
-                ),
-              )),
-        ],
-      ),
-    );
-  }
-}

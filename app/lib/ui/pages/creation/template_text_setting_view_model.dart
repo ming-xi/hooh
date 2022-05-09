@@ -8,7 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 part 'template_text_setting_view_model.g.dart';
 
 @CopyWith()
-class TemplateTextSettingPageModelState {
+class TemplateTextSettingScreenModelState {
   final int selectedTab;
   final double frameX;
   final double frameY;
@@ -16,7 +16,7 @@ class TemplateTextSettingPageModelState {
   final double frameH;
   final List<PaletteItem> paletteItems;
 
-  TemplateTextSettingPageModelState({
+  TemplateTextSettingScreenModelState({
     required this.selectedTab,
     required this.frameX,
     required this.frameY,
@@ -25,12 +25,12 @@ class TemplateTextSettingPageModelState {
     required this.paletteItems,
   });
 
-  factory TemplateTextSettingPageModelState.init(List<PaletteItem> paletteItems) =>
-      TemplateTextSettingPageModelState(selectedTab: 0, frameX: 10, frameY: 10, frameW: 80, frameH: 40, paletteItems: paletteItems);
+  factory TemplateTextSettingScreenModelState.init(List<PaletteItem> paletteItems) =>
+      TemplateTextSettingScreenModelState(selectedTab: 0, frameX: 10, frameY: 10, frameW: 80, frameH: 40, paletteItems: paletteItems);
 }
 
-class TemplateTextSettingPageViewModel extends StateNotifier<TemplateTextSettingPageModelState> {
-  TemplateTextSettingPageViewModel(TemplateTextSettingPageModelState state) : super(state) {
+class TemplateTextSettingScreenViewModel extends StateNotifier<TemplateTextSettingScreenModelState> {
+  TemplateTextSettingScreenViewModel(TemplateTextSettingScreenModelState state) : super(state) {
     // 如果需要加载时自动拉取数据，在这里调用
     // search(isRefresh: true);
   }

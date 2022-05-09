@@ -11,12 +11,12 @@ class User {
   String id;
   String name; // 昵称
   String? username;
-  String? followerCount;
-  String? followingCount;
-  String? postCount;
-  String? publicPostCount;
-  String? likeCount;
-  String? commentCount;
+  int? followerCount;
+  int? followingCount;
+  int? postCount;
+  int? publicPostCount;
+  int? likeCount;
+  int? commentCount;
   String? avatarUrl;
   String? signature;
   String? website;

@@ -70,8 +70,9 @@ class _TestMenuScreenState extends ConsumerState<TestMenuScreen> {
             ),
             ElevatedButton(
                 onPressed: () {
-                  ref.read(globalUserInfoProvider.state).state = null;
-                  preferences.putString(Preferences.KEY_USER_INFO, null);
+                  handleUserLogout(ref: ref);
+                  // ref.read(globalUserInfoProvider.state).state = null;
+                  // preferences.putString(Preferences.KEY_USER_INFO, null);
                   // Navigator.pushAndRemoveUntil(
                   //   context,
                   //   MaterialPageRoute(builder: (context) => StartScreen()),

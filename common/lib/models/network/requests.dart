@@ -124,3 +124,40 @@ class RefreshTokenRequest {
 
   Map<String, dynamic> toJson() => _$RefreshTokenRequestToJson(this);
 }
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class CreatePostRequest {
+  bool allowDownload;
+  bool isPublic;
+  List<CreateImageRequest> images;
+  List<String> tags;
+
+  CreatePostRequest(this.allowDownload, this.isPublic, this.images, this.tags);
+
+  factory CreatePostRequest.fromJson(Map<String, dynamic> json) => _$CreatePostRequestFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CreatePostRequestToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class CreateImageRequest {
+  String imageKey;
+  String content;
+
+  CreateImageRequest(this.imageKey, this.content);
+
+  factory CreateImageRequest.fromJson(Map<String, dynamic> json) => _$CreateImageRequestFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CreateImageRequestToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class GetRecommendedTemplatesForCreationRequest {
+  List<String> contents;
+
+  GetRecommendedTemplatesForCreationRequest(this.contents);
+
+  factory GetRecommendedTemplatesForCreationRequest.fromJson(Map<String, dynamic> json) => _$GetRecommendedTemplatesForCreationRequestFromJson(json);
+
+  Map<String, dynamic> toJson() => _$GetRecommendedTemplatesForCreationRequestToJson(this);
+}

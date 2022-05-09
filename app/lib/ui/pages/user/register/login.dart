@@ -36,7 +36,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     debugPrint("_LoginScreenState build");
     LoginModelState modelState = ref.watch(widget.provider);
-    LoginViewModel model = ref.watch(widget.provider.notifier);
+    LoginViewModel model = ref.read(widget.provider.notifier);
     return Scaffold(
       appBar: AppBar(
         title: const Text(""),
@@ -112,9 +112,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         : () {
                       showDialog(
                           context: context,
-                          builder: (context) {
-                            return LoadingDialog(LoadingDialogController());
-                          });
+                                barrierDismissible: false,
+                                builder: (context) {
+                                  return LoadingDialog(LoadingDialogController());
+                                });
                       model.login(context, usernameController.text, passwordController.text, onSuccess: (user) {
                         ref.read(globalUserInfoProvider.state).state = user;
                         preferences.putString(Preferences.KEY_USER_INFO, json.encode(user.toJson()));

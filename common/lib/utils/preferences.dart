@@ -13,6 +13,7 @@ class Preferences {
   static const KEY_DARK_MODE = "KEY_DARK_MODE";
   static const KEY_SERVER = "KEY_SERVER";
   static const KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED = "KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED";
+  static const KEY_USER_DRAFT = "KEY_USER_DRAFT";
 
   Future<void> init() async {
     // SharedPreferences.getInstance().then((value) {

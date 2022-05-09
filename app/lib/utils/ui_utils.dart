@@ -5,6 +5,17 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:sprintf/sprintf.dart';
+
+String formatAmount(int number) {
+  if (number > 1000000) {
+    return sprintf("%.1f", number / 1000000);
+  } else {
+    final formatter = NumberFormat("#,##0.00", "en_US");
+    return formatter.format(number);
+  }
+}
 
 class HoohImage extends ConsumerWidget {
   const HoohImage({
@@ -66,7 +77,7 @@ class HoohImage extends ConsumerWidget {
         // return Container(color: Colors.red,);
       },
     );
-    if (cornerRadius != null) {
+    if (cornerRadius != 0) {
       return ClipRRect(
         child: networkImage,
         borderRadius: BorderRadius.circular(cornerRadius),

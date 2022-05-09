@@ -74,7 +74,10 @@ class TemplatesPageViewModel extends StateNotifier<TemplatesPageModelState> {
       ));
       getImageList((succeed) => null);
     }, (error) {
-      updateState(state.copyWith(error: error));
+      updateState(state.copyWith(
+        error: error,
+        tagsPageState: PageState.inited,
+      ));
       debugPrint("error");
     });
   }
@@ -145,7 +148,10 @@ class TemplatesPageViewModel extends StateNotifier<TemplatesPageModelState> {
         callback(state.templatesPageState);
       }
     }, (error) {
-      updateState(state.copyWith(error: error));
+      updateState(state.copyWith(
+        error: error,
+        templatesPageState: PageState.inited,
+      ));
       if (callback != null) {
         callback(state.templatesPageState);
       }

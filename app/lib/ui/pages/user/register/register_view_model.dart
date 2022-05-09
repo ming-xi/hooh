@@ -43,7 +43,8 @@ class RegisterViewModel extends StateNotifier<RegisterModelState> {
     updateState(state.copyWith(confirmPasswordVisible: !state.confirmPasswordVisible));
   }
 
-  void register(BuildContext context, String username, String password, String email, {Function(User)? onSuccess, Function(HoohApiErrorResponse)? onFailed}) {
+  void register(BuildContext context, String username, String password, String email,
+      {void Function(User)? onSuccess, Function(HoohApiErrorResponse)? onFailed}) {
     network.requestAsync<LoginResponse>(network.register(username, password, email), (data) {
       network.setUserToken(data.jwtResponse.accessToken);
       if (onSuccess != null) {
