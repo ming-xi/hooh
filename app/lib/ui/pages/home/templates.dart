@@ -81,7 +81,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
               "Upload",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
             )),
-            decoration: MainStyles.gradientBlueButtonDecoration(cornerRadius: 22),
+            decoration: MainStyles.gradientButtonDecoration(cornerRadius: 22),
           ),
           // shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(20), bottomLeft: Radius.circular(20))),
           // child: Text("Upload"),
@@ -174,14 +174,17 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
               },
             );
           } else {
+            TemplateViewSetting viewSetting = TemplateView.generateViewSetting(TemplateView.SCENE_GALLERY_HOME);
+            viewSetting.buttons[TemplateView.EDGE_BUTTON_TYPE_FAVORITE]!.onPress = (newState) {
+              debugPrint("newState=$newState index=${index - 1}");
+              viewModel.setFavorite(index - 1, newState);
+            };
+            Template template = modelState.templates[index - 1];
             return GestureDetector(
               onTap: () {
                 _galleryItemTouched(index);
               },
-              child: TemplateView(PostImageSetting.withTemplate(modelState.templates[index - 1]), onFavoriteChange: (newState) {
-                debugPrint("newState=$newState index=${index - 1}");
-                viewModel.setFavorite(index - 1, newState);
-              }),
+              child: TemplateView(PostImageSetting.withTemplate(template), viewSetting: viewSetting, template: template),
             );
           }
         },

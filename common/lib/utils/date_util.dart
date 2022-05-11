@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class DateUtil {
@@ -16,5 +17,9 @@ class DateUtil {
 
   static String getUtcDateString(DateTime dateTime, {String? format}) {
     return DateFormat(format ?? FORMAT_DEFAULT).format(dateTime);
+  }
+
+  static String getZonedDateString(DateTime dateTime, {String? format}) {
+    return DateFormat(format ?? FORMAT_DEFAULT).format(dateTime.add(dateTime.timeZoneOffset));
   }
 }

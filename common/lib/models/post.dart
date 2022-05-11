@@ -9,17 +9,19 @@ class Post {
   User author;
   int commentCount;
   int likeCount;
+  int voteCount;
+  int myVoteCount;
   List<PostImage> images;
   bool liked;
   bool favorited;
-  bool public;
+  bool visible;
   bool allowDownload;
   int publishState;
-  DateTime featuredAt;
+  DateTime? featuredAt;
   DateTime createdAt;
 
-  Post(this.id, this.author, this.commentCount, this.likeCount, this.images, this.liked, this.favorited, this.public, this.allowDownload, this.publishState,
-      this.featuredAt, this.createdAt);
+  Post(this.id, this.author, this.commentCount, this.likeCount, this.voteCount, this.myVoteCount, this.images, this.liked, this.favorited, this.visible,
+      this.allowDownload, this.publishState, this.featuredAt, this.createdAt);
 
   factory Post.fromJson(Map<String, dynamic> json) => _$PostFromJson(json);
 

@@ -232,6 +232,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.0.2"
+  dart_service_announcement:
+    dependency: transitive
+    description:
+      name: dart_service_announcement
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.2.3"
   dart_style:
     dependency: transitive
     description:
@@ -302,6 +309,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "6.1.2"
+  file_local_storage_inspector:
+    dependency: "direct main"
+    description:
+      name: file_local_storage_inspector
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.2.3"
   filesystem_picker:
     dependency: "direct main"
     description:
@@ -389,6 +403,48 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.0.3"
+  flutter_secure_storage:
+    dependency: transitive
+    description:
+      name: flutter_secure_storage
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "5.0.2"
+  flutter_secure_storage_linux:
+    dependency: transitive
+    description:
+      name: flutter_secure_storage_linux
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.1.0"
+  flutter_secure_storage_macos:
+    dependency: transitive
+    description:
+      name: flutter_secure_storage_macos
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.1.0"
+  flutter_secure_storage_platform_interface:
+    dependency: transitive
+    description:
+      name: flutter_secure_storage_platform_interface
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.0.0"
+  flutter_secure_storage_web:
+    dependency: transitive
+    description:
+      name: flutter_secure_storage_web
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.0.2"
+  flutter_secure_storage_windows:
+    dependency: transitive
+    description:
+      name: flutter_secure_storage_windows
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.1.2"
   flutter_svg:
     dependency: "direct main"
     description:
@@ -819,6 +875,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.5.0"
+  preferences_local_storage_inspector:
+    dependency: "direct main"
+    description:
+      name: preferences_local_storage_inspector
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.2.3"
   pretty_json:
     dependency: transitive
     description:
@@ -875,6 +938,20 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.27.3"
+  screenshot:
+    dependency: "direct main"
+    description:
+      name: screenshot
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.2.3"
+  secure_storage_local_storage_inspector:
+    dependency: "direct main"
+    description:
+      name: secure_storage_local_storage_inspector
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.2.3"
   shared_preferences:
     dependency: transitive
     description:
@@ -1006,6 +1083,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.7.2+1"
+  storage_inspector:
+    dependency: "direct main"
+    description:
+      name: storage_inspector
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.2.3"
   stream_channel:
     dependency: transitive
     description:
@@ -1076,6 +1160,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.0.4"
+  uri:
+    dependency: transitive
+    description:
+      name: uri
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.0.0"
   url_launcher:
     dependency: "direct main"
     description:

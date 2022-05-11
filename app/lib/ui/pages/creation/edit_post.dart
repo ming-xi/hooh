@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:app/ui/pages/creation/edit_post_view_model.dart';
+import 'package:app/ui/pages/creation/publish_post.dart';
 import 'package:app/ui/pages/user/register/draw_badge_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/template_compose_view.dart';
@@ -93,6 +94,19 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
     double statusbarHeight = MediaQuery.of(context).viewPadding.top;
     AppBar appBar = AppBar(
       title: Text("Edit"),
+      actions: [
+        IconButton(
+            onPressed: () async {
+              EditPostScreenModelState modelState = ref.watch(widget.provider);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => PublishPostScreen(
+                            setting: modelState.setting,
+                          )));
+            },
+            icon: Icon(Icons.arrow_forward))
+      ],
     );
     var size2 = MediaQuery.of(context).size;
     // Size screenSize = Size(size2.width,size2.height+size2.width);
@@ -129,8 +143,8 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
                         ),
                       ),
                     ],
-                    indicatorColor: designColors.dark_01.auto(ref),
-                    indicatorSize: TabBarIndicatorSize.label,
+                    // indicatorColor: designColors.dark_01.auto(ref),
+                    // indicatorSize: TabBarIndicatorSize.label,
                   ),
                 ),
                 SizedBox(
@@ -178,10 +192,10 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
           translate(modelState.setting.frameW, width),
           translate(modelState.setting.frameH, height),
         );
+        TemplateViewSetting viewSetting = TemplateView.generateViewSetting(TemplateView.SCENE_EDIT_POST_CANVAS);
         var child = TemplateView(
           modelState.setting,
-          showFrame: true,
-          showUploaderInfoButton: false,
+          viewSetting: viewSetting,
           radius: 0,
         );
         return Listener(

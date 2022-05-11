@@ -8,6 +8,7 @@ import 'package:app/ui/widgets/template_compose_view.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:blur/blur.dart';
 import 'package:common/models/page_state.dart';
+import 'package:common/models/template.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
@@ -183,11 +184,17 @@ class _GallerySearchScreenState extends ConsumerState<GallerySearchScreen> {
               childAspectRatio: 1.0),
           itemCount: modelState.images.length,
           itemBuilder: (BuildContext context, int index) {
+            TemplateViewSetting viewSetting = TemplateView.generateViewSetting(TemplateView.SCENE_GALLERY_SEARCH);
+            Template template = modelState.images[index];
             return GestureDetector(
               onTap: () {
                 // _galleryItemTouched(index);
               },
-              child: TemplateView(PostImageSetting.withTemplate(modelState.images[index]), onFavoriteChange: (newState) {}),
+              child: TemplateView(
+                PostImageSetting.withTemplate(template),
+                viewSetting: viewSetting,
+                template: template,
+              ),
             );
           },
         ),

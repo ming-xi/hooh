@@ -1,4 +1,5 @@
 import 'package:app/providers.dart';
+import 'package:app/ui/pages/me/setting.dart';
 import 'package:app/ui/pages/user/register/login.dart';
 import 'package:app/ui/pages/user/register/register.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
@@ -111,7 +112,9 @@ class _UserCenterPageState extends ConsumerState<UserCenterPage> {
               ))
         ],
         leading: IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()));
+            },
             icon: HoohIcon(
               "assets/images/icon_me_setting.svg",
               width: 24,

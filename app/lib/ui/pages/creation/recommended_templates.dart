@@ -86,10 +86,11 @@ class _RecommendedTemplatesScreenState extends ConsumerState<RecommendedTemplate
   }
 
   Widget buildTemplateWidget(Template template, double scale) {
+    TemplateViewSetting viewSetting = TemplateView.generateViewSetting(TemplateView.SCENE_EDIT_POST_SINGLE_IMAGE_RECOMMENDATION);
     return TemplateView(
       PostImageSetting.withTemplate(template, text: getText()),
       template: template,
-      onFavoriteChange: (newState) {},
+      viewSetting: viewSetting,
       onPressBody: () {
         debugPrint("press");
         Navigator.push(context, MaterialPageRoute(builder: (context) => EditPostScreen(setting: PostImageSetting.withTemplate(template, text: getText()))));

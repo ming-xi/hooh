@@ -10,28 +10,75 @@ import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class TemplateView extends ConsumerStatefulWidget {
-  static const int MASK_COLOR = 0x59000000;
+  static const MASK_COLOR = 0x59000000;
+
+  static const SCENE_CUSTOM = 0;
+  static const SCENE_GALLERY_HOME = 1;
+  static const SCENE_GALLERY_SEARCH = 2;
+  static const SCENE_EDIT_POST_SINGLE_IMAGE_RECOMMENDATION = 3;
+  static const SCENE_EDIT_POST_MULTIPLE_IMAGE_GRID = 4;
+  static const SCENE_EDIT_POST_CANVAS = 5;
+  static const SCENE_PUBLISH_POST_PREVIEW = 6;
+
+  //边缘按钮类型
+  static const EDGE_BUTTON_TYPE_FAVORITE = 1;
+  static const EDGE_BUTTON_TYPE_INFO = 2;
+  static const EDGE_BUTTON_TYPE_DELETE = 3;
+  static const EDGE_BUTTON_TYPE_EDIT = 4;
+
   final PostImageSetting setting;
   final Template? template;
   final double scale;
   final double? radius;
-  final bool showUploaderInfoButton;
-  final void Function(bool)? onFavoriteChange;
   final void Function()? onPressBody;
+  final TemplateViewSetting viewSetting;
 
-  final bool showFrame;
-
-  const TemplateView(
+  TemplateView(
     this.setting, {
-    this.showUploaderInfoButton = true,
+    required this.viewSetting,
     this.template,
-    this.onFavoriteChange,
     this.onPressBody,
     this.scale = 1,
     this.radius = 20,
-    this.showFrame = false,
     Key? key,
-  }) : super(key: key);
+  }) : super(key: key) {}
+
+  static TemplateViewSetting generateViewSetting(int scene) {
+    bool showFrame = false;
+    Map<int, EdgeButtonSetting> buttons = {};
+    switch (scene) {
+      case SCENE_GALLERY_HOME:
+      case SCENE_GALLERY_SEARCH:
+      case SCENE_EDIT_POST_SINGLE_IMAGE_RECOMMENDATION:
+        {
+          buttons[EDGE_BUTTON_TYPE_FAVORITE] = EdgeButtonSetting(
+            location: EdgeButtonLocation.topRight,
+          );
+          buttons[EDGE_BUTTON_TYPE_INFO] = EdgeButtonSetting(
+            location: EdgeButtonLocation.bottomRight,
+          );
+          break;
+        }
+      case SCENE_EDIT_POST_MULTIPLE_IMAGE_GRID:
+        {
+          buttons[EDGE_BUTTON_TYPE_DELETE] = EdgeButtonSetting(
+            location: EdgeButtonLocation.topRight,
+          );
+          break;
+        }
+      case SCENE_EDIT_POST_CANVAS:
+        {
+          showFrame = true;
+          break;
+        }
+      case SCENE_PUBLISH_POST_PREVIEW:
+        {
+          showFrame = false;
+          break;
+        }
+    }
+    return TemplateViewSetting(buttons: buttons, showFrame: showFrame);
+  }
 
   @override
   ConsumerState createState() => _TemplateViewState();
@@ -70,14 +117,14 @@ class _TemplateViewState extends ConsumerState<TemplateView> {
         ),
       ));
     }
-    if (widget.template != null && widget.showUploaderInfoButton) {
+    if (widget.template != null && widget.viewSetting.buttons[TemplateView.EDGE_BUTTON_TYPE_INFO] != null) {
       widgets.add(buildUploaderWidget(visible, widget.template!.authorName));
     }
-    if (widget.template != null && widget.onFavoriteChange != null) {
-      widgets.add(buildFavoriteButton());
+    if (widget.template != null && widget.viewSetting.buttons[TemplateView.EDGE_BUTTON_TYPE_FAVORITE] != null) {
+      widgets.add(getPositioned(widget.viewSetting.buttons[TemplateView.EDGE_BUTTON_TYPE_FAVORITE]!, buildFavoriteButton()));
     }
-    if (widget.template != null && widget.showUploaderInfoButton) {
-      widgets.add(buildUploaderInfoButton());
+    if (widget.template != null && widget.viewSetting.buttons[TemplateView.EDGE_BUTTON_TYPE_INFO] != null) {
+      widgets.add(getPositioned(widget.viewSetting.buttons[TemplateView.EDGE_BUTTON_TYPE_INFO]!, buildUploaderInfoButton()));
     }
     return ClipRect(
       child: Stack(
@@ -86,36 +133,64 @@ class _TemplateViewState extends ConsumerState<TemplateView> {
     );
   }
 
-  Positioned buildUploaderInfoButton() {
+  Positioned getPositioned(EdgeButtonSetting setting, Widget widget) {
+    double? top;
+    double? bottom;
+    double? left;
+    double? right;
+    switch (setting.location) {
+      case EdgeButtonLocation.topLeft:
+        top = 0;
+        left = 0;
+        break;
+      case EdgeButtonLocation.topRight:
+        top = 0;
+        right = 0;
+        break;
+      case EdgeButtonLocation.bottomLeft:
+        bottom = 0;
+        left = 0;
+        break;
+      case EdgeButtonLocation.bottomRight:
+        bottom = 0;
+        right = 0;
+        break;
+    }
     return Positioned(
-      child: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTapCancel: () {
-          ref.read(visibleProvider.state).state = false;
-        },
-        onTapDown: (details) {
-          ref.read(visibleProvider.state).state = true;
-        },
-        onTapUp: (details) {
-          ref.read(visibleProvider.state).state = false;
-        },
-        child: SizedBox(
-          width: 44,
-          height: 44,
-          child: Center(
-            child: HoohIcon('assets/images/image_info.svg', height: 17, width: 17),
-          ),
+      child: widget,
+      top: top,
+      bottom: bottom,
+      left: left,
+      right: right,
+    );
+  }
+
+  Widget buildUploaderInfoButton() {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTapCancel: () {
+        ref.read(visibleProvider.state).state = false;
+      },
+      onTapDown: (details) {
+        ref.read(visibleProvider.state).state = true;
+      },
+      onTapUp: (details) {
+        ref.read(visibleProvider.state).state = false;
+      },
+      child: SizedBox(
+        width: 44,
+        height: 44,
+        child: Center(
+          child: HoohIcon('assets/images/image_info.svg', height: 17, width: 17),
         ),
       ),
-      bottom: 0,
-      right: 0,
     );
   }
 
   Widget buildMaskView() {
     return Positioned.fill(
         child: Container(
-      color: Color(TemplateView.MASK_COLOR),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(widget.radius ?? 0), color: Color(TemplateView.MASK_COLOR)),
     ));
   }
 
@@ -133,32 +208,28 @@ class _TemplateViewState extends ConsumerState<TemplateView> {
             drawShadow: widget.setting.shadow,
             drawStroke: widget.setting.stroke,
             lineHeight: widget.setting.lineHeight,
-            showFrame: widget.showFrame,
+            showFrame: widget.viewSetting.showFrame,
             scale: widget.scale),
       ),
     );
   }
 
   Widget buildFavoriteButton() {
-    return Positioned(
-      child: SizedBox(
-        width: 44,
-        height: 44,
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          child: (Center(
-            child: HoohIcon(widget.template!.favorited ? 'assets/images/collection_selected.svg' : 'assets/images/collection_unselected.svg',
-                height: 27, width: 27),
-          )),
-          onTap: () {
-            if (widget.onFavoriteChange != null) {
-              widget.onFavoriteChange!(!widget.template!.favorited);
-            }
-          },
-        ),
+    return SizedBox(
+      width: 44,
+      height: 44,
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        child: (Center(
+          child:
+              HoohIcon(widget.template!.favorited ? 'assets/images/collection_selected.svg' : 'assets/images/collection_unselected.svg', height: 27, width: 27),
+        )),
+        onTap: () {
+          if (widget.viewSetting.buttons[TemplateView.EDGE_BUTTON_TYPE_FAVORITE]?.onPress != null) {
+            widget.viewSetting.buttons[TemplateView.EDGE_BUTTON_TYPE_FAVORITE]?.onPress!(!widget.template!.favorited);
+          }
+        },
       ),
-      top: 0,
-      right: 0,
     );
   }
 
@@ -183,7 +254,7 @@ class _TemplateViewState extends ConsumerState<TemplateView> {
         child = image;
       }
     }
-    return widget.setting.blur ? child.blurred(blur: 4) : child;
+    return widget.setting.blur ? child.blurred(blur: 4, borderRadius: BorderRadius.circular(widget.radius ?? 0)) : child;
   }
 
   Widget buildUploaderWidget(bool visible, String uploaderName) {
@@ -191,7 +262,7 @@ class _TemplateViewState extends ConsumerState<TemplateView> {
       visible: visible,
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(widget.radius ?? 0),
           color: Colors.black.withAlpha(40),
         ),
         child: Padding(
@@ -358,3 +429,19 @@ class PostTextPainter extends CustomPainter {
     return this != oldDelegate;
   }
 }
+
+class TemplateViewSetting {
+  final bool showFrame;
+  final Map<int, EdgeButtonSetting> buttons;
+
+  TemplateViewSetting({required this.buttons, this.showFrame = false});
+}
+
+class EdgeButtonSetting {
+  final EdgeButtonLocation location;
+  Function(dynamic data)? onPress;
+
+  EdgeButtonSetting({required this.location, this.onPress});
+}
+
+enum EdgeButtonLocation { topLeft, topRight, bottomLeft, bottomRight }

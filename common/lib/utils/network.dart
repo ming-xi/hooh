@@ -283,6 +283,13 @@ class Network {
 
   //endregion
   //region post
+  Future<List<String>> getRecommendedPublishPostTags() {
+    return _getResponseList(
+      HttpMethod.get,
+      _buildHoohUri("posts/recommended-publish-tags"),
+    );
+  }
+
   Future<RequestUploadingFileResponse> requestUploadingPostImage(File file) {
     String fileMd5 = md5.convert(file.readAsBytesSync()).toString().toLowerCase();
     String ext = file.path;
@@ -294,6 +301,28 @@ class Network {
 
   Future<Post> createPost(CreatePostRequest request) {
     return _getResponseObject<Post>(HttpMethod.post, _buildHoohUri("posts/create"), body: request.toJson(), deserializer: Post.fromJson);
+  }
+
+  Future<List<Post>> getWaitingListPosts({DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
+    Map<String, dynamic> params = {
+      "size": size,
+    };
+    if (date != null) {
+      params["timestamp"] = DateUtil.getUtcDateString(date);
+    }
+    return _getResponseList<Post>(HttpMethod.get, _buildHoohUri("posts/waiting-list", params: params), deserializer: Post.fromJson);
+  }
+
+  Future<List<Post>> getMainListRecentPosts({DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
+    Map<String, dynamic> params = {
+      "size": size,
+    };
+
+    if (date != null) {
+      params["timestamp"] = DateUtil.getUtcDateString(date);
+    }
+
+    return _getResponseList<Post>(HttpMethod.get, _buildHoohUri("posts/main-list/recent", params: params), deserializer: Post.fromJson);
   }
 
   //endregion
@@ -387,10 +416,14 @@ class Network {
     if (data is HoohApiErrorResponse) {
       return Future.error(data);
     } else {
-      if (deserializer != null) {
-        return (data as List<dynamic>).map((e) => deserializer(e as Map<String, dynamic>)).toList();
+      if (M == String) {
+        return (data as List<dynamic>).map((e) => e as M).toList();
       } else {
-        return Future.value([]);
+        if (deserializer != null) {
+          return (data as List<dynamic>).map((e) => deserializer(e as Map<String, dynamic>)).toList();
+        } else {
+          return Future.value([]);
+        }
       }
     }
   }

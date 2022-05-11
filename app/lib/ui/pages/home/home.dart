@@ -2,7 +2,7 @@ import 'package:app/ui/pages/home/home_view_model.dart';
 import 'package:app/ui/pages/home/input.dart';
 import 'package:app/ui/pages/home/input_view_model.dart';
 import 'package:app/ui/pages/home/me.dart';
-import 'package:app/ui/pages/home/social.dart';
+import 'package:app/ui/pages/home/feeds.dart';
 import 'package:app/ui/pages/home/templates.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:blur/blur.dart';
@@ -38,7 +38,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     pageContents = [
       InputPage(),
       GalleryPage(widget.homePageProvider),
-      SocialPage(),
+      FeedsPage(),
       MePage(),
     ];
     floatingButtons = [

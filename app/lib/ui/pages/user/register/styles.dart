@@ -5,7 +5,58 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class MainStyles {
-  static BoxDecoration gradientBlueButtonDecoration({double cornerRadius = 24, bool enabled = true}) {
+  static Widget buildListDivider(WidgetRef ref) {
+    return Container(
+      height: 1,
+      color: designColors.light_02.auto(ref),
+    );
+  }
+
+  static Widget buildListTile(WidgetRef ref, String title, {bool showArrow = false, Widget? tailWidget, String? tailText, Function()? onPress}) {
+    List<Widget> children = [
+      Text(
+        title,
+        style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
+      ),
+      Spacer(),
+    ];
+    if (tailText != null) {
+      children.add(Text(
+        tailText,
+        style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref), fontWeight: FontWeight.bold),
+      ));
+      children.add(SizedBox(
+        width: 8,
+      ));
+    }
+    if (tailWidget != null) {
+      children.add(tailWidget);
+    }
+    if (showArrow) {
+      children.add(Icon(
+        Icons.arrow_forward_ios_rounded,
+        size: 18,
+        color: designColors.light_06.auto(ref),
+      ));
+    }
+    return Material(
+      child: Ink(
+        height: 48,
+        // color: designColors.light_02.auto(ref),
+        child: InkWell(
+          onTap: onPress,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: children,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  static BoxDecoration gradientButtonDecoration({double cornerRadius = 24, bool enabled = true}) {
     var colors = [
       const Color(0xFF0167F9),
       const Color(0xFF20E0C2),
@@ -24,7 +75,7 @@ class MainStyles {
       type: MaterialType.transparency,
       child: Ink(
         decoration: onPressed != null
-            ? gradientBlueButtonDecoration(cornerRadius: cornerRadius, enabled: true)
+            ? gradientButtonDecoration(cornerRadius: cornerRadius, enabled: true)
             : BoxDecoration(
                 color: designColors.dark_03.auto(ref),
                 borderRadius: BorderRadius.circular(cornerRadius),
@@ -50,9 +101,10 @@ class MainStyles {
       onPressed: onPressed,
       child: Text(
         text,
-        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        style: TextStyle(fontFamily: 'Linotte'),
       ),
-      style: RegisterStyles.blueButtonStyle(ref, cornerRadius: cornerRadius),
+      style: RegisterStyles.blueButtonStyle(ref, cornerRadius: cornerRadius)
+          .copyWith(textStyle: MaterialStateProperty.all(const TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
     );
   }
 

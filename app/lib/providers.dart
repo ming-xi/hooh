@@ -3,7 +3,6 @@ import 'package:common/models/user.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void handleUserLogout({WidgetRef? ref}) {
   if (ref != null) {
@@ -59,6 +58,22 @@ final globalLightTheme = ThemeData(
             Radius.circular(4),
           ),
         )),
+    tabBarTheme: TabBarTheme(
+        labelStyle: TextStyle(
+          color: designColors.dark_01.light,
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          fontFamily: 'Linotte',
+        ),
+        unselectedLabelStyle: TextStyle(
+          color: designColors.dark_01.light,
+          fontSize: 16,
+          fontFamily: 'Linotte',
+        ),
+        indicatorSize: TabBarIndicatorSize.label,
+        indicator: UnderlineTabIndicator(
+          borderSide: BorderSide(color: designColors.dark_01.light, width: 1),
+        )),
     textButtonTheme: TextButtonThemeData(
         style: ButtonStyle(
             textStyle: MaterialStateProperty.all(
@@ -94,6 +109,22 @@ final globalDarkTheme = ThemeData(
           borderRadius: BorderRadius.all(
             Radius.circular(4),
           ),
+        )),
+    tabBarTheme: TabBarTheme(
+        labelStyle: TextStyle(
+          color: designColors.dark_01.dark,
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          fontFamily: 'Linotte',
+        ),
+        unselectedLabelStyle: TextStyle(
+          color: designColors.dark_01.dark,
+          fontSize: 16,
+          fontFamily: 'Linotte',
+        ),
+        indicatorSize: TabBarIndicatorSize.label,
+        indicator: UnderlineTabIndicator(
+          borderSide: BorderSide(color: designColors.dark_01.dark, width: 1),
         )),
     textButtonTheme: TextButtonThemeData(
         style: ButtonStyle(

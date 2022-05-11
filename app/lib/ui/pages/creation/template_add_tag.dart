@@ -84,9 +84,7 @@ class _TemplateAddTagScreenState extends ConsumerState<TemplateAddTagScreen> wit
                     // onEditingComplete: () {
                     //   // keep keyboard open
                     // },
-                    inputFormatters: [
-                      LengthLimitingTextInputFormatter(200),
-                    ],
+                    inputFormatters: [LengthLimitingTextInputFormatter(200), FilteringTextInputFormatter.deny(RegExp("\n"))],
                     style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
                     decoration: InputDecoration(
                       prefixIcon: Padding(

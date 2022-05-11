@@ -128,11 +128,12 @@ class RefreshTokenRequest {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class CreatePostRequest {
   bool allowDownload;
-  bool isPublic;
+  bool visible;
+  bool joinWaitingList;
   List<CreateImageRequest> images;
   List<String> tags;
 
-  CreatePostRequest(this.allowDownload, this.isPublic, this.images, this.tags);
+  CreatePostRequest(this.allowDownload, this.visible, this.joinWaitingList, this.images, this.tags);
 
   factory CreatePostRequest.fromJson(Map<String, dynamic> json) => _$CreatePostRequestFromJson(json);
 

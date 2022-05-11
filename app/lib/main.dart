@@ -7,6 +7,8 @@ import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/file_utils.dart';
 import 'package:common/utils/device_info.dart';
 import 'package:common/utils/preferences.dart';
+import 'package:file_local_storage_inspector/file_local_storage_inspector.dart';
+import 'package:flutter/foundation.dart';
 
 // import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +18,13 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:preferences_local_storage_inspector/preferences_local_storage_inspector.dart';
+import 'package:secure_storage_local_storage_inspector/secure_storage_local_storage_inspector.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:storage_inspector/storage_inspector.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +45,48 @@ Future<void> _initUtils() async {
 Future<void> _initSyncUtils() async {
   await preferences.init();
   await deviceInfo.init();
+  await initInspector();
+}
+
+Future<void> initInspector() async {
+  if (kDebugMode) {
+    final driver = StorageServerDriver(
+      bundleId: 'xyz.hooh.app', //Used for identification
+      port: 0, //Default 0, use 0 to automatically use a free port
+      // icon: '...' //Optional icon to visually identify the server. Base64 png or plain svg string
+    );
+
+    final keyValueServer = PreferencesKeyValueServer(await SharedPreferences.getInstance(), 'Preferences', keySuggestions: {
+      const ValueWithType(StorageType.string, 'testBool'),
+      const ValueWithType(StorageType.string, 'testInt'),
+      const ValueWithType(StorageType.string, 'testFloat'),
+    });
+    driver.addKeyValueServer(keyValueServer);
+
+    final secureKeyValueServer = SecureStorageKeyValueServer(const FlutterSecureStorage(), 'Preferences', keySuggestions: {
+      'testBool',
+      'testInt',
+      'testFloat',
+    });
+    driver.addKeyValueServer(secureKeyValueServer);
+
+    var fileServer = DefaultFileServer(await _documentsDirectory(), 'App Documents');
+    driver.addFileServer(fileServer);
+    fileServer = DefaultFileServer(await _cacheDirectory(), 'Cache');
+    driver.addFileServer(fileServer);
+
+    await driver.start();
+  }
+}
+
+Future<String> _documentsDirectory() async {
+  if (kIsWeb) return '.';
+  return (await getApplicationDocumentsDirectory()).path;
+}
+
+Future<String> _cacheDirectory() async {
+  if (kIsWeb) return '.';
+  return (await getTemporaryDirectory()).path;
 }
 
 ///不需要同步初始化的工具类

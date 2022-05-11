@@ -113,7 +113,7 @@ class _TemplateDoneScreenState extends ConsumerState<TemplateDoneScreen> with Si
         padding: EdgeInsets.symmetric(
           horizontal: 12,
         ),
-        decoration: MainStyles.gradientBlueButtonDecoration(cornerRadius: 18),
+        decoration: MainStyles.gradientButtonDecoration(cornerRadius: 18),
       ),
     );
   }

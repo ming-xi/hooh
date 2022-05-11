@@ -5,16 +5,19 @@ import 'dart:io';
 import 'package:app/extensions/extensions.dart';
 import 'package:app/providers.dart';
 import 'package:app/test_uploading_view_model.dart';
+import 'package:app/ui/pages/creation/publish_post.dart';
 import 'package:app/ui/pages/creation/template_add_tag.dart';
 import 'package:app/ui/pages/creation/template_done.dart';
 import 'package:app/ui/pages/creation/template_text_setting.dart';
 import 'package:app/ui/pages/user/register/set_badge.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/ipfs_node.dart';
+import 'package:app/ui/widgets/post_view.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/file_utils.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/network/responses.dart';
+import 'package:common/models/post.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
@@ -54,7 +57,7 @@ class _TestMenuScreenState extends ConsumerState<TestMenuScreen> {
           children: [
             ElevatedButton(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => TemplateDoneScreen()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => TestWidgetScreen()));
                 },
                 child: Text("test screen")),
             SizedBox(
@@ -121,6 +124,63 @@ class _TestMenuScreenState extends ConsumerState<TestMenuScreen> {
             )
           ],
         ),
+      ),
+    );
+  }
+}
+
+class TestWidgetScreen extends ConsumerStatefulWidget {
+  const TestWidgetScreen({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  ConsumerState createState() => _TestWidgetScreenState();
+}
+
+class _TestWidgetScreenState extends ConsumerState<TestWidgetScreen> {
+  static const JSON = '''
+   {
+     "allow_download": false,
+     "author": {
+       "avatar_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/user-content/avatars/10130a69034d88e28d04630b47ce16d5.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220511T075427Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220511%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=f28ce05b0d949801db121de1ec9e4b1261803b61fe464ec7449933c1013c64b5",
+       "badge_image_url": null,
+       "followed": false,
+       "id": "646365ad-3a43-4bf5-baa8-c323bd6f8a62",
+       "name": "Alice"
+     },
+     "comment_count": 0,
+     "created_at": "2022-05-10 08:47:05",
+     "favorited": false,
+     "id": "a5670e8c-2856-48f5-8dcc-10dfeb8fa903",
+     "images": [
+       {
+         "hidden": false,
+         "image_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/user-content/posts/d57abff7ca32d9263f5f2c8d584b43d5.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220511T075427Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220511%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=4563d727dde23b5782c45c3555a9a3494d6024e419b00ea1d4f3c91fd473f421"
+       },
+       {
+         "hidden": false,
+         "image_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/user-content/posts/5bd520a16c6654188b9a91ff7db05d98.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220511T075427Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220511%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=18a55aa6c179cd67e391a4d3fe710d59825dc9a2039e39e87b5b387c5f12df43"
+       },
+       {
+         "hidden": false,
+         "image_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/user-content/posts/74239c44725977447308648ca7a8ac93.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220511T075427Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220511%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=69b80ce752638ee5f8c9779f0d436d677a50ca30a2d7e95ad6c19dcef3a7feef"
+       }
+     ],
+     "like_count": 0,
+     "liked": false,
+     "publish_state": 1,
+     "visible": true,
+     "vote_count": 0,
+     "votes": 0
+   }
+''';
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: PostView(post: Post.fromJson(json.decode(JSON))),
       ),
     );
   }
