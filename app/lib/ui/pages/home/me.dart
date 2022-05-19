@@ -1,6 +1,6 @@
 import 'package:app/global.dart';
 import 'package:app/ui/pages/me/badges.dart';
-import 'package:app/ui/pages/me/setting.dart';
+import 'package:app/ui/pages/me/settings/setting.dart';
 import 'package:app/ui/pages/user/register/login.dart';
 import 'package:app/ui/pages/user/register/register.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
@@ -219,7 +219,7 @@ class _UserCenterPageState extends ConsumerState<UserCenterPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
-                    AppLocalizations.of(context)!.me_personal_socoal_icon,
+                    AppLocalizations.of(context)!.me_personal_social_icon,
                     style: titleTextStyle,
                   ),
                 ),
