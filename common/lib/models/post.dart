@@ -3,7 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'post.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Post {
   /// 不加入waiting list
   static const int PUBLISH_STATE_NORMAL = 0;

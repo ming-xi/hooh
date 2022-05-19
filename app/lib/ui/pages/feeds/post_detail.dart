@@ -1,19 +1,25 @@
 import 'package:app/global.dart';
 import 'package:app/ui/pages/feeds/comment_page.dart';
+import 'package:app/ui/pages/feeds/likes_page.dart';
 import 'package:app/ui/pages/feeds/post_detail_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/comment_compose_view.dart';
 import 'package:app/ui/widgets/comment_compose_view_model.dart';
+import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
+import 'package:common/models/page_state.dart';
 import 'package:common/models/post.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/date_util.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/src/material/refresh_indicator.dart' as refresh;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
   late final StateNotifierProvider<PostDetailScreenViewModel, PostDetailScreenModelState> provider;
+  final FocusNode textFieldNode = FocusNode();
 
   PostDetailScreen({
     required String postId,
@@ -31,6 +37,11 @@ class PostDetailScreen extends ConsumerStatefulWidget {
 
 class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with TickerProviderStateMixin {
   late TabController tabController;
+  final RefreshController _refreshController = RefreshController(initialRefresh: false);
+  ScrollController scrollController = ScrollController();
+  GlobalKey columnKey = GlobalKey();
+  double headerHeight = 100;
+  bool scrollable = false;
 
   @override
   void initState() {
@@ -40,19 +51,38 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
       PostDetailScreenViewModel model = ref.read(widget.provider.notifier);
       model.changeTab(tabController.index);
     });
+    scrollController.addListener(() {
+      final keyContext = columnKey.currentContext;
+      if (keyContext != null) {
+        final RenderBox box = keyContext.findRenderObject() as RenderBox;
+        debugPrint("offset=${scrollController.offset} box.size.height=${box.size.height}");
+        headerHeight = box.size.height;
+        bool newState = scrollController.offset > headerHeight;
+        if (newState != scrollable) {
+          setState(() {
+            scrollable = newState;
+          });
+        }
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
     double userBarHeight = 40;
     double tabbarHeight = 44;
     double tagsPaddingTop = 12;
     double tagsPaddingBottom = 20;
     double tagsRunSpacing = 4;
     double statusbarHeight = MediaQuery.of(context).viewPadding.top;
+
     PostDetailScreenModelState modelState = ref.watch(widget.provider);
     PostDetailScreenViewModel model = ref.read(widget.provider.notifier);
+    StateNotifierProvider<CommentComposeWidgetViewModel, CommentComposeWidgetModelState> composerProvider = StateNotifierProvider((ref) {
+      return CommentComposeWidgetViewModel(CommentComposeWidgetModelState.init(post: modelState.post!));
+    });
     List<Widget> widgets = [
       AspectRatio(
         aspectRatio: 1,
@@ -66,13 +96,23 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
             children: [
               Expanded(
                 child: Wrap(
-                  spacing: 16,
+                  spacing: 8,
                   runSpacing: 4,
                   children: (modelState.post?.tags ?? [])
                       // .expand((e) => [e,e,e])
-                      .map((e) => Text(
-                            "# $e",
-                            style: TextStyle(fontSize: 14, color: designColors.blue_dark.auto(ref)),
+                      .map((e) => TextButton(
+                            onPressed: () {
+                              Toast.showSnackBar(context, "to topic: $e");
+                            },
+                            style: TextButton.styleFrom(
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                minimumSize: Size(48, 16),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                            child: Text(
+                              "# $e",
+                              style: TextStyle(fontSize: 14, color: designColors.blue_dark.auto(ref)),
+                            ),
                           ))
                       .toList(),
                 ),
@@ -109,8 +149,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
     //     // indicatorSize: TabBarIndicatorSize.label,
     //   ),
     // );
-    var column = Column(
-      mainAxisSize: MainAxisSize.max,
+
+    Widget column = Column(
+      key: columnKey,
+      mainAxisSize: MainAxisSize.min,
       children: widgets,
     );
     var commentTabText = "Comments ${formatAmount(modelState.post?.commentCount ?? 0)}";
@@ -141,53 +183,48 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
       // indicatorColor: designColors.dark_01.auto(ref),
       // indicatorSize: TabBarIndicatorSize.label,
     );
+
+    TabBarView tabBarView = TabBarView(controller: tabController, children: [
+      CommentPage(
+          scrollable: scrollable,
+          comments: modelState.comments,
+          onLikeClick: (comment, newState) {},
+          onLoadMore: () {
+            model.getComments((state) {
+              // debugPrint("refresh state=$state");
+              _refreshController.refreshCompleted();
+            }, isRefresh: false);
+          },
+          noMore: modelState.commentState == PageState.noMore,
+          onReplyClick: (comment) {
+            CommentComposeWidgetViewModel composerModel = ref.read(composerProvider.notifier);
+            composerModel.setRepliedComment(comment);
+            showKeyboard(widget.textFieldNode);
+          }),
+      LikesPage(users: modelState.likedUsers)
+    ]);
+    SliverAppBar sliverAppBar = SliverAppBar(
+      title: Text(""),
+      pinned: true,
+    );
+
     return Scaffold(
-      // appBar: AppBar(
-      //
-      //   title: Text("Post Detail"),
-      //   bottom: PreferredSize(
-      //     preferredSize: Size.fromHeight(screenWidth + userBarHeight),
-      //     child: Column(
-      //       mainAxisSize: MainAxisSize.max,
-      //       children: widgets,
-      //     ),
-      //   ),
-      // ),
       body: Stack(
         children: [
           Positioned.fill(
-            child: CustomScrollView(
-              slivers: [
-                // SliverPersistentHeader(
-                //   delegate: SectionHeaderDelegate("Section B"),
-                //   pinned: true,
-                // ),
-                SliverAppBar(
-                  title: Text(""),
-                  // flexibleSpace: FlexibleSpaceBar(
-                  // expandedTitleScale: 1,
-                  // background: column,
-                  // title: Text(""),
-                  // titlePadding: EdgeInsets.zero,
-                  // title: SizedBox(
-                  //   width: screenWidth,
-                  //     height: tabbarHeight,
-                  //     child: Padding(
-                  //       padding: EdgeInsets.only(left: tabbarHeight),
-                  //       child: Container(
-                  //         child: tabBar,
-                  //         color: designColors.light_01.auto(ref),
-                  //       ),
-                  //     )),
-                  // ),
-                  // expandedHeight: screenWidth + userBarHeight + statusbarHeight + 1,
-                  pinned: true,
-                  // bottom:  PreferredSize(
-                  //       preferredSize: Size.fromHeight(screenWidth + userBarHeight),
-                  //       child: column,
-                  //     ),
-                ),
-
+              child: refresh.RefreshIndicator(
+            notificationPredicate: (notification) {
+              return notification.depth == 2;
+            },
+            onRefresh: () async {
+              model.onRefresh((state) {
+                // debugPrint("refresh state=$state");
+                _refreshController.refreshCompleted();
+              });
+            },
+            child: NestedScrollView(
+              headerSliverBuilder: (a, b) => [
+                sliverAppBar,
                 SliverToBoxAdapter(
                   child: column,
                 ),
@@ -195,17 +232,37 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
                   delegate: _SliverTabBarDelegate(tabBar, ref),
                   pinned: true,
                 ),
-                SliverFillRemaining(
-                  child: TabBarView(controller: tabController, children: [
-                    CommentPage(comments: modelState.comments, onLikeClick: (comment, newState) {}, onReplyClick: (comment) {}),
-                    Container(
-                      color: Colors.blue,
-                    ),
-                  ]),
-                )
               ],
+              body: tabBarView,
             ),
-          ),
+          )
+
+              // CustomScrollView(
+              //   controller: scrollController,
+              //   slivers: [
+              //     // SliverPersistentHeader(
+              //     //   delegate: SectionHeaderDelegate("Section B"),
+              //     //   pinned: true,
+              //     // ),
+              //     sliverAppBar,
+              //
+              //     SliverToBoxAdapter(
+              //       child: column,
+              //     ),
+              //     SliverPersistentHeader(
+              //       delegate: _SliverTabBarDelegate(tabBar, ref),
+              //       pinned: true,
+              //     ),
+              //     // SliverFillRemaining(
+              //     //   child: tabBarView,
+              //     // ),
+              //     SliverPersistentHeader(
+              //       delegate: _SliverTabViewDelegate(tabBarView, screenHeight - statusbarHeight - sliverAppBar.toolbarHeight - tabbarHeight),
+              //       // pinned: true,
+              //     ),
+              //   ],
+              // ),
+              ),
           modelState.post == null
               ? SizedBox(
                   height: 1,
@@ -215,11 +272,20 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  child: CommentComposeView(provider: StateNotifierProvider((ref) {
-                    return CommentComposeWidgetViewModel(CommentComposeWidgetModelState.init(modelState.post!));
-                  })))
+                  child: CommentComposeView(
+                    provider: composerProvider,
+                    textFieldNode: widget.textFieldNode,
+                    onLikePress: model.onPostLikePress,
+                    onFavoritePress: model.onPostFavoritePress,
+                    onSharePress: model.onPostSharePress,
+                    onSendPress: (comment, text, onComplete, onError) {
+                      model.createComment(comment, text, onComplete, onError);
+                      hideKeyboard();
+                    },
+                  ))
         ],
       ),
+
       // body: TabBarView(controller: tabController, children: [
       //   Container(
       //     color: Colors.red,
@@ -257,11 +323,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
   List<Widget> buildUserInfo(Post post) {
     User author = post.author;
     return [
-      HoohImage(
-        imageUrl: author.avatarUrl!,
-        cornerRadius: 100,
-        width: 32,
-        height: 32,
+      AvatarView(
+        user: author,
+        size: 32,
       ),
       SizedBox(
         width: 8,
@@ -332,7 +396,7 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
     debugPrint("build");
     return Container(
       decoration: BoxDecoration(color: designColors.bar90_1.auto(ref), border: Border(bottom: BorderSide(color: designColors.light_02.auto(ref), width: 1))),
-      child: tabBar,
+      child: Material(child: tabBar),
     );
   }
 
@@ -341,6 +405,32 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   double get minExtent => tabBar.preferredSize.height;
+
+  @override
+  bool shouldRebuild(SliverPersistentHeaderDelegate oldDelegate) {
+    return this != oldDelegate;
+  }
+}
+
+class _SliverTabViewDelegate extends SliverPersistentHeaderDelegate {
+  final TabBarView tabBarView;
+  final double maxHeight;
+
+  _SliverTabViewDelegate(this.tabBarView, this.maxHeight);
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    debugPrint("build");
+    return Material(child: tabBarView);
+  }
+
+  @override
+  // double get maxExtent => tabBarView.preferredSize.height;
+  double get maxExtent => maxHeight;
+
+  @override
+  // double get minExtent => tabBarView.preferredSize.height;
+  double get minExtent => 0;
 
   @override
   bool shouldRebuild(SliverPersistentHeaderDelegate oldDelegate) {

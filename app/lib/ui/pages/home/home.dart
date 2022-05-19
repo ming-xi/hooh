@@ -5,9 +5,8 @@ import 'package:app/ui/pages/home/input.dart';
 import 'package:app/ui/pages/home/me.dart';
 import 'package:app/ui/pages/home/templates.dart';
 import 'package:app/utils/design_colors.dart';
+import 'package:app/utils/ui_utils.dart';
 import 'package:blur/blur.dart';
-import 'package:common/models/user.dart';
-import 'package:common/utils/network.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -89,14 +88,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             showSelectedLabels: false,
             showUnselectedLabels: false,
             elevation: 0,
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.input), label: "input"),
-              BottomNavigationBarItem(icon: Icon(Icons.image), label: "album"),
-              BottomNavigationBarItem(icon: Icon(Icons.explore), label: "explore"),
+            items: [
+              BottomNavigationBarItem(
+                  icon: HoohIcon(
+                    modelState.tabIndex != 0 ? "assets/images/icon_tab_creation_off.svg" : "assets/images/icon_tab_creation_on.svg",
+                    color: modelState.tabIndex != 0 ? designColors.light_06.auto(ref) : null,
+                  ),
+                  label: "input"),
+              BottomNavigationBarItem(
+                  icon: HoohIcon(
+                    modelState.tabIndex != 1 ? "assets/images/icon_tab_templates_off.svg" : "assets/images/icon_tab_templates_on.svg",
+                    color: modelState.tabIndex != 1 ? designColors.light_06.auto(ref) : null,
+                  ),
+                  label: "album"),
+              BottomNavigationBarItem(
+                  icon: HoohIcon(
+                    modelState.tabIndex != 2 ? "assets/images/icon_tab_feeds_off.svg" : "assets/images/icon_tab_feeds_on.svg",
+                    color: modelState.tabIndex != 2 ? designColors.light_06.auto(ref) : null,
+                  ),
+                  label: "explore"),
               BottomNavigationBarItem(icon: Icon(Icons.person), label: "person"),
             ],
-            selectedItemColor: designColors.feiyu_blue.auto(ref),
-            unselectedItemColor: designColors.dark_03.auto(ref),
+            // selectedItemColor: designColors.feiyu_blue.auto(ref),
+            // unselectedItemColor: designColors.dark_03.auto(ref),
             onTap: (index) {
               FocusManager.instance.primaryFocus?.unfocus();
               ref.read(homePageProvider.notifier).updateTabIndex(index);

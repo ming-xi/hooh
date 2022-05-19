@@ -20,6 +20,7 @@ void openLink(BuildContext context, String url) async {
   // launchUrlString(url);
 }
 
+bool globalIsKeyboardVisible = false;
 bool globalHomeScreenIsInStack = false;
 
 void popToHomeScreen(BuildContext context) {

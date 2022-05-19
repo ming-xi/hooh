@@ -75,7 +75,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
       if (tabController.index == 0) {
         node.requestFocus();
       } else {
-        FocusManager.instance.primaryFocus?.unfocus();
+        hideKeyboard();
       }
       EditPostScreenViewModel model = ref.read(widget.provider.notifier);
       model.changeTab(tabController.index);

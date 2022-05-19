@@ -1,5 +1,7 @@
 import 'package:app/global.dart';
+import 'package:app/ui/widgets/toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:common/models/user.dart';
 import 'package:common/utils/network.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,12 +10,90 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:sprintf/sprintf.dart';
 
+void showKeyboard(FocusNode node) {
+  if (globalIsKeyboardVisible) {
+    node.requestFocus();
+  } else {
+    if (node.hasFocus) {
+      node.unfocus();
+      Future.delayed(Duration(milliseconds: 100), () {
+        node.requestFocus();
+      });
+    } else {
+      node.requestFocus();
+    }
+  }
+}
+
+void hideKeyboard() {
+  FocusManager.instance.primaryFocus?.unfocus();
+}
+
 String formatAmount(int number) {
   if (number > 1000000) {
     return sprintf("%.1f", number / 1000000);
   } else {
     final formatter = NumberFormat("#,##0", "en_US");
     return formatter.format(number);
+  }
+}
+
+mixin KeyboardLogic<T extends StatefulWidget> on State<T>, WidgetsBindingObserver {
+  bool _keyboardVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeMetrics() {
+    super.didChangeMetrics();
+    if (!mounted) return;
+    final temp = keyboardVisible;
+    if (_keyboardVisible == temp) return;
+    _keyboardVisible = temp;
+    onKeyboardChanged(keyboardVisible);
+  }
+
+  void onKeyboardChanged(bool visible);
+
+  bool get keyboardVisible =>
+      EdgeInsets.fromWindowPadding(
+        WidgetsBinding.instance.window.viewInsets,
+        WidgetsBinding.instance.window.devicePixelRatio,
+      ).bottom >
+      100;
+}
+
+class AvatarView extends ConsumerWidget {
+  final User user;
+  final double size;
+
+  const AvatarView({
+    required this.user,
+    required this.size,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return HoohImage(
+      imageUrl: user.avatarUrl!,
+      width: size,
+      height: size,
+      cornerRadius: size / 2,
+      onPress: () {
+        Toast.showSnackBar(context, "show user ${user.id}");
+      },
+    );
   }
 }
 
@@ -27,6 +107,7 @@ class HoohImage extends ConsumerWidget {
     this.cornerRadius = 0,
     this.placeholderWidget,
     this.errorWidget,
+    this.onPress,
   }) : super(key: key);
 
   final String imageUrl;
@@ -36,16 +117,18 @@ class HoohImage extends ConsumerWidget {
   final double cornerRadius;
   final Widget Function(BuildContext, String)? placeholderWidget;
   final Widget Function(BuildContext, String, dynamic)? errorWidget;
+  final void Function()? onPress;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     int darkMode = ref.watch(globalDarkModeProvider.state).state;
 
-    Widget networkImage = CachedNetworkImage(
+    Widget result = CachedNetworkImage(
       filterQuality: (isBadge ?? false) ? FilterQuality.none : FilterQuality.low,
       width: width,
       fit: BoxFit.cover,
       height: height,
+      useOldImageOnUrlChange: true,
       cacheKey: network.getS3ImageKey(imageUrl),
       imageUrl: imageUrl,
       errorWidget: errorWidget ??
@@ -88,19 +171,42 @@ class HoohImage extends ConsumerWidget {
       },
     );
     if (getThemeMode(darkMode) == ThemeMode.dark) {
-      networkImage = Opacity(
+      result = Opacity(
         opacity: 0.7,
-        child: networkImage,
+        child: result,
       );
     }
     if (cornerRadius != 0) {
-      return ClipRRect(
-        child: networkImage,
+      result = ClipRRect(
+        child: result,
         borderRadius: BorderRadius.circular(cornerRadius),
       );
-    } else {
-      return networkImage;
+      // return ClipRRect(
+      //   child: result,
+      //   borderRadius: BorderRadius.circular(cornerRadius),
+      // );
     }
+    if (onPress != null) {
+      result = Stack(
+        children: [
+          result,
+          Material(
+            type: MaterialType.transparency,
+            child: Ink(
+              child: InkWell(
+                onTap: onPress,
+                borderRadius: BorderRadius.circular(cornerRadius),
+                child: SizedBox(
+                  width: width,
+                  height: height,
+                ),
+              ),
+            ),
+          )
+        ],
+      );
+    }
+    return result;
   }
 
   ThemeMode getThemeMode(int darkModeValue) {

@@ -1,5 +1,7 @@
 import 'package:app/extensions/extensions.dart';
+import 'package:app/ui/widgets/comment_view.dart';
 import 'package:common/models/hooh_api_error_response.dart';
+import 'package:common/models/network/requests.dart';
 import 'package:common/models/page_state.dart';
 import 'package:common/models/post.dart';
 import 'package:common/models/post_comment.dart';
@@ -53,9 +55,13 @@ class PostDetailScreenModelState {
 class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState> {
   PostDetailScreenViewModel(PostDetailScreenModelState state) : super(state) {
     // 如果需要加载时自动拉取数据，在这里调用
-    getPostInfo(null);
-    getLikes(null);
-    getComments(null);
+    onRefresh(null);
+  }
+
+  void onRefresh(Function(PageState)? callback) {
+    getPostInfo(callback);
+    getLikes(callback);
+    getComments(callback);
   }
 
   void getPostInfo(Function(PageState)? callback) {
@@ -82,14 +88,25 @@ class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState
     });
   }
 
-  void getComments(Function(PageState)? callback) {
-    if (state.commentState == PageState.loading) {
-      if (callback != null) {
-        callback(state.commentState);
+  void getComments(Function(PageState)? callback, {bool isRefresh = true}) {
+    if (isRefresh) {
+      updateState(state.copyWith(lastTimestamp: null));
+      if (state.commentState == PageState.loading) {
+        if (callback != null) {
+          callback(state.commentState);
+        }
+        return;
       }
-      return;
+    } else {
+      if (![
+        PageState.dataLoaded,
+      ].contains(state.commentState)) {
+        if (callback != null) {
+          callback(state.commentState);
+        }
+        return;
+      }
     }
-
     updateState(state.copyWith(commentState: PageState.loading));
     DateTime date = state.lastTimestamp ?? DateUtil.getCurrentUtcDate();
     network.requestAsync<List<PostComment>>(
@@ -99,14 +116,26 @@ class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState
         ), (newData) {
       if (newData.isEmpty) {
         //no data
-        updateState(state.copyWith(commentState: state.lastTimestamp == null ? PageState.empty : PageState.noMore));
+        if (isRefresh) {
+          updateState(state.copyWith(commentState: PageState.empty, comments: []));
+        } else {
+          updateState(state.copyWith(commentState: PageState.noMore));
+        }
       } else {
         //has data
-        updateState(state.copyWith(
-          commentState: PageState.dataLoaded,
-          lastTimestamp: newData.last.createdAt,
-          comments: [...state.comments, ...newData],
-        ));
+        if (isRefresh) {
+          updateState(state.copyWith(
+            commentState: PageState.dataLoaded,
+            lastTimestamp: newData.last.createdAt,
+            comments: [...newData],
+          ));
+        } else {
+          updateState(state.copyWith(
+            commentState: PageState.dataLoaded,
+            lastTimestamp: newData.last.createdAt,
+            comments: [...state.comments, ...newData],
+          ));
+        }
       }
       if (callback != null) {
         callback(state.commentState);
@@ -141,7 +170,7 @@ class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState
         //has data
         updateState(state.copyWith(
           likeState: PageState.dataLoaded,
-          likedUsers: [...state.likedUsers, ...newData],
+          likedUsers: [...newData],
         ));
       }
       if (callback != null) {
@@ -160,5 +189,60 @@ class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState
 
   void changeTab(int newTab) {
     updateState(state.copyWith(selectedTab: newTab));
+  }
+
+  void onPostLikePress(bool newState, void Function(String msg)? onError) {
+    if (state.post == null) {
+      return;
+    }
+    Future<void> request = state.post!.liked ? network.cancelLikePost(state.post!.id) : network.likePost(state.post!.id);
+    network.requestAsync<void>(request, (data) {
+      // to create a new object
+      updateState(state.copyWith(post: Post.fromJson((state.post!..liked = newState).toJson())));
+    }, (error) {
+      if (onError != null) {
+        onError(error.message);
+      }
+    });
+  }
+
+  void onPostFavoritePress(bool newState, void Function(String msg)? onError) {
+    // if (state.post==null) {
+    //   return;
+    // }
+    // Future<void> request = state.post!.favorited ? network.cancelLikePost(state.post!.id) : network.likePost(state.post!.id);
+    // network.requestAsync<void>(request, (data) {
+    //   updateState(state.copyWith(post: state.post!..liked=newState));
+    // }, (error) {
+    //   if (onError!=null) {
+    //     onError(error.message);
+    //   }
+    // });
+  }
+
+  void onPostSharePress() {}
+
+  void createComment(PostComment? repliedComment, String text, void Function()? onComplete, void Function(String msg)? onError) {
+    Future<PostComment> request;
+    CreatePostCommentRequest createPostCommentRequest = CreatePostCommentRequest([], getEscapedString(text));
+    if (repliedComment != null) {
+      request = network.replyComment(repliedComment.id, createPostCommentRequest);
+    } else {
+      request = network.createPostComment(state.postId, createPostCommentRequest);
+    }
+    network.requestAsync<PostComment>(request, (data) {
+      updateState(state.copyWith(comments: [data, ...state.comments], post: Post.fromJson((state.post!..commentCount += 1).toJson())));
+      if (onComplete != null) {
+        onComplete();
+      }
+    }, (error) {
+      if (onError != null) {
+        onError(error.message);
+      }
+    });
+  }
+
+  String getEscapedString(String text) {
+    return text.replaceAll(CommentView.SUBSTITUTE, CommentView.SUBSTITUTE_REGEX);
   }
 }

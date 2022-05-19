@@ -5,6 +5,7 @@ import 'package:app/ui/pages/splash.dart';
 import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/file_utils.dart';
+import 'package:app/utils/ui_utils.dart';
 import 'package:common/utils/device_info.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:file_local_storage_inspector/file_local_storage_inspector.dart';
@@ -120,7 +121,12 @@ class HoohApp extends ConsumerStatefulWidget {
   ConsumerState createState() => _MyAppState();
 }
 
-class _MyAppState extends ConsumerState<HoohApp> {
+class _MyAppState extends ConsumerState<HoohApp> with WidgetsBindingObserver, KeyboardLogic {
+  @override
+  void onKeyboardChanged(bool visible) {
+    globalIsKeyboardVisible = visible;
+  }
+
   @override
   void initState() {
     super.initState();

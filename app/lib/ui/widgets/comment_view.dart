@@ -10,10 +10,18 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class CommentView extends ConsumerStatefulWidget {
+  static const SUBSTITUTE = "[]";
+  static const SUBSTITUTE_REGEX = r'\[\]';
+  static const SUBSTITUTE_ESCAPE_REGEX = r'\\\[\\\]';
+
   final PostComment comment;
+  final void Function(PostComment comment)? onReplyClick;
+  final void Function(PostComment comment, bool newState)? onLikeClick;
 
   const CommentView({
     required this.comment,
+    this.onReplyClick,
+    this.onLikeClick,
     Key? key,
   }) : super(key: key);
 
@@ -22,9 +30,6 @@ class CommentView extends ConsumerStatefulWidget {
 }
 
 class _CommentViewState extends ConsumerState<CommentView> {
-  static const SUBSTITUTE = "[]";
-  static const SUBSTITUTE_REGEX = r'\[\]';
-  static const SUBSTITUTE_ESCAPE_REGEX = r'\\\[\\\]';
   final TapGestureRecognizer _tapGestureRecognizer = TapGestureRecognizer();
 
   @override
@@ -82,7 +87,9 @@ class _CommentViewState extends ConsumerState<CommentView> {
                     Spacer(),
                     GestureDetector(
                       onTap: () {
-                        debugPrint("tap");
+                        if (widget.onLikeClick != null) {
+                          widget.onLikeClick!(comment, !comment.liked!);
+                        }
                       },
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -101,7 +108,7 @@ class _CommentViewState extends ConsumerState<CommentView> {
                             SizedBox(
                               width: 16,
                               child: Text(
-                                formatAmount(comment.likeCount),
+                                comment.likeCount == 0 ? "" : formatAmount(comment.likeCount),
                                 textAlign: TextAlign.start,
                                 style: TextStyle(
                                   fontSize: 6,
@@ -115,7 +122,11 @@ class _CommentViewState extends ConsumerState<CommentView> {
                       ),
                     ),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        if (widget.onReplyClick != null) {
+                          widget.onReplyClick!(comment);
+                        }
+                      },
                       child: Text(
                         "Reply",
                         style: TextStyle(color: designColors.light_06.auto(ref)),
@@ -149,7 +160,7 @@ class _CommentViewState extends ConsumerState<CommentView> {
         style: normalTextStyle,
       );
     } else {
-      List<dynamic> splits = comment.content.split(RegExp(SUBSTITUTE_REGEX)).map((e) => e as dynamic).toList();
+      List<dynamic> splits = comment.content.split(RegExp(CommentView.SUBSTITUTE_REGEX)).map((e) => e as dynamic).toList();
       int index = 0;
       for (int i = 0; i < splits.length; i++) {
         if (i < substitutes.length) {
@@ -163,7 +174,7 @@ class _CommentViewState extends ConsumerState<CommentView> {
           text: TextSpan(
               children: splits.map((e) {
         if (e is String) {
-          return TextSpan(text: e.replaceAll(RegExp(SUBSTITUTE_ESCAPE_REGEX), SUBSTITUTE), style: normalTextStyle);
+          return TextSpan(text: e.replaceAll(RegExp(CommentView.SUBSTITUTE_ESCAPE_REGEX), CommentView.SUBSTITUTE), style: normalTextStyle);
         } else if (e is Substitute) {
           if (e.type == Substitute.TYPE_MENTION) {
             return TextSpan(

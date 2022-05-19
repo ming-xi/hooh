@@ -36,6 +36,7 @@ class Toast {
 
   static void showSnackBar(BuildContext context, String message) {
     final snackBar = SnackBar(
+      duration: Duration(seconds: 2),
       content: Text(message),
     );
 
