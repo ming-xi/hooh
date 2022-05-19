@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:app/providers.dart';
+import 'package:app/global.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/user/register/set_badge.dart';
 import 'package:app/ui/pages/user/register/start.dart';
@@ -23,7 +23,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       FlutterNativeSplash.remove();
       Future.delayed(
         Duration(milliseconds: 0),
@@ -38,13 +38,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           }
           if (user == null) {
             if (preferences.getBool(Preferences.KEY_USER_HAS_SKIPPED_LOGIN) ?? false) {
-              Navigator.pushReplacement(context, pageRouteBuilder(HomeScreen()));
+              Navigator.pushReplacement(context, pageRouteBuilder(HomeScreen(), isHome: true));
             } else {
               Navigator.pushReplacement(context, pageRouteBuilder(StartScreen()));
             }
           } else {
             if (user.hasFinishedRegisterSteps()) {
-              Navigator.pushReplacement(context, pageRouteBuilder(HomeScreen()));
+              Navigator.pushReplacement(context, pageRouteBuilder(HomeScreen(), isHome: true));
             } else {
               // int register_step = user.register_step!;
               // ......
@@ -59,7 +59,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     });
   }
 
-  PageRouteBuilder<dynamic> pageRouteBuilder(Widget widget) => PageRouteBuilder(
+  PageRouteBuilder<dynamic> pageRouteBuilder(Widget widget, {bool isHome = false}) => PageRouteBuilder(
+        settings: !isHome ? null : const RouteSettings(name: "/home"),
         pageBuilder: (context, anim1, anim2) => widget,
         // transitionsBuilder: (context, anim1, anim2, child) => FadeTransition(opacity: anim1, child: child),
         // transitionDuration: const Duration(milliseconds: 250),

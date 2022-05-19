@@ -1,16 +1,13 @@
-import 'package:app/extensions/extensions.dart';
-import 'package:app/test.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/user/register/login.dart';
 import 'package:app/ui/pages/user/register/register.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
-import 'package:app/utils/design_colors.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class StartScreen extends ConsumerStatefulWidget {
-   StartScreen({
+  StartScreen({
     Key? key,
   }) : super(key: key);
 
@@ -81,7 +78,12 @@ class _StartScreenState extends ConsumerState<StartScreen> {
                     TextButton(
                         onPressed: () {
                           preferences.putBool(Preferences.KEY_USER_HAS_SKIPPED_LOGIN, true);
-                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen()));
+                          Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => HomeScreen(),
+                                settings: const RouteSettings(name: "/home"),
+                              ));
                         },
                         child: Text('Skip', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey))),
                   ],

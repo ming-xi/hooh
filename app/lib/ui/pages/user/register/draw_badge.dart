@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:app/providers.dart';
+import 'package:app/global.dart';
 import 'package:app/ui/pages/user/register/draw_badge_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/draw_badge_view.dart';
@@ -207,13 +207,7 @@ class _DrawBadgeScreenState extends ConsumerState<DrawBadgeScreen> {
               res = Ink(
                 decoration: BoxDecoration(
                     color: modelState.customColor != null ? modelState.customColor : null,
-                    gradient: modelState.customColor != null
-                        ? null
-                        : const LinearGradient(colors: [
-                            Color(0xFFFFD840),
-                            Color(0xFFF3ACFF),
-                            Color(0xFF48E1FF),
-                          ], begin: Alignment.bottomLeft, end: Alignment.topRight),
+                    gradient: modelState.customColor != null ? null : MainStyles.badgeGradient(),
                     borderRadius: borderRadius,
                     border: selectedBorder),
                 child: InkWell(

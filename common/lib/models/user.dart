@@ -17,15 +17,38 @@ class User {
   int? publicPostCount;
   int? likeCount;
   int? commentCount;
+  int? templateCount;
   String? avatarUrl;
+  String? badgeImageUrl;
   String? signature;
   String? website;
+  List<String>? receivedBadges;
+
+  bool? followed;
 
   DateTime? createdAt; // 创建时间
 
   int? register_step;
 
-  User(this.id, this.name, this.username, this.avatarUrl, this.signature, this.website, this.createdAt, this.register_step);
+  User(
+      this.id,
+      this.name,
+      this.username,
+      this.followerCount,
+      this.followingCount,
+      this.postCount,
+      this.publicPostCount,
+      this.likeCount,
+      this.commentCount,
+      this.templateCount,
+      this.avatarUrl,
+      this.badgeImageUrl,
+      this.signature,
+      this.website,
+      this.receivedBadges,
+      this.followed,
+      this.createdAt,
+      this.register_step);
 
   bool hasFinishedRegisterSteps() {
     return register_step! == REGISTER_STEP_COMPLETED;
@@ -34,4 +57,18 @@ class User {
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
   Map<String, dynamic> toJson() => _$UserToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class UserBadge {
+  String imageUrl;
+  User designer;
+  int serialNumber;
+  DateTime createdAt;
+
+  UserBadge(this.imageUrl, this.designer, this.serialNumber, this.createdAt);
+
+  factory UserBadge.fromJson(Map<String, dynamic> json) => _$UserBadgeFromJson(json);
+
+  Map<String, dynamic> toJson() => _$UserBadgeToJson(this);
 }

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width = "48px"
+     height = "48px"
+     viewBox = "0 0 48 48"
+     version = "1.1"
+     xmlns = "http://www.w3.org/2000/svg"
+     xmlns:xlink = "http://www.w3.org/1999/xlink">
+	<title>编组</title>
+	<g id = "控件"
+	   stroke = "none"
+	   stroke-width = "1"
+	   fill = "none"
+	   fill-rule = "evenodd">
+		<g id = "编组">
+			<rect id = "Rectangle-25"
+			      x = "0"
+			      y = "0"
+			      width = "48"
+			      height = "48"
+			      rx = "8"></rect>
+			<g id = "NFT"
+			   transform = "translate(7.000000, 15.000000)"
+			   fill = "#FFFFFF"
+			   fill-rule = "nonzero">
+				<polygon id = "路径"
+				         points = "11.8671875 18.8125 7.68359375 18.8125 4.07421875 9.98046875 4.07421875 18.8125 0 18.8125 0 0 4.15625 0 7.79296875 8.75 7.79296875 0 11.8671875 0"></polygon>
+				<polygon id = "路径"
+				         points = "22.1035938 3.74609375 18.7129688 3.74609375 18.7129688 7.328125 21.748125 7.328125 21.748125 10.9101562 18.7129688 10.9101562 18.7129688 18.8125 13.8184375 18.8125 13.8184375 0 22.1035938 0"></polygon>
+				<polygon id = "路径"
+				         points = "33.8985938 3.74609375 31.0275 3.74609375 31.0275 18.8125 26.1329688 18.8125 26.1329688 3.74609375 23.2071875 3.74609375 23.2071875 0 33.8985938 0"></polygon>
+			</g>
+		</g>
+	</g>
+</svg>

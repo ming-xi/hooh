@@ -98,3 +98,32 @@ class HomepageBackgroundImageResponse {
 
   Map<String, dynamic> toJson() => _$HomepageBackgroundImageResponseToJson(this);
 }
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class UserBadgeStatsResponse {
+  int createdBadgeCount;
+  int receivedBadgeCount;
+  List<UserCreatedBadge> createdBadges;
+
+  UserBadgeStatsResponse(this.createdBadgeCount, this.receivedBadgeCount, this.createdBadges);
+
+  factory UserBadgeStatsResponse.fromJson(Map<String, dynamic> json) => _$UserBadgeStatsResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$UserBadgeStatsResponseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class UserCreatedBadge {
+  String imageUrl;
+  int ownerAmount;
+  DateTime createdAt;
+
+  @JsonKey(ignore: true)
+  late String displayDate;
+
+  UserCreatedBadge(this.imageUrl, this.ownerAmount, this.createdAt);
+
+  factory UserCreatedBadge.fromJson(Map<String, dynamic> json) => _$UserCreatedBadgeFromJson(json);
+
+  Map<String, dynamic> toJson() => _$UserCreatedBadgeToJson(this);
+}

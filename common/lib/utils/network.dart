@@ -7,6 +7,7 @@ import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/network/requests.dart';
 import 'package:common/models/network/responses.dart';
 import 'package:common/models/post.dart';
+import 'package:common/models/post_comment.dart';
 import 'package:common/models/social_badge.dart';
 import 'package:common/models/template.dart';
 import 'package:common/models/user.dart';
@@ -208,6 +209,19 @@ class Network {
     return _getResponseList<User>(HttpMethod.get, _buildHoohUri("users/$userId/followings"), deserializer: User.fromJson);
   }
 
+  Future<UserBadgeStatsResponse> getUserBadgeStats(String userId) {
+    return _getResponseObject<UserBadgeStatsResponse>(HttpMethod.get, _buildHoohUri("users/$userId/badges/stats"),
+        deserializer: UserBadgeStatsResponse.fromJson);
+  }
+
+  Future<List<UserBadge>> getUserReceivedBadges(String userId, {int page = DEFAULT_PAGE, int size = DEFAULT_PAGE_SIZE}) {
+    Map<String, dynamic> params = {
+      "page": page,
+      "size": size,
+    };
+    return _getResponseList<UserBadge>(HttpMethod.get, _buildHoohUri("users/$userId/badges", params: params), deserializer: UserBadge.fromJson);
+  }
+
   //endregion
 
   //region template
@@ -283,6 +297,11 @@ class Network {
 
   //endregion
   //region post
+
+  Future<Post> getPostInfo(String id) {
+    return _getResponseObject<Post>(HttpMethod.get, _buildHoohUri("posts/$id"), deserializer: Post.fromJson);
+  }
+
   Future<List<String>> getRecommendedPublishPostTags() {
     return _getResponseList(
       HttpMethod.get,
@@ -303,29 +322,110 @@ class Network {
     return _getResponseObject<Post>(HttpMethod.post, _buildHoohUri("posts/create"), body: request.toJson(), deserializer: Post.fromJson);
   }
 
-  Future<List<Post>> getWaitingListPosts({DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
+  Future<List<Post>> getWaitingListPosts({required bool trending, DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
     Map<String, dynamic> params = {
       "size": size,
     };
     if (date != null) {
       params["timestamp"] = DateUtil.getUtcDateString(date);
     }
-    return _getResponseList<Post>(HttpMethod.get, _buildHoohUri("posts/waiting-list", params: params), deserializer: Post.fromJson);
+
+    return _getResponseList<Post>(HttpMethod.get, _buildHoohUri("posts/waiting-list/${trending ? "trending" : "recent"}", params: params),
+        deserializer: Post.fromJson);
   }
 
-  Future<List<Post>> getMainListRecentPosts({DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
+  Future<List<Post>> getMainListPosts({required bool trending, DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
     Map<String, dynamic> params = {
       "size": size,
     };
-
     if (date != null) {
       params["timestamp"] = DateUtil.getUtcDateString(date);
     }
+    return _getResponseList<Post>(HttpMethod.get, _buildHoohUri("posts/main-list/${trending ? "trending" : "recent"}", params: params),
+        deserializer: Post.fromJson);
+  }
 
-    return _getResponseList<Post>(HttpMethod.get, _buildHoohUri("posts/main-list/recent", params: params), deserializer: Post.fromJson);
+  Future<Post> votePost(String postId) {
+    return _getResponseObject<Post>(HttpMethod.put, _buildHoohUri("posts/$postId/vote"), deserializer: Post.fromJson);
+  }
+
+  Future<void> likePost(String postId) {
+    return _getResponseObject<void>(
+      HttpMethod.put,
+      _buildHoohUri("posts/$postId/like"),
+    );
+  }
+
+  Future<void> cancelLikePost(String postId) {
+    return _getResponseObject<void>(
+      HttpMethod.delete,
+      _buildHoohUri("posts/$postId/like"),
+    );
+  }
+
+  Future<List<User>> getPostLikes(String id, {int page = DEFAULT_PAGE, int size = 100}) {
+    Map<String, dynamic> params = {
+      "page": page,
+      "size": size,
+    };
+    return _getResponseList<User>(HttpMethod.get, _buildHoohUri("posts/$id/likes", params: params), deserializer: User.fromJson);
+  }
+
+  Future<List<PostComment>> getPostComments(String id, {DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
+    Map<String, dynamic> params = {
+      "size": size,
+    };
+    if (date != null) {
+      params["timestamp"] = DateUtil.getUtcDateString(date);
+    }
+    return _getResponseList<PostComment>(HttpMethod.get, _buildHoohUri("posts/$id/comments", params: params), deserializer: PostComment.fromJson);
   }
 
   //endregion
+
+  //region comments
+  // Future<List<PostComment>> getCommentComments(String id, {DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
+  //   Map<String, dynamic> params = {
+  //     "size": size,
+  //   };
+  //   if (date != null) {
+  //     params["timestamp"] = DateUtil.getUtcDateString(date);
+  //   }
+  //   return _getResponseList<PostComment>(HttpMethod.get, _buildHoohUri("post-comments/$id/comments", params: params), deserializer: PostComment.fromJson);
+  // }
+
+  Future<PostComment> createPostComment(String id, CreatePostCommentRequest request) {
+    return _getResponseObject<PostComment>(HttpMethod.post, _buildHoohUri("posts/$id/comments"), body: request.toJson(), deserializer: PostComment.fromJson);
+  }
+
+  Future<PostComment> replyComment(String id, CreatePostCommentRequest request) {
+    return _getResponseObject<PostComment>(HttpMethod.post, _buildHoohUri("post-comments/$id/comments"),
+        body: request.toJson(), deserializer: PostComment.fromJson);
+  }
+
+  Future<void> deletePostComment(String id) {
+    return _getResponseObject<void>(
+      HttpMethod.delete,
+      _buildHoohUri("post-comments/$id"),
+    );
+  }
+
+  Future<void> likePostComment(String id) {
+    return _getResponseObject<void>(
+      HttpMethod.put,
+      _buildHoohUri("post-comments/$id/like"),
+    );
+  }
+
+  Future<void> cancelLikePostComment(String id) {
+    return _getResponseObject<void>(
+      HttpMethod.delete,
+      _buildHoohUri("post-comments/$id/like"),
+    );
+  }
+
+  //endregion
+
   //region misc
 
   Future<HomepageBackgroundImageResponse> getHomepageRandomBackground() {

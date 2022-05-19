@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:app/providers.dart';
+import 'package:app/global.dart';
 import 'package:app/ui/pages/splash.dart';
 import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
@@ -27,13 +27,28 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:storage_inspector/storage_inspector.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // enableImmersiveMode();
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   // 保留开屏页
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
   await _initUtils();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
     runApp(const ProviderScope(child: HoohApp()));
   });
+}
+
+void enableImmersiveMode() {
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    systemStatusBarContrastEnforced: true,
+    statusBarIconBrightness: Brightness.light,
+    systemNavigationBarContrastEnforced: true,
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarDividerColor: Colors.transparent,
+    systemNavigationBarIconBrightness: Brightness.dark,
+  ));
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 }
 
 Future<void> _initUtils() async {
@@ -109,8 +124,8 @@ class _MyAppState extends ConsumerState<HoohApp> {
   @override
   void initState() {
     super.initState();
-    // SchedulerBinding.instance!.window.onPlatformBrightnessChanged=(){
-    //   Brightness brightness = SchedulerBinding.instance!.window.platformBrightness;
+    // SchedulerBinding.instance.window.onPlatformBrightnessChanged=(){
+    //   Brightness brightness = SchedulerBinding.instance.window.platformBrightness;
     //
     // };
   }
@@ -127,7 +142,7 @@ class _MyAppState extends ConsumerState<HoohApp> {
           // shadowColor: Colors.transparent,
         ));
     int darkMode = ref.watch(globalDarkModeProvider.state).state;
-    Brightness brightness = SchedulerBinding.instance!.window.platformBrightness;
+    Brightness brightness = SchedulerBinding.instance.window.platformBrightness;
     // debugPrint("DesignColor brightness=$brightness");
     return MaterialApp(
       theme: globalLightTheme,

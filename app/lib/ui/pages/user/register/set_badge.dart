@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:app/providers.dart';
+import 'package:app/global.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/user/register/draw_badge.dart';
 import 'package:app/ui/pages/user/register/set_badge_view_model.dart';
@@ -69,7 +69,9 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
                   });
             } else if (result is User) {
               ref.read(globalUserInfoProvider.state).state = result;
-              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeScreen()), (route) => false);
+              // Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeScreen()), (route) => false);
+
+              popToHomeScreen(context);
             }
           },
           style: RegisterStyles.appbarTextButtonStyle(ref),

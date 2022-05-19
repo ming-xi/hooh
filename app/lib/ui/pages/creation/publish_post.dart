@@ -1,6 +1,10 @@
+import 'package:app/global.dart';
 import 'package:app/ui/pages/creation/edit_post_view_model.dart';
 import 'package:app/ui/pages/creation/publish_post_view_model.dart';
 import 'package:app/ui/pages/creation/select_topic.dart';
+import 'package:app/ui/pages/home/feeds.dart';
+import 'package:app/ui/pages/home/home.dart';
+import 'package:app/ui/pages/home/home_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/template_compose_view.dart';
 import 'package:app/ui/widgets/toast.dart';
@@ -81,16 +85,16 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
                         onChanged: (newState) {
                           model.setAllowDownload(newState);
                         }), onPress: () {
-                  model.setAllowDownload(!modelState.allowDownload);
-                }),
+                      model.setAllowDownload(!modelState.allowDownload);
+                    }),
                 MainStyles.buildListTile(ref, "Private",
                     tailWidget: Switch(
                         value: modelState.isPrivate,
                         onChanged: (newState) {
                           model.setIsPrivate(newState);
                         }), onPress: () {
-                  model.setIsPrivate(!modelState.isPrivate);
-                }),
+                      model.setIsPrivate(!modelState.isPrivate);
+                    }),
                 Spacer(),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 48.0),
@@ -170,8 +174,17 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
         context: context,
         publishToWaitingList: publishToWaitingList,
         onSuccess: (post) {
-          Navigator.of(context).pop();
-          Toast.showSnackBar(context, "upload success!");
+          // Navigator.popUntil(context, ModalRoute.withName("/home"));
+          Future.delayed(Duration(seconds: 1), () {
+            Navigator.of(context).pop();
+            Toast.showSnackBar(context, "upload success!");
+            if (publishToWaitingList) {
+              HomePageViewModel model = ref.read(homePageProvider.notifier);
+              model.updateTabIndex(HomeScreen.PAGE_INDEX_FEEDS);
+              model.updateFeedsTabIndex(FeedsPage.PAGE_INDEX_WAITING, notifyController: true);
+            }
+            popToHomeScreen(context);
+          });
         },
         onError: (error) {
           Navigator.of(context).pop();

@@ -1,4 +1,4 @@
-import 'package:app/ui/pages/feeds/waiting_list_view_model.dart';
+import 'package:app/ui/pages/feeds/main_list_view_model.dart';
 import 'package:app/ui/pages/home/feeds.dart';
 import 'package:app/ui/widgets/post_view.dart';
 import 'package:app/ui/widgets/toast.dart';
@@ -9,20 +9,20 @@ import 'package:flutter/scheduler.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
-class WaitingListPage extends ConsumerStatefulWidget {
-  final StateNotifierProvider<WaitingListPageViewModel, WaitingListPageModelState> provider = StateNotifierProvider((ref) {
-    return WaitingListPageViewModel(WaitingListPageModelState.init());
+class MainListPage extends ConsumerStatefulWidget {
+  final StateNotifierProvider<MainListPageViewModel, MainListPageModelState> provider = StateNotifierProvider((ref) {
+    return MainListPageViewModel(MainListPageModelState.init());
   });
 
-  WaitingListPage({
+  MainListPage({
     Key? key,
   }) : super(key: key) {}
 
   @override
-  ConsumerState createState() => _WaitingListPageState();
+  ConsumerState createState() => _MainListPageState();
 }
 
-class _WaitingListPageState extends ConsumerState<WaitingListPage> {
+class _MainListPageState extends ConsumerState<MainListPage> {
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
   ScrollController scrollController = ScrollController();
   late void Function() listener;
@@ -33,7 +33,7 @@ class _WaitingListPageState extends ConsumerState<WaitingListPage> {
     super.initState();
     listener = () {
       if (!scrollController.position.isScrollingNotifier.value) {
-        WaitingListPageViewModel model = ref.read(widget.provider.notifier);
+        MainListPageViewModel model = ref.read(widget.provider.notifier);
         model.setScrollDistance(scrollController.offset);
       } else {
         // print('scroll is started');
@@ -41,7 +41,7 @@ class _WaitingListPageState extends ConsumerState<WaitingListPage> {
     };
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
       scrollController.position.isScrollingNotifier.addListener(listener);
-      WaitingListPageModelState modelState = ref.read(widget.provider);
+      MainListPageModelState modelState = ref.read(widget.provider);
       scrollController.jumpTo(modelState.scrollDistance);
       setState(() {
         //防止list闪动
@@ -58,8 +58,8 @@ class _WaitingListPageState extends ConsumerState<WaitingListPage> {
 
   @override
   Widget build(BuildContext context) {
-    WaitingListPageModelState modelState = ref.watch(widget.provider);
-    WaitingListPageViewModel model = ref.read(widget.provider.notifier);
+    MainListPageModelState modelState = ref.watch(widget.provider);
+    MainListPageViewModel model = ref.read(widget.provider.notifier);
     return SmartRefresher(
       enablePullDown: true,
       enablePullUp: true,
@@ -110,7 +110,7 @@ class _WaitingListPageState extends ConsumerState<WaitingListPage> {
     );
   }
 
-  Widget buildHeaderView(BuildContext context, WaitingListPageViewModel model, WaitingListPageModelState modelState) {
+  Widget buildHeaderView(BuildContext context, MainListPageViewModel model, MainListPageModelState modelState) {
     return Row(
       children: [
         Spacer(),
@@ -121,7 +121,7 @@ class _WaitingListPageState extends ConsumerState<WaitingListPage> {
     );
   }
 
-  Widget buildHeaderButtonView(WaitingListPageViewModel model, bool trending, bool selected) {
+  Widget buildHeaderButtonView(MainListPageViewModel model, bool trending, bool selected) {
     return SizedBox(
       height: 40,
       width: 100,
@@ -147,14 +147,41 @@ class _WaitingListPageState extends ConsumerState<WaitingListPage> {
     );
   }
 
-  Widget buildPostView(BuildContext context, int index, WaitingListPageViewModel model, WaitingListPageModelState modelState) {
+  Widget buildPostView(BuildContext context, int index, MainListPageViewModel model, MainListPageModelState modelState) {
     return PostView(
       post: modelState.posts[index],
+      onShare: (post, error) {
+        Toast.showSnackBar(context, "share...");
+      },
+      onComment: (post, error) {
+        Toast.showSnackBar(context, "comment...");
+      },
+      onLike: (post, error) {
+        if (error != null) {
+          Toast.showSnackBar(context, error.message);
+          return;
+        }
+        if (post.liked) {
+          post.likeCount -= 1;
+        } else {
+          post.likeCount += 1;
+        }
+        post.liked = !post.liked;
+        model.updatePostData(post, index);
+      },
       onVote: (post, error) {
         if (error != null) {
           Toast.showSnackBar(context, error.message);
           return;
         }
+        model.updatePostData(post, index);
+      },
+      onFollow: (post, error) {
+        if (error != null) {
+          Toast.showSnackBar(context, error.message);
+          return;
+        }
+        post.author.followed = true;
         model.updatePostData(post, index);
       },
     );

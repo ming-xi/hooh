@@ -1,8 +1,11 @@
+import 'package:app/ui/pages/home/home.dart';
+import 'package:app/ui/pages/user/web_view.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 void handleUserLogout({WidgetRef? ref}) {
   if (ref != null) {
@@ -10,6 +13,28 @@ void handleUserLogout({WidgetRef? ref}) {
   }
   preferences.remove(Preferences.KEY_USER_INFO);
   // preferences.remove(Preferences.KEY_USER_DRAFT);
+}
+
+void openLink(BuildContext context, String url) async {
+  Navigator.push(context, MaterialPageRoute(builder: (context) => const WebViewScreen('User Agreement and Privacy Policy', 'https://www.baidu.com')));
+  // launchUrlString(url);
+}
+
+bool globalHomeScreenIsInStack = false;
+
+void popToHomeScreen(BuildContext context) {
+  if (globalHomeScreenIsInStack) {
+    Navigator.popUntil(context, ModalRoute.withName("/home"));
+  } else {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HomeScreen(),
+        settings: const RouteSettings(name: "/home"),
+      ),
+      (route) => false,
+    );
+  }
 }
 
 final StateProvider<User?> globalUserInfoProvider = StateProvider<User?>((ref) => null);

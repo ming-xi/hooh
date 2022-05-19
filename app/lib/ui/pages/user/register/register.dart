@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:app/providers.dart';
+import 'package:app/global.dart';
 import 'package:app/ui/pages/user/register/login.dart';
 import 'package:app/ui/pages/user/register/register_view_model.dart';
 import 'package:app/ui/pages/user/register/set_badge.dart';

@@ -1,3 +1,4 @@
+import 'package:common/models/post_comment.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'requests.g.dart';
@@ -100,14 +101,13 @@ class CreateTemplateRequest {
   String imageKey;
   String textColor;
 
-  CreateTemplateRequest(
-      {required this.frameHeight,
-      required this.frameWidth,
-      required this.frameX,
-      required this.frameY,
-      this.tags,
-      required this.imageKey,
-      required this.textColor});
+  CreateTemplateRequest({required this.frameHeight,
+    required this.frameWidth,
+    required this.frameX,
+    required this.frameY,
+    this.tags,
+    required this.imageKey,
+    required this.textColor});
 
   factory CreateTemplateRequest.fromJson(Map<String, dynamic> json) => _$CreateTemplateRequestFromJson(json);
 
@@ -161,4 +161,16 @@ class GetRecommendedTemplatesForCreationRequest {
   factory GetRecommendedTemplatesForCreationRequest.fromJson(Map<String, dynamic> json) => _$GetRecommendedTemplatesForCreationRequestFromJson(json);
 
   Map<String, dynamic> toJson() => _$GetRecommendedTemplatesForCreationRequestToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class CreatePostCommentRequest {
+  List<Substitute> substitutes;
+  String content;
+
+  CreatePostCommentRequest(this.substitutes, this.content);
+
+  factory CreatePostCommentRequest.fromJson(Map<String, dynamic> json) => _$CreatePostCommentRequestFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CreatePostCommentRequestToJson(this);
 }

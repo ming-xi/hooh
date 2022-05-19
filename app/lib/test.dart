@@ -3,21 +3,17 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:app/extensions/extensions.dart';
-import 'package:app/providers.dart';
+import 'package:app/global.dart';
 import 'package:app/test_uploading_view_model.dart';
-import 'package:app/ui/pages/creation/publish_post.dart';
-import 'package:app/ui/pages/creation/template_add_tag.dart';
-import 'package:app/ui/pages/creation/template_done.dart';
-import 'package:app/ui/pages/creation/template_text_setting.dart';
 import 'package:app/ui/pages/user/register/set_badge.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
+import 'package:app/ui/widgets/comment_view.dart';
 import 'package:app/ui/widgets/ipfs_node.dart';
-import 'package:app/ui/widgets/post_view.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/file_utils.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/network/responses.dart';
-import 'package:common/models/post.dart';
+import 'package:common/models/post_comment.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
@@ -58,6 +54,8 @@ class _TestMenuScreenState extends ConsumerState<TestMenuScreen> {
             ElevatedButton(
                 onPressed: () {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => TestWidgetScreen()));
+                  // Navigator.popUntil(context,ModalRoute.withName("/home"));
+                  // popToHomeScreen(context);
                 },
                 child: Text("test screen")),
             SizedBox(
@@ -141,46 +139,58 @@ class TestWidgetScreen extends ConsumerStatefulWidget {
 class _TestWidgetScreenState extends ConsumerState<TestWidgetScreen> {
   static const JSON = '''
    {
-     "allow_download": false,
-     "author": {
-       "avatar_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/user-content/avatars/10130a69034d88e28d04630b47ce16d5.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220511T075427Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220511%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=f28ce05b0d949801db121de1ec9e4b1261803b61fe464ec7449933c1013c64b5",
-       "badge_image_url": null,
-       "followed": false,
-       "id": "646365ad-3a43-4bf5-baa8-c323bd6f8a62",
-       "name": "Alice"
-     },
-     "comment_count": 0,
-     "created_at": "2022-05-10 08:47:05",
-     "favorited": false,
-     "id": "a5670e8c-2856-48f5-8dcc-10dfeb8fa903",
-     "images": [
-       {
-         "hidden": false,
-         "image_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/user-content/posts/d57abff7ca32d9263f5f2c8d584b43d5.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220511T075427Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220511%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=4563d727dde23b5782c45c3555a9a3494d6024e419b00ea1d4f3c91fd473f421"
-       },
-       {
-         "hidden": false,
-         "image_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/user-content/posts/5bd520a16c6654188b9a91ff7db05d98.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220511T075427Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220511%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=18a55aa6c179cd67e391a4d3fe710d59825dc9a2039e39e87b5b387c5f12df43"
-       },
-       {
-         "hidden": false,
-         "image_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/user-content/posts/74239c44725977447308648ca7a8ac93.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220511T075427Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220511%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=69b80ce752638ee5f8c9779f0d436d677a50ca30a2d7e95ad6c19dcef3a7feef"
-       }
-     ],
-     "like_count": 0,
-     "liked": false,
-     "publish_state": 1,
-     "visible": true,
-     "vote_count": 0,
-     "votes": 0
-   }
+        "author": {
+            "avatar_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/hq-content/default_avatars/default_avatar_1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220518T084114Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220518%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=8f1f0f360b566ccd93edebe7c62af032ec0a0b1e46f1dc8b3013994216578c0f",
+            "id": "fa9c8fde-e84a-4953-9c44-e37e71def81a",
+            "name": "test16"
+        },
+        "comment_count": 0,
+        "content": "hi, this is [], use \\\\[\\\\] to mention other people in nested comments!",
+        "created_at": "2022-05-16 09:58:42",
+        "id": "6457c135-e193-4294-98eb-88601df850f2",
+        "like_count": 0,
+        "liked": false,
+        "replied_user": {
+            "avatar_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/hq-content/default_avatars/default_avatar_1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220518T084114Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220518%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=8f1f0f360b566ccd93edebe7c62af032ec0a0b1e46f1dc8b3013994216578c0f",
+            "id": "fa9c8fde-e84a-4953-9c44-e37e71def81a",
+            "name": "test16"
+        },
+        "sub_comments": null,
+        "substitutes": [
+            {
+                "text": "Alice",
+                "data": "a041ff9c-5b0f-43a2-9032-353cd72049f9",
+                "type": 0
+            }
+        ]
+    }
 ''';
 
   @override
   Widget build(BuildContext context) {
+    // return Scaffold(
+    //   body: Center(
+    //     child: PostView(post: Post.fromJson(json.decode(JSON))),
+    //   ),
+    // );
+    // return Scaffold(
+    //   body: Center(
+    //     child: Column(
+    //       mainAxisSize: MainAxisSize.min,
+    //       children: [
+    //         CommentComposeView(provider: StateNotifierProvider((ref) {
+    //           return CommentComposeWidgetViewModel(CommentComposeWidgetModelState.init(Post.fromJson(json.decode(JSON))));
+    //         })),
+    //       ],
+    //     ),
+    //   ),
+    // );
     return Scaffold(
       body: Center(
-        child: PostView(post: Post.fromJson(json.decode(JSON))),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [CommentView(comment: PostComment.fromJson(json.decode(JSON)))],
+        ),
       ),
     );
   }

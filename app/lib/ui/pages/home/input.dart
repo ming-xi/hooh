@@ -29,7 +29,7 @@ class _InputPageState extends ConsumerState<InputPage> with WidgetsBindingObserv
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance!.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
     modelRef = ref.read(widget.provider.notifier);
     List<String> strings = modelRef.readFromDraft(needsUpdate: false);
     controller.text = strings.isEmpty ? "" : strings[0];
@@ -38,7 +38,7 @@ class _InputPageState extends ConsumerState<InputPage> with WidgetsBindingObserv
   @override
   void dispose() {
     modelRef.saveDraft(controller.text);
-    WidgetsBinding.instance!.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 

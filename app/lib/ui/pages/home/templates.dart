@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:app/extensions/extensions.dart';
-import 'package:app/providers.dart';
+import 'package:app/global.dart';
 import 'package:app/ui/pages/creation/edit_post_view_model.dart';
 import 'package:app/ui/pages/creation/template_adjust.dart';
 import 'package:app/ui/pages/gallery/search.dart';
@@ -28,13 +28,11 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'templates_view_model.dart';
 
 class GalleryPage extends ConsumerStatefulWidget {
-  final StateNotifierProvider<HomePageViewModel, HomePageModelState> homePageProvider;
   final StateNotifierProvider<TemplatesPageViewModel, TemplatesPageModelState> templatesProvider = StateNotifierProvider((ref) {
     return TemplatesPageViewModel(TemplatesPageModelState.init());
   });
 
-  GalleryPage(
-    this.homePageProvider, {
+  GalleryPage({
     Key? key,
   }) : super(key: key);
 
@@ -71,8 +69,8 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
     var categoryBar = buildTags(padding, listHeight, _controller, model, modelState);
     Widget listWidget = modelState.selectedTag == null ? Container() : buildListWidget(model, modelState, imageWidth, totalHeight + safePadding);
     return Scaffold(
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 64),
+      floatingActionButton: SafeArea(
+        minimum: EdgeInsets.only(bottom: 100),
         child: FloatingActionButton.extended(
           label: Container(
             constraints: BoxConstraints(minHeight: 64, minWidth: 128),
@@ -156,7 +154,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
       controller: _refreshController,
       child: GridView.builder(
         controller: _imageScrollController,
-        padding: EdgeInsets.fromLTRB(16, totalHeight, 16, 96),
+        padding: EdgeInsets.fromLTRB(16, totalHeight, 16, 100),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             //横轴元素个数
             crossAxisCount: 3,

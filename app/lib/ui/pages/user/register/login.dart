@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:app/providers.dart';
+import 'package:app/global.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/user/register/login_view_model.dart';
 import 'package:app/ui/pages/user/register/register.dart';
@@ -122,8 +122,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         Navigator.of(context).pop();
                         Toast.showSnackBar(context, "登录成功");
                         if (user.hasFinishedRegisterSteps()) {
-                          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeScreen()), (route) => false);
-                        } else {
+                                // Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeScreen()), (route) => false);
+                                popToHomeScreen(context);
+                              } else {
                           Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => SetBadgeScreen()), (route) => false);
                         }
                       }, onFailed: () {

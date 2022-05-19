@@ -1,4 +1,4 @@
-import 'package:app/utils/design_colors.dart';
+import 'package:app/global.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:common/utils/network.dart';
 import 'package:flutter/cupertino.dart';
@@ -12,7 +12,7 @@ String formatAmount(int number) {
   if (number > 1000000) {
     return sprintf("%.1f", number / 1000000);
   } else {
-    final formatter = NumberFormat("#,##0.00", "en_US");
+    final formatter = NumberFormat("#,##0", "en_US");
     return formatter.format(number);
   }
 }
@@ -23,6 +23,7 @@ class HoohImage extends ConsumerWidget {
     required this.imageUrl,
     this.width,
     this.height,
+    this.isBadge = false,
     this.cornerRadius = 0,
     this.placeholderWidget,
     this.errorWidget,
@@ -31,13 +32,17 @@ class HoohImage extends ConsumerWidget {
   final String imageUrl;
   final double? width;
   final double? height;
+  final bool? isBadge;
   final double cornerRadius;
   final Widget Function(BuildContext, String)? placeholderWidget;
   final Widget Function(BuildContext, String, dynamic)? errorWidget;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var networkImage = CachedNetworkImage(
+    int darkMode = ref.watch(globalDarkModeProvider.state).state;
+
+    Widget networkImage = CachedNetworkImage(
+      filterQuality: (isBadge ?? false) ? FilterQuality.none : FilterQuality.low,
       width: width,
       fit: BoxFit.cover,
       height: height,
@@ -45,7 +50,7 @@ class HoohImage extends ConsumerWidget {
       imageUrl: imageUrl,
       errorWidget: errorWidget ??
           (context, url, error) {
-            var color = designColors.light_06.auto(ref);
+            // var color = designColors.light_06.auto(ref);
             // return Container(
             //   color: Colors.white.withOpacity(0.5),
             //   child: SizedBox(
@@ -82,6 +87,12 @@ class HoohImage extends ConsumerWidget {
         // return Container(color: Colors.red,);
       },
     );
+    if (getThemeMode(darkMode) == ThemeMode.dark) {
+      networkImage = Opacity(
+        opacity: 0.7,
+        child: networkImage,
+      );
+    }
     if (cornerRadius != 0) {
       return ClipRRect(
         child: networkImage,
@@ -89,6 +100,18 @@ class HoohImage extends ConsumerWidget {
       );
     } else {
       return networkImage;
+    }
+  }
+
+  ThemeMode getThemeMode(int darkModeValue) {
+    switch (darkModeValue) {
+      case DARK_MODE_LIGHT:
+        return ThemeMode.light;
+      case DARK_MODE_DARK:
+        return ThemeMode.dark;
+      case DARK_MODE_SYSTEM:
+      default:
+        return ThemeMode.system;
     }
   }
 }

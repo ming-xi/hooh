@@ -1,11 +1,29 @@
+import 'package:app/ui/pages/feeds/main_list.dart';
 import 'package:app/ui/pages/feeds/waiting_list.dart';
+import 'package:app/ui/pages/home/home.dart';
+import 'package:app/ui/pages/home/home_view_model.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
+import 'package:blur/blur.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class FeedsPage extends ConsumerStatefulWidget {
-  const FeedsPage({
+  static const PAGE_INDEX_FOLLOWED = 0;
+  static const PAGE_INDEX_MAIN = 1;
+  static const PAGE_INDEX_WAITING = 2;
+
+  static const double LIST_TOP_PADDING = 100;
+  static const double LIST_BOTTOM_PADDING = 100;
+  final List<Widget> tabWidgets = [
+    Container(
+      color: Colors.red,
+    ),
+    MainListPage(),
+    WaitingListPage(),
+  ];
+
+  FeedsPage({
     Key? key,
   }) : super(key: key);
 
@@ -19,7 +37,9 @@ class _FeedsPageState extends ConsumerState<FeedsPage> with TickerProviderStateM
   @override
   void initState() {
     super.initState();
-    tabController = TabController(length: 3, vsync: this);
+    HomePageModelState homeModelState = ref.read(homePageProvider);
+    HomePageViewModel homeModel = ref.read(homePageProvider.notifier);
+    tabController = TabController(length: 3, vsync: this, initialIndex: homeModelState.feedsTabIndex);
     tabController.addListener(() {
       // if (tabController.index == 0) {
       //   node.requestFocus();
@@ -28,12 +48,17 @@ class _FeedsPageState extends ConsumerState<FeedsPage> with TickerProviderStateM
       // }
       // EditPostScreenViewModel model = ref.read(widget.provider.notifier);
       // model.changeTab(tabController.index);
+      homeModel.updateFeedsTabIndex(tabController.index);
     });
+    homeModel.setTabController(tabController);
   }
 
   @override
   Widget build(BuildContext context) {
+    HomePageModelState homeModelState = ref.watch(homePageProvider);
+
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight),
         child: SafeArea(
@@ -71,19 +96,15 @@ class _FeedsPageState extends ConsumerState<FeedsPage> with TickerProviderStateM
               )
             ],
           ),
+        ).frosted(
+          blur: 10,
+          frostColor: designColors.light_01.auto(ref),
+          frostOpacity: 0.9,
         ),
       ),
       body: TabBarView(
         controller: tabController,
-        children: [
-          Container(
-            color: Colors.red,
-          ),
-          Container(
-            color: Colors.blue,
-          ),
-          WaitingListPage(),
-        ],
+        children: widget.tabWidgets,
       ),
     );
   }

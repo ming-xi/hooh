@@ -5,6 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class MainStyles {
+  static LinearGradient badgeGradient() => const LinearGradient(colors: [
+        Color(0xFFFFD840),
+        Color(0xFFF3ACFF),
+        Color(0xFF48E1FF),
+      ], begin: Alignment.bottomLeft, end: Alignment.topRight);
+
   static Widget buildListDivider(WidgetRef ref) {
     return Container(
       height: 1,
@@ -77,9 +83,9 @@ class MainStyles {
         decoration: onPressed != null
             ? gradientButtonDecoration(cornerRadius: cornerRadius, enabled: true)
             : BoxDecoration(
-                color: designColors.dark_03.auto(ref),
-                borderRadius: BorderRadius.circular(cornerRadius),
-              ),
+          color: designColors.dark_03.auto(ref),
+          borderRadius: BorderRadius.circular(cornerRadius),
+        ),
         child: InkWell(
           borderRadius: BorderRadius.all(Radius.circular(cornerRadius)),
           onTap: onPressed,
@@ -87,9 +93,9 @@ class MainStyles {
             constraints: const BoxConstraints(minHeight: 64),
             child: Center(
                 child: Text(
-              text,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
-            )),
+                  text,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+                )),
           ),
         ),
       ),
@@ -343,19 +349,20 @@ class RegisterStyles {
   }
 
   static Widget rainbowButton(WidgetRef ref, {Widget? label, Widget? icon, Function()? onPress}) {
+    const double radius = 24;
     final gradient = BoxDecoration(
       gradient: const LinearGradient(colors: [
         Color(0xFFFFD840),
         Color(0xFFF3ACFF),
         Color(0xFF48E1FF),
       ], begin: Alignment.bottomLeft, end: Alignment.topRight),
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(radius),
     );
     var buttonStyle = TextButton.styleFrom(
         primary: designColors.feiyu_blue.auto(ref),
         onSurface: designColors.feiyu_blue.auto(ref),
         backgroundColor: designColors.light_01.auto(ref),
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(22.0)), side: BorderSide(color: Colors.transparent)),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(radius - 1)), side: BorderSide(color: Colors.transparent)),
         minimumSize: const Size.fromHeight(64),
         textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold));
     Widget button;

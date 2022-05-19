@@ -9,10 +9,10 @@ import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-part 'waiting_list_view_model.g.dart';
+part 'main_list_view_model.g.dart';
 
 @CopyWith()
-class WaitingListPageModelState {
+class MainListPageModelState {
   final List<Post> posts;
   final PageState pageState;
   final HoohApiErrorResponse? error;
@@ -21,7 +21,7 @@ class WaitingListPageModelState {
   final bool isTrending;
   final double scrollDistance;
 
-  WaitingListPageModelState({
+  MainListPageModelState({
     required this.posts,
     required this.pageState,
     required this.error,
@@ -31,7 +31,7 @@ class WaitingListPageModelState {
     this.scrollDistance = 0,
   });
 
-  factory WaitingListPageModelState.init() => WaitingListPageModelState(
+  factory MainListPageModelState.init() => MainListPageModelState(
       posts: [],
       pageState: PageState.inited,
       error: null,
@@ -39,8 +39,8 @@ class WaitingListPageModelState {
       infoDialogChecked: preferences.getBool(Preferences.KEY_VOTE_POST_DIALOG_CHECKED) ?? false);
 }
 
-class WaitingListPageViewModel extends StateNotifier<WaitingListPageModelState> {
-  WaitingListPageViewModel(WaitingListPageModelState state) : super(state) {
+class MainListPageViewModel extends StateNotifier<MainListPageModelState> {
+  MainListPageViewModel(MainListPageModelState state) : super(state) {
     // 如果需要加载时自动拉取数据，在这里调用
     getPosts(null);
   }
@@ -74,7 +74,7 @@ class WaitingListPageViewModel extends StateNotifier<WaitingListPageModelState> 
 
     DateTime date = state.lastTimestamp ?? DateUtil.getCurrentUtcDate();
 
-    network.requestAsync<List<Post>>(network.getWaitingListPosts(trending: state.isTrending, date: date), (newData) {
+    network.requestAsync<List<Post>>(network.getMainListPosts(trending: state.isTrending, date: date), (newData) {
       if (newData.isEmpty) {
         //has data
         if (isRefresh) {
@@ -113,26 +113,17 @@ class WaitingListPageViewModel extends StateNotifier<WaitingListPageModelState> 
     });
   }
 
-  void setScrollDistance(double distance) {
-    updateState(state.copyWith(scrollDistance: distance));
-  }
-
   void setTrending(bool trending) {
     updateState(state.copyWith(isTrending: trending));
   }
 
-  void setAgreementChecked(bool checked) {
-    updateState(state.copyWith(infoDialogChecked: checked));
+  void setScrollDistance(double distance) {
+    updateState(state.copyWith(scrollDistance: distance));
   }
 
   void updatePostData(Post post, int index) {
-    debugPrint("updatePostData vote_count=${post.voteCount}(${post.myVoteCount}) index=$index");
     List<Post> list = [...state.posts];
-    if (post.publishState == Post.PUBLISH_STATE_WAITING_LIST) {
-      list[index] = post;
-    } else {
-      list.removeAt(index);
-    }
+    list[index] = post;
     updateState(state.copyWith(posts: list));
   }
 }

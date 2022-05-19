@@ -31,7 +31,7 @@ class _TemplateDoneScreenState extends ConsumerState<TemplateDoneScreen> with Si
 
     // offset = Tween<Offset>(begin: Offset(0, -1), end: Offset(0, 1)).animate(controller);
 
-    // WidgetsBinding.instance!.addPostFrameCallback((_) {
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
     //   Future.delayed(Duration(milliseconds: 500), () {
     //     controller.forward();
     //   });

@@ -125,7 +125,7 @@ class TemplatesPageViewModel extends StateNotifier<TemplatesPageModelState> {
     }
     network.requestAsync<List<Template>>(searchFunction, (newData) {
       if (newData.isEmpty) {
-        //has data
+        //no data
         if (isRefresh) {
           updateState(state.copyWith(templatesPageState: isRefresh ? PageState.empty : PageState.noMore, templates: []));
         } else {
@@ -133,7 +133,7 @@ class TemplatesPageViewModel extends StateNotifier<TemplatesPageModelState> {
         }
         debugPrint("${state.templatesPageState}");
       } else {
-        //no data
+        //has data
         if (isRefresh) {
           updateState(state.copyWith(templatesPageState: PageState.dataLoaded, lastTimestamp: newData.last.featuredAt, templates: newData, page: 1));
         } else {
