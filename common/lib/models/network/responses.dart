@@ -1,4 +1,5 @@
 import 'package:common/models/user.dart';
+import 'package:common/utils/serialization.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'responses.g.dart';
@@ -126,4 +127,67 @@ class UserCreatedBadge {
   factory UserCreatedBadge.fromJson(Map<String, dynamic> json) => _$UserCreatedBadgeFromJson(json);
 
   Map<String, dynamic> toJson() => _$UserCreatedBadgeToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class UserActivityResponse {
+  User user;
+  List<UserActivity> activities;
+
+  UserActivityResponse(this.user, this.activities);
+
+  factory UserActivityResponse.fromJson(Map<String, dynamic> json) => _$UserActivityResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$UserActivityResponseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class UserWalletResponse {
+  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
+  double balance;
+  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
+  double totalCost;
+  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
+  double totalEarnedPow;
+  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
+  double totalEarnedReputation;
+  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
+  double yesterdayEarnedPow;
+  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
+  double yesterdayEarnedReputation;
+
+  UserWalletResponse(this.balance, this.totalCost, this.totalEarnedPow, this.totalEarnedReputation, this.yesterdayEarnedPow, this.yesterdayEarnedReputation);
+
+  factory UserWalletResponse.fromJson(Map<String, dynamic> json) => _$UserWalletResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$UserWalletResponseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class FeeInfoResponse {
+  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
+  double joinWaitingList;
+  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
+  double createBadge;
+  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
+  double deleteActivity;
+  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
+  double votePost;
+
+  FeeInfoResponse(this.joinWaitingList, this.createBadge, this.deleteActivity, this.votePost);
+
+  factory FeeInfoResponse.fromJson(Map<String, dynamic> json) => _$FeeInfoResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$FeeInfoResponseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class UnreadNotificationCountResponse {
+  int unreadCount;
+
+  UnreadNotificationCountResponse(this.unreadCount);
+
+  factory UnreadNotificationCountResponse.fromJson(Map<String, dynamic> json) => _$UnreadNotificationCountResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$UnreadNotificationCountResponseToJson(this);
 }

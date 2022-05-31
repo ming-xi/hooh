@@ -12,6 +12,7 @@ import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sprintf/sprintf.dart';
 
 class PublishPostScreen extends ConsumerStatefulWidget {
   late StateNotifierProvider<PublishPostScreenViewModel, PublishPostScreenModelState> provider;
@@ -39,7 +40,7 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
     TextStyle bottomTextStyle = TextStyle(color: designColors.light_06.auto(ref), fontSize: 12, fontWeight: FontWeight.bold);
     return Scaffold(
       appBar: AppBar(
-        title: Text("Post"),
+        title: Text(globalLocalizations.common_post),
       ),
       body: CustomScrollView(
         slivers: [
@@ -79,26 +80,26 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
                 MainStyles.buildListDivider(ref),
                 buildTags(modelState.tags),
                 MainStyles.buildListDivider(ref),
-                MainStyles.buildListTile(ref, "Download",
+                MainStyles.buildListTile(ref, globalLocalizations.publish_post_download,
                     tailWidget: Switch(
                         value: modelState.allowDownload,
                         onChanged: (newState) {
                           model.setAllowDownload(newState);
                         }), onPress: () {
-                      model.setAllowDownload(!modelState.allowDownload);
-                    }),
-                MainStyles.buildListTile(ref, "Private",
+                  model.setAllowDownload(!modelState.allowDownload);
+                }),
+                MainStyles.buildListTile(ref, globalLocalizations.publish_post_private,
                     tailWidget: Switch(
                         value: modelState.isPrivate,
                         onChanged: (newState) {
                           model.setIsPrivate(newState);
                         }), onPress: () {
-                      model.setIsPrivate(!modelState.isPrivate);
-                    }),
+                  model.setIsPrivate(!modelState.isPrivate);
+                }),
                 Spacer(),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 48.0),
-                  child: MainStyles.blueButton(ref, "Post to My Homepage only", () {
+                  child: MainStyles.blueButton(ref, globalLocalizations.publish_post_publish_to_homepage, () {
                     publishPost(false);
                   }, cornerRadius: 22),
                 ),
@@ -107,7 +108,7 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 48.0),
-                  child: MainStyles.gradientButton(ref, "Post to square queue", () {
+                  child: MainStyles.gradientButton(ref, globalLocalizations.publish_post_publish_to_waiting_list, () {
                     publishPost(true);
                   }, cornerRadius: 22),
                 ),
@@ -122,7 +123,7 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
                       width: 24,
                     ),
                     Text(
-                      "Spend 5 x ",
+                      globalLocalizations.publish_post_spends_ore_part1,
                       style: bottomTextStyle,
                     ),
                     HoohIcon(
@@ -130,7 +131,7 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
                       width: 18,
                       height: 18,
                     ),
-                    Text(" for more exposure", style: bottomTextStyle),
+                    Text(globalLocalizations.publish_post_spends_ore_part2, style: bottomTextStyle),
                     IconButton(
                         onPressed: () {
                           showDialog(
@@ -177,7 +178,7 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
           // Navigator.popUntil(context, ModalRoute.withName("/home"));
           Future.delayed(Duration(seconds: 1), () {
             Navigator.of(context).pop();
-            Toast.showSnackBar(context, "upload success!");
+            Toast.showSnackBar(context, globalLocalizations.publish_post_success);
             if (publishToWaitingList) {
               HomePageViewModel model = ref.read(homePageProvider.notifier);
               model.updateTabIndex(HomeScreen.PAGE_INDEX_FEEDS);
@@ -188,7 +189,7 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
         },
         onError: (error) {
           Navigator.of(context).pop();
-          Toast.showSnackBar(context, "upload failed: " + error);
+          Toast.showSnackBar(context, sprintf(globalLocalizations.publish_post_failed, [error]));
         });
   }
 
@@ -198,7 +199,7 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
     List<Widget> children = [
       Expanded(
         child: Text(
-          tags.isEmpty ? "# Topics" : tags.map((e) => "# $e").join("   "),
+          tags.isEmpty ? globalLocalizations.publish_post_topics : tags.map((e) => "# $e").join("   "),
           overflow: TextOverflow.ellipsis,
           style: TextStyle(fontSize: 14, color: tags.isEmpty ? designColors.light_06.auto(ref) : designColors.feiyu_blue.auto(ref)),
         ),

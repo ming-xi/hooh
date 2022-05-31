@@ -14,9 +14,9 @@ import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:image/image.dart' as img;
 
 part 'publish_post_view_model.g.dart';
 
@@ -57,7 +57,7 @@ class PublishPostScreenViewModel extends StateNotifier<PublishPostScreenModelSta
 
   Future<File> _saveScreenshot(BuildContext context) async {
     WidgetsBinding? binding = WidgetsBinding.instance;
-    double devicePixelRatio = binding!.window.devicePixelRatio;
+    double devicePixelRatio = binding.window.devicePixelRatio;
     double screenWidth = MediaQuery.of(context).size.width;
     double ratio = PublishPostScreenViewModel.OUTPUT_IMAGE_SIZE / (screenWidth / devicePixelRatio);
     TemplateViewSetting viewSetting = TemplateView.generateViewSetting(TemplateView.SCENE_PUBLISH_POST_PREVIEW);
@@ -113,7 +113,13 @@ class PublishPostScreenViewModel extends StateNotifier<PublishPostScreenModelSta
       return imageKey;
     }).toList());
     List<CreateImageRequest> imageRequests = keys.map((e) => CreateImageRequest(e!, state.setting.text ?? "")).toList();
-    CreatePostRequest request = CreatePostRequest(state.allowDownload, !state.isPrivate, publishToWaitingList, imageRequests, state.tags);
+    CreatePostRequest request = CreatePostRequest(
+        allowDownload: state.allowDownload,
+        visible: !state.isPrivate,
+        joinWaitingList: publishToWaitingList,
+        images: imageRequests,
+        tags: state.tags,
+        templateId: state.setting.templateId);
     network.requestAsync<Post>(network.createPost(request), (post) {
       state = state.copyWith(uploading: false);
       if (onSuccess != null) {

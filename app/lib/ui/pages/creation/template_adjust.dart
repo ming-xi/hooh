@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui;
 
+import 'package:app/global.dart';
 import 'package:app/ui/pages/creation/template_text_setting.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:crypto/crypto.dart';
@@ -45,7 +46,7 @@ class _AdjustTemplatePositionScreenState extends ConsumerState<AdjustTemplatePos
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("scale"),
+        title: Text(globalLocalizations.template_adjustment_title),
         actions: [
           IconButton(
               onPressed: () async {
@@ -105,7 +106,7 @@ class _AdjustTemplatePositionScreenState extends ConsumerState<AdjustTemplatePos
               color: designColors.dark_01.light.withOpacity(0.75),
               child: Center(
                 child: Text(
-                  "Pinch and zoom the picture with both hands,Double click to adjust background color",
+                  globalLocalizations.template_adjustment_description,
                   style: TextStyle(
                     color: designColors.dark_03.auto(ref),
                     fontSize: 16,
@@ -144,18 +145,18 @@ class _AdjustTemplatePositionScreenState extends ConsumerState<AdjustTemplatePos
 
   Future<File> captureImage() async {
     WidgetsBinding? binding = WidgetsBinding.instance;
-    double devicePixelRatio = binding!.window.devicePixelRatio;
-    debugPrint("devicePixelRatio=$devicePixelRatio");
+    double devicePixelRatio = binding.window.devicePixelRatio;
+    // debugPrint("devicePixelRatio=$devicePixelRatio");
     int imageSize = 720;
     double screenWidth = MediaQuery.of(context).size.width * devicePixelRatio;
     double screenHeight = MediaQuery.of(context).size.height * devicePixelRatio;
     RenderRepaintBoundary boundary = genKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
     ui.Image image = await boundary.toImage(pixelRatio: devicePixelRatio);
     img.Image src = img.Image.fromBytes(image.width, image.height, (await image.toByteData())!.buffer.asUint8List());
-    debugPrint("screenWidth=$screenWidth screenHeight=$screenHeight src.width=${src.width} src.height=${src.height}");
+    // debugPrint("screenWidth=$screenWidth screenHeight=$screenHeight src.width=${src.width} src.height=${src.height}");
     double offsetX = x * devicePixelRatio;
     double offsetY = y * devicePixelRatio;
-    debugPrint("offsetX=$offsetX offsetY=$offsetY ");
+    // debugPrint("offsetX=$offsetX offsetY=$offsetY ");
     img.Image result = img.Image.rgb(imageSize, imageSize);
     img.fill(result, Colors.white.value);
     double dstX = offsetX * imageSize / screenWidth;
@@ -174,19 +175,19 @@ class _AdjustTemplatePositionScreenState extends ConsumerState<AdjustTemplatePos
       dstW: dstW.toInt(),
       dstH: dstH.toInt(),
     );
-    debugPrint(""
-        "srcX=${0}\n"
-        "srcY=${0}\n"
-        "srcW=${src.width}\n"
-        "srcH=${src.height}\n"
-        "dstX=$dstX\n"
-        "dstY=$dstY\n"
-        "dstW=$dstW\n"
-        "dstH=$dstH\n");
+    // debugPrint(""
+    //     "srcX=${0}\n"
+    //     "srcY=${0}\n"
+    //     "srcW=${src.width}\n"
+    //     "srcH=${src.height}\n"
+    //     "dstX=$dstX\n"
+    //     "dstY=$dstY\n"
+    //     "dstW=$dstW\n"
+    //     "dstH=$dstH\n");
     final directory = (await getApplicationDocumentsDirectory()).path;
     var bytes = img.encodeJpg(result, quality: 80);
     var filename = md5.convert(bytes).toString();
-    debugPrint("bytes=$filename");
+    // debugPrint("bytes=$filename");
     File imgFile = File('$directory/$filename.jpg');
     imgFile.writeAsBytesSync(bytes, flush: true);
     return imgFile;

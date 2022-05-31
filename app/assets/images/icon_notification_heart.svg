@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width = "24px"
+     height = "24px"
+     viewBox = "0 0 24 24"
+     version = "1.1"
+     xmlns = "http://www.w3.org/2000/svg"
+     xmlns:xlink = "http://www.w3.org/1999/xlink">
+	<title>编组</title>
+	<g id = "控件"
+	   stroke = "none"
+	   stroke-width = "1"
+	   fill = "none"
+	   fill-rule = "evenodd">
+		<g id = "编组">
+			<rect id = "bound"
+			      x = "0"
+			      y = "0"
+			      width = "24"
+			      height = "24"></rect>
+			<path d = "M16,6 C14.5693333,6 12.8962222,7.62189525 12,8.66666667 C11.1037778,7.62189525 9.43066667,6 8,6 C5.46755556,6 4,7.97527097 4,10.4892522 C4,13.2741952 6.66666667,16.2222222 12,19.3333333 C17.3333333,16.2222222 20,13.3333333 20,10.6666667 C20,8.15268544 18.5324444,6 16,6 Z"
+			      id = "Shape"
+			      fill = "#0167F9"
+			      fill-rule = "nonzero"></path>
+		</g>
+	</g>
+</svg>

@@ -63,7 +63,7 @@ class _DrawBadgeScreenState extends ConsumerState<DrawBadgeScreen> {
   Widget build(BuildContext context) {
     DrawBadgeViewModel model = ref.read(widget.provider.notifier);
     DrawBadgeModelState modelState = ref.watch(widget.provider);
-    debugPrint("modelState.paletteItems.length=${modelState.paletteItems.length}");
+    // debugPrint("modelState.paletteItems.length=${modelState.paletteItems.length}");
 
     var children = [
       Padding(
@@ -207,7 +207,7 @@ class _DrawBadgeScreenState extends ConsumerState<DrawBadgeScreen> {
               res = Ink(
                 decoration: BoxDecoration(
                     color: modelState.customColor != null ? modelState.customColor : null,
-                    gradient: modelState.customColor != null ? null : MainStyles.badgeGradient(),
+                    gradient: modelState.customColor != null ? null : MainStyles.badgeGradient(ref),
                     borderRadius: borderRadius,
                     border: selectedBorder),
                 child: InkWell(

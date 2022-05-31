@@ -1,3 +1,4 @@
+import 'package:app/global.dart';
 import 'package:app/test.dart';
 import 'package:app/ui/pages/creation/recommended_templates.dart';
 import 'package:app/ui/pages/home/input_view_model.dart';
@@ -74,7 +75,7 @@ class _InputPageState extends ConsumerState<InputPage> with WidgetsBindingObserv
                               expands: true,
                               style: TextStyle(color: designColors.dark_01.auto(ref), fontWeight: FontWeight.bold),
                               decoration: InputDecoration(
-                                  hintText: "Make meme Get mineral",
+                                  hintText: globalLocalizations.input_hint,
                                   hintStyle: TextStyle(color: designColors.light_06.auto(ref), fontWeight: FontWeight.bold),
                                   helperStyle: TextStyle(fontWeight: FontWeight.bold, color: designColors.dark_03.auto(ref), fontSize: 11),
                                   border: InputBorder.none,
@@ -89,7 +90,7 @@ class _InputPageState extends ConsumerState<InputPage> with WidgetsBindingObserv
                                 width: 180,
                                 child: MainStyles.gradientButton(
                                     ref,
-                                    "go!",
+                                    globalLocalizations.input_go,
                                     !modelState.isStartButtonEnabled
                                         ? null
                                         : () {

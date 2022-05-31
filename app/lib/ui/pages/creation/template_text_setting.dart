@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:app/global.dart';
 import 'package:app/ui/pages/creation/template_add_tag.dart';
 import 'package:app/ui/pages/creation/template_text_setting_view_model.dart';
 import 'package:app/ui/pages/user/register/draw_badge_view_model.dart';
@@ -95,7 +96,7 @@ class _TemplateTextSettingScreenState extends ConsumerState<TemplateTextSettingS
     TemplateTextSettingModelState textSettingModelState = ref.watch(widget.textSettingProvider);
     return Scaffold(
       appBar: AppBar(
-        title: Text("text setting"),
+        title: Text(globalLocalizations.template_text_setting_title),
         actions: [
           IconButton(
               onPressed: () {
@@ -153,7 +154,7 @@ class _TemplateTextSettingScreenState extends ConsumerState<TemplateTextSettingS
                 padding: const EdgeInsets.symmetric(horizontal: 56.0),
                 child: Center(
                   child: Text(
-                    "Pinch and zoom the picture with both hands,Double click to adjust background color",
+                    globalLocalizations.template_text_setting_description,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref)),
                   ),
                 ),

@@ -1,17 +1,18 @@
 import 'dart:async';
 
 import 'package:app/extensions/extensions.dart';
+import 'package:app/global.dart';
 import 'package:app/ui/pages/creation/edit_post_view_model.dart';
 import 'package:app/ui/pages/gallery/search_view_model.dart';
-import 'package:app/ui/pages/home/templates.dart';
+import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/template_compose_view.dart';
+import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:blur/blur.dart';
 import 'package:common/models/page_state.dart';
 import 'package:common/models/template.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
@@ -66,7 +67,7 @@ class _GallerySearchScreenState extends ConsumerState<GallerySearchScreen> {
             elevation: 0,
             title: searchBar,
             titleSpacing: 0,
-            backgroundColor: Colors.transparent,
+            // backgroundColor: Colors.transparent,
             automaticallyImplyLeading: false,
             systemOverlayStyle: SystemUiOverlayStyle.dark,
           ).frosted(
@@ -76,13 +77,10 @@ class _GallerySearchScreenState extends ConsumerState<GallerySearchScreen> {
           );
         }),
       ),
-      body: Container(
-        color: Colors.white,
-        child: SafeArea(
-          top: false,
-          bottom: false,
-          child: listWidget,
-        ),
+      body: SafeArea(
+        top: false,
+        bottom: false,
+        child: listWidget,
       ),
     );
   }
@@ -93,28 +91,33 @@ class _GallerySearchScreenState extends ConsumerState<GallerySearchScreen> {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(200),
-          color: const Color(0xFFEAEAEA),
+          color: designColors.light_02.auto(ref),
         ),
         child: GestureDetector(
           onTap: () {},
           child: Row(
             children: [
               Container(
-                  child: HoohIcon('assets/images/icon_search.svg', height: iconSize, width: iconSize),
+                  child: HoohIcon(
+                    'assets/images/icon_search.svg',
+                    height: iconSize,
+                    width: iconSize,
+                    color: designColors.dark_01.auto(ref),
+                  ),
                   padding: EdgeInsets.fromLTRB(0, padding, padding, padding)),
               Expanded(
                 child: TextField(
                   focusNode: node,
                   controller: controller,
                   autofocus: true,
-                  decoration: const InputDecoration(
-                    hintStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  decoration: InputDecoration(
+                    hintStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref)),
                     labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    hintText: 'search',
+                    hintText: globalLocalizations.templates_search,
                     border: InputBorder.none,
                   ),
                   onChanged: (String value) async {
-                    debugPrint("onChanged $value");
+                    // debugPrint("onChanged $value");
                     // // 如果不在第一页，重新加载数据的时候滚到顶部
                     // if (scrollController.hasClients) {
                     //   final position = scrollController.position.minScrollExtent;
@@ -128,25 +131,24 @@ class _GallerySearchScreenState extends ConsumerState<GallerySearchScreen> {
                     viewModel.updateState(ref.read(widget.imagesProvider(imageWidth)).copyWith(keyword: value));
                     viewModel.search();
                   },
-                  onSubmitted: (String value) async {
-                    debugPrint("onSubmitted $value");
-                  },
+                  // onSubmitted: (String value) async {
+                  //   // debugPrint("onSubmitted $value");
+                  // },
+                  onEditingComplete: () {},
                 ),
               ),
               SizedBox(width: padding),
               TextButton(
+                style: MainStyles.textButtonStyle(ref),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: const Text(
-                  "Cancel",
+                child: Text(
+                  globalLocalizations.common_cancel,
                   style: TextStyle(
-                    color: Colors.black,
+                    color: designColors.dark_01.auto(ref),
                     fontSize: 16,
                   ),
-                ),
-                style: const ButtonStyle(
-                  splashFactory: NoSplash.splashFactory,
                 ),
               )
             ],
@@ -162,7 +164,7 @@ class _GallerySearchScreenState extends ConsumerState<GallerySearchScreen> {
     if ([PageState.empty, PageState.inited].contains(modelState.pageState)) {
       listWidget = Container();
     } else {
-      debugPrint("images size=${modelState.images.length}");
+      // debugPrint("images size=${modelState.images.length}");
       listWidget = SmartRefresher(
         enablePullDown: false,
         enablePullUp: modelState.pageState != PageState.noMore,

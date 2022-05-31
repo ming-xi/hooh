@@ -27,13 +27,13 @@ class _DrawBadgeViewState extends ConsumerState<DrawBadgeView> {
         maxScale: 5,
         child: GestureDetector(
           onTapDown: (detail) {
-            debugPrint("onTapDown detail=${detail.localPosition}");
+            // debugPrint("onTapDown detail=${detail.localPosition}");
             setState(() {
               pointer = detail.localPosition;
             });
           },
           onTapUp: (detail) {
-            debugPrint("onTapUp detail=${detail.localPosition}");
+            // debugPrint("onTapUp detail=${detail.localPosition}");
             // setState(() {
             //   pointer = null;
             // });
@@ -62,15 +62,15 @@ class _CanvasPainter extends CustomPainter {
     darkerGridColor = designColors.light_02.auto(ref);
     gridColor = designColors.light_01.auto(ref);
     backgroundColor = designColors.light_03.auto(ref);
-    debugPrint("darkerGridColor=$darkerGridColor");
-    debugPrint("gridColor=$gridColor");
+    // debugPrint("darkerGridColor=$darkerGridColor");
+    // debugPrint("gridColor=$gridColor");
     p.strokeCap = StrokeCap.square;
     p.strokeWidth = 1;
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    debugPrint("size=$size");
+    // debugPrint("size=$size");
     canvas.save();
     double scale = (size.width / CANVAS_PIXEL_WIDTH);
     canvas.scale(scale, (size.height / CANVAS_PIXEL_HEIGHT));
@@ -91,7 +91,7 @@ class _CanvasPainter extends CustomPainter {
       double x = (scale2.dx).floorToDouble();
       double y = (scale2.dy).floorToDouble();
       scale2 = Offset(x, y);
-      debugPrint("pointer=$scale2");
+      // debugPrint("pointer=$scale2");
       canvas.drawPoints(PointMode.points, [scale2], p);
       canvas.translate(-0.5, -0.5);
     }
@@ -114,7 +114,7 @@ class _CanvasPainter extends CustomPainter {
       }
     }
     if (image != null) {
-      debugPrint("draw mask");
+      // debugPrint("draw mask");
       canvas.drawImage(image!, Offset(((CANVAS_PIXEL_WIDTH - image!.width) ~/ 2).toDouble(), ((CANVAS_PIXEL_HEIGHT - image!.height) ~/ 2).toDouble()), p);
     }
     p.blendMode = BlendMode.srcIn;

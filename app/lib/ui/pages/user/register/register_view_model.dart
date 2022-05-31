@@ -1,4 +1,5 @@
 import 'package:app/extensions/extensions.dart';
+import 'package:app/global.dart';
 import 'package:app/utils/constants.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/network/responses.dart';
@@ -147,14 +148,14 @@ class RegisterViewModel extends StateNotifier<RegisterModelState> {
     //   return false;
     // }
     var stringMatch = RegExp(Constants.PASSWORD_REGEX).stringMatch(password);
-    debugPrint("stringMatch=$stringMatch");
+    // debugPrint("stringMatch=$stringMatch");
     if (stringMatch != password) {
-      updateState(state.copyWith(passwordErrorText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters"));
+      updateState(state.copyWith(passwordErrorText: globalLocalizations.register_password_hint));
       return true;
     }
     updateState(state.copyWith(passwordErrorText: null));
     if (password != confirmPassword) {
-      updateState(state.copyWith(confirmPasswordErrorText: "The password and confirmation password are different"));
+      updateState(state.copyWith(confirmPasswordErrorText: globalLocalizations.register_password_different));
       return false;
     }
     updateState(state.copyWith(confirmPasswordErrorText: null));

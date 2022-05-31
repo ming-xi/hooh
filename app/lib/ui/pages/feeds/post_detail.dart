@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/material/refresh_indicator.dart' as refresh;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:sprintf/sprintf.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
   late final StateNotifierProvider<PostDetailScreenViewModel, PostDetailScreenModelState> provider;
@@ -55,7 +56,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
       final keyContext = columnKey.currentContext;
       if (keyContext != null) {
         final RenderBox box = keyContext.findRenderObject() as RenderBox;
-        debugPrint("offset=${scrollController.offset} box.size.height=${box.size.height}");
+        // debugPrint("offset=${scrollController.offset} box.size.height=${box.size.height}");
         headerHeight = box.size.height;
         bool newState = scrollController.offset > headerHeight;
         if (newState != scrollable) {
@@ -78,6 +79,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
     double tagsRunSpacing = 4;
     double statusbarHeight = MediaQuery.of(context).viewPadding.top;
 
+    bool keyboardVisible = ref.watch(globalKeyboardInfoProvider);
+    debugPrint("keyboardVisible=$keyboardVisible");
     PostDetailScreenModelState modelState = ref.watch(widget.provider);
     PostDetailScreenViewModel model = ref.read(widget.provider.notifier);
     StateNotifierProvider<CommentComposeWidgetViewModel, CommentComposeWidgetModelState> composerProvider = StateNotifierProvider((ref) {
@@ -90,6 +93,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
       ),
       Visibility(
         visible: (modelState.post?.tags ?? []).isNotEmpty,
+        replacement: SizedBox(
+          height: 16,
+        ),
         child: Padding(
           padding: const EdgeInsets.only(left: 20, right: 20, top: 12, bottom: 20),
           child: Row(
@@ -155,10 +161,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
       mainAxisSize: MainAxisSize.min,
       children: widgets,
     );
-    var commentTabText = "Comments ${formatAmount(modelState.post?.commentCount ?? 0)}";
-    var likeTabText = "Likes ${formatAmount(modelState.post?.likeCount ?? 0)}";
-    debugPrint("commentTabText=$commentTabText likeTabText=$likeTabText");
-    debugPrint("modelState.selectedTab=${modelState.selectedTab}");
+    var commentTabText = sprintf(globalLocalizations.post_detail_comment_count, [formatAmount(modelState.post?.commentCount ?? 0)]);
+    var likeTabText = sprintf(globalLocalizations.post_detail_like_count, [formatAmount(modelState.post?.likeCount ?? 0)]);
+
+    // debugPrint("commentTabText=$commentTabText likeTabText=$likeTabText");
+    // debugPrint("modelState.selectedTab=${modelState.selectedTab}");
     TabBar tabBar = TabBar(
       controller: tabController,
       isScrollable: true,
@@ -199,7 +206,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
           onReplyClick: (comment) {
             CommentComposeWidgetViewModel composerModel = ref.read(composerProvider.notifier);
             composerModel.setRepliedComment(comment);
-            showKeyboard(widget.textFieldNode);
+            showKeyboard(ref, widget.textFieldNode);
           }),
       LikesPage(users: modelState.likedUsers)
     ]);
@@ -323,8 +330,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
   List<Widget> buildUserInfo(Post post) {
     User author = post.author;
     return [
-      AvatarView(
-        user: author,
+      AvatarView.fromUser(
+        author,
         size: 32,
       ),
       SizedBox(
@@ -357,7 +364,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
     }
     return _buildButton(
         text: Text(
-          "Follow",
+          globalLocalizations.common_follow,
           style: TextStyle(fontFamily: 'Linotte'),
         ),
         isEnabled: (post.myVoteCount ?? 0) == 0,
@@ -393,7 +400,7 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    debugPrint("build");
+    // debugPrint("build");
     return Container(
       decoration: BoxDecoration(color: designColors.bar90_1.auto(ref), border: Border(bottom: BorderSide(color: designColors.light_02.auto(ref), width: 1))),
       child: Material(child: tabBar),
@@ -420,7 +427,7 @@ class _SliverTabViewDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    debugPrint("build");
+    // debugPrint("build");
     return Material(child: tabBarView);
   }
 

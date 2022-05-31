@@ -1,5 +1,7 @@
+import 'package:app/global.dart';
 import 'package:app/ui/pages/feeds/main_list_view_model.dart';
 import 'package:app/ui/pages/home/feeds.dart';
+import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/post_view.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
@@ -63,24 +65,22 @@ class _MainListPageState extends ConsumerState<MainListPage> {
     return SmartRefresher(
       enablePullDown: true,
       enablePullUp: true,
-      header: MaterialClassicHeader(
-        offset: FeedsPage.LIST_TOP_PADDING / 2,
-        color: designColors.feiyu_blue.auto(ref),
-      ),
+      header: MainStyles.getRefresherHeader(ref, offset: FeedsPage.LIST_TOP_PADDING / 2),
       onRefresh: () async {
         model.getPosts((state) {
-          debugPrint("refresh state=$state");
+          // debugPrint("refresh state=$state");
           _refreshController.refreshCompleted();
+          _refreshController.resetNoData();
         });
       },
       onLoading: () async {
         model.getPosts((state) {
           if (state == PageState.noMore) {
             _refreshController.loadNoData();
-            debugPrint("load no more state=$state");
+            // debugPrint("load no more state=$state");
           } else {
             _refreshController.loadComplete();
-            debugPrint("load complete state=$state");
+            // debugPrint("load complete state=$state");
           }
         }, isRefresh: false);
       },
@@ -94,11 +94,11 @@ class _MainListPageState extends ConsumerState<MainListPage> {
               child: index == 0
                   ? buildHeaderView(context, model, modelState)
                   : buildPostView(
-                      context,
-                      index - 1,
-                      model,
-                      modelState,
-                    ));
+                context,
+                index - 1,
+                model,
+                modelState,
+              ));
         },
         itemCount: modelState.posts.length + 1,
         separatorBuilder: (context, index) {
@@ -137,7 +137,7 @@ class _MainListPageState extends ConsumerState<MainListPage> {
             borderRadius: BorderRadius.circular(100),
             child: Center(
               child: Text(
-                trending ? "Trending" : "Recent",
+                trending ? globalLocalizations.common_trending : globalLocalizations.common_recent,
                 style: TextStyle(color: selected ? designColors.light_01.auto(ref) : designColors.light_06.auto(ref)),
               ),
             ),

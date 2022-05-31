@@ -26,6 +26,8 @@ import 'package:preferences_local_storage_inspector/preferences_local_storage_in
 import 'package:secure_storage_local_storage_inspector/secure_storage_local_storage_inspector.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:storage_inspector/storage_inspector.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -62,6 +64,9 @@ Future<void> _initSyncUtils() async {
   await preferences.init();
   await deviceInfo.init();
   await initInspector();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 }
 
 Future<void> initInspector() async {
@@ -124,7 +129,8 @@ class HoohApp extends ConsumerStatefulWidget {
 class _MyAppState extends ConsumerState<HoohApp> with WidgetsBindingObserver, KeyboardLogic {
   @override
   void onKeyboardChanged(bool visible) {
-    globalIsKeyboardVisible = visible;
+    // globalIsKeyboardVisible = visible;
+    ref.read(globalKeyboardInfoProvider.state).state = visible;
   }
 
   @override
@@ -167,34 +173,37 @@ class _MyAppState extends ConsumerState<HoohApp> with WidgetsBindingObserver, Ke
       title: 'HooH',
       // home: HomeScreen(),
       home: const SplashScreen(),
-      builder: (context, child) => Scaffold(
-        body: Stack(
-          children: [
-            child!,
-            Positioned(
-              top: 8,
-              left: MediaQuery.of(context).size.width * 0.3,
-              child: SafeArea(
-                child: ElevatedButton(
-                    style: TextButton.styleFrom(
-                      backgroundColor: designColors.light_01.auto(ref),
-                      shape: CircleBorder(),
+      builder: (context, child) {
+        globalLocalizations = AppLocalizations.of(context)!;
+        return Scaffold(
+          body: Stack(
+            children: [
+              child!,
+              Positioned(
+                top: 8,
+                left: MediaQuery.of(context).size.width * 0.3,
+                child: SafeArea(
+                  child: ElevatedButton(
+                      style: TextButton.styleFrom(
+                        backgroundColor: designColors.light_01.auto(ref),
+                        shape: CircleBorder(),
                     ),
                     onPressed: () {
                       int darkMode = ref.watch(globalDarkModeProvider.state).state;
                       darkMode = cycleDarkMode(darkMode);
                       ref.read(globalDarkModeProvider.state).state = darkMode;
-                      preferences.putInt(Preferences.KEY_DARK_MODE, darkMode);
-                    },
-                    child: Icon(
-                      getIcon(darkMode),
-                      color: designColors.dark_01.auto(ref),
-                    )),
+                        preferences.putInt(Preferences.KEY_DARK_MODE, darkMode);
+                      },
+                      child: Icon(
+                        getIcon(darkMode),
+                        color: designColors.dark_01.auto(ref),
+                      )),
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 

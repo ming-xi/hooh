@@ -5,15 +5,16 @@ import 'dart:io';
 import 'package:app/extensions/extensions.dart';
 import 'package:app/global.dart';
 import 'package:app/test_uploading_view_model.dart';
+import 'package:app/ui/pages/me/activities.dart';
 import 'package:app/ui/pages/user/register/set_badge.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
-import 'package:app/ui/widgets/comment_view.dart';
 import 'package:app/ui/widgets/ipfs_node.dart';
 import 'package:app/ui/widgets/toast.dart';
+import 'package:app/ui/widgets/user_activity_view.dart';
 import 'package:app/utils/file_utils.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/network/responses.dart';
-import 'package:common/models/post_comment.dart';
+import 'package:common/models/user.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
@@ -53,7 +54,8 @@ class _TestMenuScreenState extends ConsumerState<TestMenuScreen> {
           children: [
             ElevatedButton(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => TestWidgetScreen()));
+                  // Navigator.push(context, MaterialPageRoute(builder: (context) => TestWidgetScreen()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => UserActivityScreen(userId: "da599f8e-cd49-443f-9e78-fa3f1394de0c")));
                   // Navigator.popUntil(context,ModalRoute.withName("/home"));
                   // popToHomeScreen(context);
                 },
@@ -137,32 +139,133 @@ class TestWidgetScreen extends ConsumerStatefulWidget {
 }
 
 class _TestWidgetScreenState extends ConsumerState<TestWidgetScreen> {
-  static const JSON = '''
-   {
-        "author": {
-            "avatar_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/hq-content/default_avatars/default_avatar_1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220518T084114Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220518%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=8f1f0f360b566ccd93edebe7c62af032ec0a0b1e46f1dc8b3013994216578c0f",
-            "id": "fa9c8fde-e84a-4953-9c44-e37e71def81a",
-            "name": "test16"
+  static const ACTIVITY_JSON = '''
+    [
+        {
+            "created_at": "2022-05-20 08:57:13",
+            "data": {
+                "badge_image_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/user-content/social-badges/026e006f74807cf4063ded57c9f13583.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220523T091312Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220523%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=4e66feba2951b65ae8697376b6e86468b51c4abe6d1c9d699575559f9b94258d",
+                "name": "Alice",
+                "user_avatar_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/user-content/avatars/10130a69034d88e28d04630b47ce16d5.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220523T091312Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220523%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=a6d8c681b78da2c43536f256975693f4e470e556a0912cd97b2ae0b6feeb1bdf"
+            },
+            "type": 10,
+            "universal_link": "https://landing.hooh.zone/users/ba58e9f9-a7f0-46b4-9960-d651c775b61b/badges"
         },
-        "comment_count": 0,
-        "content": "hi, this is [], use \\\\[\\\\] to mention other people in nested comments!",
-        "created_at": "2022-05-16 09:58:42",
-        "id": "6457c135-e193-4294-98eb-88601df850f2",
-        "like_count": 0,
-        "liked": false,
-        "replied_user": {
-            "avatar_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/hq-content/default_avatars/default_avatar_1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220518T084114Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220518%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=8f1f0f360b566ccd93edebe7c62af032ec0a0b1e46f1dc8b3013994216578c0f",
-            "id": "fa9c8fde-e84a-4953-9c44-e37e71def81a",
-            "name": "test16"
+        {
+            "created_at": "2022-05-20 08:56:33",
+            "data": {
+                "badge_image_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/user-content/social-badges/026e006f74807cf4063ded57c9f13583.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220523T091312Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220523%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=4e66feba2951b65ae8697376b6e86468b51c4abe6d1c9d699575559f9b94258d",
+                "name": "test169q8wutgow9aeu9gioyw8uyg",
+                "user_avatar_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/hq-content/default_avatars/default_avatar_1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220523T091312Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220523%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=9948c8a34c4b70cd6d1f0d490c204100cca85879dfa1b5c56c62e4aed258dea4"
+            },
+            "type": 11,
+            "universal_link": "https://landing.hooh.zone/users/fa9c8fde-e84a-4953-9c44-e37e71def81a/badges"
         },
-        "sub_comments": null,
-        "substitutes": [
-            {
-                "text": "Alice",
-                "data": "a041ff9c-5b0f-43a2-9032-353cd72049f9",
-                "type": 0
-            }
-        ]
+        {
+            "created_at": "2022-05-20 08:56:33",
+            "data": {
+                "signature": "",
+                "name": "test16",
+                "user_avatar_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/hq-content/default_avatars/default_avatar_1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220523T091312Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220523%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=9948c8a34c4b70cd6d1f0d490c204100cca85879dfa1b5c56c62e4aed258dea4"
+            },
+            "type": 6,
+            "universal_link": "https://landing.hooh.zone/users/fa9c8fde-e84a-4953-9c44-e37e71def81a"
+        },
+        {
+            "created_at": "2022-05-20 08:50:08",
+            "data": {
+                "signature": "",
+                "name": "test16",
+                "user_avatar_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/hq-content/default_avatars/default_avatar_1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220523T091312Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220523%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=9948c8a34c4b70cd6d1f0d490c204100cca85879dfa1b5c56c62e4aed258dea4"
+            },
+            "type": 7,
+            "universal_link": "https://landing.hooh.zone/users/fa9c8fde-e84a-4953-9c44-e37e71def81a"
+        },
+        {
+            "created_at": "2022-05-20 08:50:06",
+            "data": {
+                "signature": "",
+                "name": "test16",
+                "user_avatar_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/hq-content/default_avatars/default_avatar_1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220523T091312Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220523%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=9948c8a34c4b70cd6d1f0d490c204100cca85879dfa1b5c56c62e4aed258dea4"
+            },
+            "type": 6,
+            "universal_link": "https://landing.hooh.zone/users/fa9c8fde-e84a-4953-9c44-e37e71def81a"
+        },
+        {
+            "created_at": "2022-05-20 08:40:32",
+            "data": {
+                "post_image_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/user-content/posts/d57abff7ca32d9263f5f2c8d584b43d5.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220523T091312Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220523%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=4008a08d7e82b0e89acfe3938a172361e3665b897e2bd3c7e4160eb50020ec9e"
+            },
+            "type": 4,
+            "universal_link": "https://landing.hooh.zone/posts/19036651-e955-4051-8fce-14f64fe0b761"
+        },
+        {
+            "created_at": "2022-05-20 08:37:42",
+            "data": {
+                "post_image_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/user-content/posts/d57abff7ca32d9263f5f2c8d584b43d5.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220523T091312Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220523%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=58f1e7abcdff349656d323c64f8a418d3fe21e718e6c1e6fc263ea9b48e75d65",
+                "comment_content": "hi, this is baidu, use \\\\[\\\\] to mention other people!"
+            },
+            "type": 3,
+            "universal_link": "https://landing.hooh.zone/posts/087dca5d-acb6-4228-811e-94fa1ee82a4d"
+        },
+        {
+            "created_at": "2022-05-20 08:36:56",
+            "data": {
+                "post_image_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/user-content/posts/d57abff7ca32d9263f5f2c8d584b43d5.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220523T091312Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220523%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=58f1e7abcdff349656d323c64f8a418d3fe21e718e6c1e6fc263ea9b48e75d65",
+                "comment_content": "hi, this is haha, use \\\\[\\\\] to mention other people!"
+            },
+            "type": 3,
+            "universal_link": "https://landing.hooh.zone/posts/087dca5d-acb6-4228-811e-94fa1ee82a4d"
+        },
+        {
+            "created_at": "2022-05-20 08:36:35",
+            "data": {
+                "post_image_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/user-content/posts/d57abff7ca32d9263f5f2c8d584b43d5.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220523T091312Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220523%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=4008a08d7e82b0e89acfe3938a172361e3665b897e2bd3c7e4160eb50020ec9e",
+                "comment_content": "hi, this is @Alice, use \\\\[\\\\] to mention other people!"
+            },
+            "type": 3,
+            "universal_link": "https://landing.hooh.zone/posts/087dca5d-acb6-4228-811e-94fa1ee82a4d"
+        },
+        {
+            "created_at": "2022-05-20 08:33:12",
+            "data": {
+                "post_image_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/user-content/posts/d57abff7ca32d9263f5f2c8d584b43d5.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220523T091312Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220523%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=58f1e7abcdff349656d323c64f8a418d3fe21e718e6c1e6fc263ea9b48e75d65",
+                "comment_content": "hi, this is Alice, use \\\\[\\\\] to mention other people!"
+            },
+            "type": 3,
+            "universal_link": "https://landing.hooh.zone/posts/087dca5d-acb6-4228-811e-94fa1ee82a4d"
+        },
+        {
+            "created_at": "2022-05-20 08:30:03",
+            "data": {
+                "post_image_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/user-content/posts/d57abff7ca32d9263f5f2c8d584b43d5.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220523T091312Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220523%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=58f1e7abcdff349656d323c64f8a418d3fe21e718e6c1e6fc263ea9b48e75d65"
+            },
+            "type": 2,
+            "universal_link": "https://landing.hooh.zone/posts/087dca5d-acb6-4228-811e-94fa1ee82a4d"
+        },
+        {
+            "created_at": "2022-05-20 08:23:40",
+            "data": {
+                "template_image_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/user-content/templates/590bf46c875c08f760cd1ac0cff11027.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220523T091312Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220523%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=cf51a9b31470493b6e911e25d77c2d434803bdd3278a1c752e67840b9442f5e4"
+            },
+            "type": 1,
+            "universal_link": "https://landing.hooh.zone/users/ba58e9f9-a7f0-46b4-9960-d651c775b61b/templates"
+        },
+        {
+            "created_at": "2022-05-20 08:09:27",
+            "data": {
+                "post_image_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/user-content/posts/d57abff7ca32d9263f5f2c8d584b43d5.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220523T091312Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220523%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=58f1e7abcdff349656d323c64f8a418d3fe21e718e6c1e6fc263ea9b48e75d65"
+            },
+            "type": 0,
+            "universal_link": "https://landing.hooh.zone/posts/fc7126d1-a150-4e6b-b6ea-1318b36f0b3d"
+        }
+    ]
+''';
+  static const USER_JSON = '''
+     {
+        "avatar_url": "https://hooh-private.s3.ap-southeast-1.amazonaws.com/user-content/avatars/10130a69034d88e28d04630b47ce16d5.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220520T085747Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAQS2TD6PIQBMNSPEP%2F20220520%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=cca217ba72c796e3fb22dfab5ae68af152cdf8d12f592564b480007a2e72b254",
+        "id": "ba58e9f9-a7f0-46b4-9960-d651c775b61b",
+        "name": "Alice"
     }
 ''';
 
@@ -187,9 +290,15 @@ class _TestWidgetScreenState extends ConsumerState<TestWidgetScreen> {
     // );
     return Scaffold(
       body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [CommentView(comment: PostComment.fromJson(json.decode(JSON)))],
+        child: GridView(
+          padding: EdgeInsets.all(20),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 4, mainAxisSpacing: 4, childAspectRatio: 165 / 211),
+          children: (json.decode(ACTIVITY_JSON) as List)
+              .map((e) => UserActivityView(
+                    user: User.fromJson(json.decode(USER_JSON)),
+                    activity: UserActivity.fromJson(e),
+                  ))
+              .toList(),
         ),
       ),
     );

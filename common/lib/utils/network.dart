@@ -152,6 +152,22 @@ class Network {
     return _getResponseObject<User>(HttpMethod.get, _buildHoohUri("users/$userId"), deserializer: User.fromJson);
   }
 
+  Future<UserWalletResponse> getUserWalletInfo(String userId) {
+    return _getResponseObject<UserWalletResponse>(HttpMethod.get, _buildHoohUri("users/$userId/wallet"), deserializer: UserWalletResponse.fromJson);
+  }
+
+  Future<List<WalletLog>> getWalletPowLogs(String userId) {
+    return _getResponseList<WalletLog>(HttpMethod.get, _buildHoohUri("users/$userId/wallet/activities/pow"), deserializer: WalletLog.fromJson);
+  }
+
+  Future<List<WalletLog>> getWalletReputationLogs(String userId) {
+    return _getResponseList<WalletLog>(HttpMethod.get, _buildHoohUri("users/$userId/wallet/activities/reputation"), deserializer: WalletLog.fromJson);
+  }
+
+  Future<List<WalletLog>> getWalletCostLogs(String userId) {
+    return _getResponseList<WalletLog>(HttpMethod.get, _buildHoohUri("users/$userId/wallet/activities/cost"), deserializer: WalletLog.fromJson);
+  }
+
   Future<List<SocialBadgeTemplateLayer>> getRandomBadgeTemplate(String userId) {
     return _getResponseList<SocialBadgeTemplateLayer>(HttpMethod.get, _buildHoohUri("users/$userId/random-badge"),
         deserializer: SocialBadgeTemplateLayer.fromJson);
@@ -220,6 +236,35 @@ class Network {
       "size": size,
     };
     return _getResponseList<UserBadge>(HttpMethod.get, _buildHoohUri("users/$userId/badges", params: params), deserializer: UserBadge.fromJson);
+  }
+
+  Future<UserActivityResponse> getUserActivities(String userId, {DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
+    Map<String, dynamic> params = {
+      "size": size,
+    };
+    if (date != null) {
+      params["timestamp"] = DateUtil.getUtcDateString(date);
+    }
+    return _getResponseObject<UserActivityResponse>(HttpMethod.get, _buildHoohUri("users/$userId/activities", params: params),
+        deserializer: UserActivityResponse.fromJson);
+  }
+
+  Future<List<SystemNotification>> getSystemNotifications({DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
+    Map<String, dynamic> params = {
+      "size": size,
+    };
+    if (date != null) {
+      params["timestamp"] = DateUtil.getUtcDateString(date);
+    }
+    return _getResponseList<SystemNotification>(HttpMethod.get, _buildHoohUri("users/notifications", params: params),
+        deserializer: SystemNotification.fromJson);
+  }
+
+  Future<UnreadNotificationCountResponse> getUnreadNotificationCount() {
+    int milliSeconds = preferences.getInt(Preferences.KEY_LAST_SYSTEM_NOTIFICATIONS_READ) ?? 0;
+    Map<String, dynamic> params = {"timestamp": DateUtil.getUtcDateString(DateTime.fromMillisecondsSinceEpoch(milliSeconds))};
+    return _getResponseObject<UnreadNotificationCountResponse>(HttpMethod.get, _buildHoohUri("users/notifications/unread-count", params: params),
+        deserializer: UnreadNotificationCountResponse.fromJson);
   }
 
   //endregion
@@ -430,6 +475,10 @@ class Network {
 
   Future<HomepageBackgroundImageResponse> getHomepageRandomBackground() {
     return _getResponseObject(HttpMethod.get, _buildHoohUri("app/random-homepage-background-image"), deserializer: HomepageBackgroundImageResponse.fromJson);
+  }
+
+  Future<FeeInfoResponse> getFeeInfo() {
+    return _getResponseObject(HttpMethod.get, _buildHoohUri("app/fee-info"), deserializer: FeeInfoResponse.fromJson);
   }
 
   //endregion

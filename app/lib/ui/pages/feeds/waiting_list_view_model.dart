@@ -76,15 +76,15 @@ class WaitingListPageViewModel extends StateNotifier<WaitingListPageModelState> 
 
     network.requestAsync<List<Post>>(network.getWaitingListPosts(trending: state.isTrending, date: date), (newData) {
       if (newData.isEmpty) {
-        //has data
+        //no data
         if (isRefresh) {
           updateState(state.copyWith(pageState: isRefresh ? PageState.empty : PageState.noMore, posts: []));
         } else {
           updateState(state.copyWith(pageState: isRefresh ? PageState.empty : PageState.noMore));
         }
-        debugPrint("${state.pageState}");
+        // debugPrint("${state.pageState}");
       } else {
-        //no data
+        //has data
         if (isRefresh) {
           updateState(state.copyWith(
             pageState: PageState.dataLoaded,
@@ -95,7 +95,7 @@ class WaitingListPageViewModel extends StateNotifier<WaitingListPageModelState> 
           updateState(state.copyWith(
             pageState: PageState.dataLoaded,
             lastTimestamp: newData.last.createdAt,
-            posts: state.posts..addAll(newData),
+            posts: [...state.posts, ...newData],
           ));
         }
       }
@@ -126,7 +126,7 @@ class WaitingListPageViewModel extends StateNotifier<WaitingListPageModelState> 
   }
 
   void updatePostData(Post post, int index) {
-    debugPrint("updatePostData vote_count=${post.voteCount}(${post.myVoteCount}) index=$index");
+    // debugPrint("updatePostData vote_count=${post.voteCount}(${post.myVoteCount}) index=$index");
     List<Post> list = [...state.posts];
     if (post.publishState == Post.PUBLISH_STATE_WAITING_LIST) {
       list[index] = post;

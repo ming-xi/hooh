@@ -1,6 +1,10 @@
 import 'dart:io';
 
+import 'package:app/global.dart';
 import 'package:app/ui/pages/creation/template_add_tag_view_model.dart';
+import 'package:app/ui/pages/home/feeds.dart';
+import 'package:app/ui/pages/home/home.dart';
+import 'package:app/ui/pages/home/home_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
@@ -43,7 +47,7 @@ class _TemplateDoneScreenState extends ConsumerState<TemplateDoneScreen> with Si
     // var center = buildEarningToast();
     return Scaffold(
       appBar: AppBar(
-        title: Text("Done"),
+        title: Text(globalLocalizations.common_done),
       ),
       body: CustomScrollView(
         slivers: [
@@ -59,7 +63,7 @@ class _TemplateDoneScreenState extends ConsumerState<TemplateDoneScreen> with Si
                 Padding(
                   padding: EdgeInsets.only(left: 20, right: 20, top: 12, bottom: 0),
                   child: Text(
-                    "After the image is reviewed, it will appear in the gallery, and you will get more benefits if you are cited",
+                    globalLocalizations.template_done_description,
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref)),
                   ),
                 ),
@@ -67,11 +71,16 @@ class _TemplateDoneScreenState extends ConsumerState<TemplateDoneScreen> with Si
                   padding: const EdgeInsets.all(50.0),
                   child: Column(
                     children: [
-                      MainStyles.blueButton(ref, "My temple center", () {}, cornerRadius: 22),
+                      MainStyles.blueButton(ref, globalLocalizations.template_done_to_my_templates, () {}, cornerRadius: 22),
                       SizedBox(
                         height: 20,
                       ),
-                      MainStyles.gradientButton(ref, "Go to explore", () {})
+                      MainStyles.gradientButton(ref, globalLocalizations.template_done_to_feeds, () {
+                        HomePageViewModel model = ref.read(homePageProvider.notifier);
+                        model.updateTabIndex(HomeScreen.PAGE_INDEX_FEEDS);
+                        // model.updateFeedsTabIndex(FeedsPage.PAGE_INDEX_WAITING, notifyController: true);
+                        popToHomeScreen(context);
+                      })
                     ],
                   ),
                 ),
@@ -93,7 +102,7 @@ class _TemplateDoneScreenState extends ConsumerState<TemplateDoneScreen> with Si
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              "success! Get",
+              globalLocalizations.template_done_rewards_part1,
               style: toastStyle,
             ),
             SizedBox(
@@ -107,13 +116,13 @@ class _TemplateDoneScreenState extends ConsumerState<TemplateDoneScreen> with Si
             SizedBox(
               width: 4,
             ),
-            Text("X 15", style: toastStyle.copyWith(fontWeight: FontWeight.bold)),
+            Text(globalLocalizations.template_done_rewards_part2, style: toastStyle.copyWith(fontWeight: FontWeight.bold)),
           ],
         ),
         padding: EdgeInsets.symmetric(
           horizontal: 12,
         ),
-        decoration: MainStyles.gradientButtonDecoration(cornerRadius: 18),
+        decoration: MainStyles.gradientButtonDecoration(ref, cornerRadius: 18),
       ),
     );
   }

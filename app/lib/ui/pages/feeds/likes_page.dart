@@ -23,7 +23,7 @@ class _LikesPageState extends ConsumerState<LikesPage> {
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       gridDelegate:
           SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 40, mainAxisSpacing: 8, crossAxisSpacing: 8, childAspectRatio: 1, mainAxisExtent: 40),
-      itemBuilder: (context, index) => AvatarView(user: widget.users[index], size: 40),
+      itemBuilder: (context, index) => AvatarView.fromUser(widget.users[index], size: 40),
       itemCount: widget.users.length,
     );
   }

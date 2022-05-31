@@ -64,7 +64,7 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
                   context: context,
                   builder: (context) {
                     return AlertDialog(
-                      content: Text("uploading failed"),
+                      content: Text(globalLocalizations.set_badge_uploading_failed),
                     );
                   });
             } else if (result is User) {
@@ -76,7 +76,7 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
           },
           style: RegisterStyles.appbarTextButtonStyle(ref),
           child: Text(
-            'OK',
+            globalLocalizations.common_ok,
           )),
       // Icon(
       //     Icons.more_vert
@@ -260,7 +260,7 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
                     shape: MaterialStateProperty.all(const RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(22)),
                 ))),
-                label: Text("Change"),
+                label: Text(globalLocalizations.set_badge_change),
                 icon: HoohIcon('assets/images/shuffle.svg', height: 36, width: 36),
                 onPressed: () {
                   String? userId = ref.read(globalUserInfoProvider.state).state?.id;

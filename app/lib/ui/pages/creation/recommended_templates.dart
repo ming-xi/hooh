@@ -1,6 +1,8 @@
+import 'package:app/global.dart';
 import 'package:app/ui/pages/creation/edit_post.dart';
 import 'package:app/ui/pages/creation/edit_post_view_model.dart';
 import 'package:app/ui/pages/creation/recommended_templates_view_model.dart';
+import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/template_compose_view.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
@@ -43,15 +45,12 @@ class _RecommendedTemplatesScreenState extends ConsumerState<RecommendedTemplate
     double scale = imageSize / screenWidth;
     return Scaffold(
       appBar: AppBar(
-        title: Text("Select Image"),
+        title: Text(globalLocalizations.recommended_templates_title),
       ),
       body: SmartRefresher(
         enablePullDown: true,
         enablePullUp: false,
-        header: MaterialClassicHeader(
-          // offset: totalHeight,
-          color: designColors.feiyu_blue.auto(ref),
-        ),
+        header: MainStyles.getRefresherHeader(ref),
         onRefresh: () async {
           model.getRecommendedTemplates(onComplete: () {
             _refreshController.refreshCompleted();
@@ -92,7 +91,7 @@ class _RecommendedTemplatesScreenState extends ConsumerState<RecommendedTemplate
       template: template,
       viewSetting: viewSetting,
       onPressBody: () {
-        debugPrint("press");
+        // debugPrint("press");
         Navigator.push(context, MaterialPageRoute(builder: (context) => EditPostScreen(setting: PostImageSetting.withTemplate(template, text: getText()))));
       },
       scale: scale,
@@ -100,11 +99,11 @@ class _RecommendedTemplatesScreenState extends ConsumerState<RecommendedTemplate
   }
 
   Widget buildAddItemWidget() {
-    return buildSpecialItemWidget(() {}, "assets/images/select_photos.svg", "Select photos");
+    return buildSpecialItemWidget(() {}, "assets/images/select_photos.svg", globalLocalizations.recommended_templates_from_local);
   }
 
   Widget buildSeeMoreWidget() {
-    return buildSpecialItemWidget(() {}, "assets/images/to_gallery.svg", "To gallery");
+    return buildSpecialItemWidget(() {}, "assets/images/to_gallery.svg", globalLocalizations.recommended_templates_see_more);
   }
 
   Widget buildSpecialItemWidget(void Function() onPress, String assetIconPath, String text) {

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width = "10px"
+     height = "10px"
+     viewBox = "0 0 10 10"
+     version = "1.1"
+     xmlns = "http://www.w3.org/2000/svg"
+     xmlns:xlink = "http://www.w3.org/1999/xlink">
+	<title>路径备份</title>
+	<g id = "light"
+	   stroke = "none"
+	   stroke-width = "1"
+	   fill = "none"
+	   fill-rule = "evenodd">
+		<g id = "01-0-首页-默认"
+		   transform = "translate(-331.000000, -669.000000)"
+		   fill = "#FFFFFF">
+			<g id = "投稿有奖"
+			   transform = "translate(247.000000, 647.000000)">
+				<g id = "编组-3"
+				   transform = "translate(44.000000, 0.000000)">
+					<polygon id = "路径备份"
+					         points = "40.1411133 22.1518555 40.1411133 31.4448242 49.434082 22.1518555"></polygon>
+				</g>
+			</g>
+		</g>
+	</g>
+</svg>

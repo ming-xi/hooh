@@ -1,18 +1,23 @@
 import 'package:app/global.dart';
+import 'package:app/ui/pages/home/me_model.dart';
+import 'package:app/ui/pages/me/activities.dart';
 import 'package:app/ui/pages/me/badges.dart';
+import 'package:app/ui/pages/me/notifications.dart';
 import 'package:app/ui/pages/me/settings/setting.dart';
-import 'package:app/ui/pages/user/register/login.dart';
-import 'package:app/ui/pages/user/register/register.dart';
+import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
+import 'package:badges/badges.dart';
+import 'package:common/models/network/responses.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/date_util.dart';
-import 'package:common/utils/network.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:sprintf/sprintf.dart';
 import 'package:tuple/tuple.dart';
 
 class MePage extends ConsumerStatefulWidget {
@@ -28,23 +33,24 @@ class _MePageState extends ConsumerState<MePage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(Duration(seconds: 1), () {
-        User? user = ref.read(globalUserInfoProvider);
-        if (user != null) {
-          network.requestAsync<User>(network.getUserInfo(user.id), (data) {
-            if (mounted) {
-              ref.read(globalUserInfoProvider.state).state = data;
-            }
-          }, (error) {});
-        }
-      });
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   Future.delayed(const Duration(seconds: 1), () {
+    //     User? user = ref.read(globalUserInfoProvider);
+    //     if (user != null) {
+    //       network.requestAsync<User>(network.getUserInfo(user.id), (data) {
+    //         if (mounted) {
+    //           ref.read(globalUserInfoProvider.state).state = data;
+    //           preferences.putString(Preferences.KEY_USER_INFO, json.encode(user.toJson()));
+    //         }
+    //       }, (error) {});
+    //     }
+    //   });
+    // });
   }
 
   @override
   Widget build(BuildContext context) {
-    return ref.watch(globalUserInfoProvider.state).state == null ? GuestPage() : UserCenterPage();
+    return ref.watch(globalUserInfoProvider.state).state == null ? const GuestPage() : MyProfilePage();
   }
 }
 
@@ -55,53 +61,64 @@ class GuestPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      color: Colors.yellow.withAlpha(100),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text("not login"),
-              SizedBox(
-                height: 24,
-              ),
-              TextButton(
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
-                  },
-                  style: RegisterStyles.blackButtonStyle(ref),
-                  child: const Text('Sign Up')),
-              const SizedBox(
-                height: 20,
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
-                },
-                child: const Text('Or Login'),
-                style: RegisterStyles.blackOutlineButtonStyle(ref),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return StartScreen(
+      isStandaloneScreen: false,
     );
+    // return Container(
+    //   color: Colors.yellow.withAlpha(100),
+    //   child: Padding(
+    //     padding: const EdgeInsets.all(24.0),
+    //     child: Center(
+    //       child: Column(
+    //         mainAxisSize: MainAxisSize.min,
+    //         children: [
+    //           const Text("not login"),
+    //           const SizedBox(
+    //             height: 24,
+    //           ),
+    //           TextButton(
+    //               onPressed: () {
+    //                 Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
+    //               },
+    //               style: RegisterStyles.blackButtonStyle(ref),
+    //               child: const Text('Sign Up')),
+    //           const SizedBox(
+    //             height: 20,
+    //           ),
+    //           TextButton(
+    //             onPressed: () {
+    //               Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+    //             },
+    //             child: const Text('Or Login'),
+    //             style: RegisterStyles.blackOutlineButtonStyle(ref),
+    //           ),
+    //         ],
+    //       ),
+    //     ),
+    //   ),
+    // );
   }
 }
 
-class UserCenterPage extends ConsumerStatefulWidget {
-  const UserCenterPage({
+class MyProfilePage extends ConsumerStatefulWidget {
+  late final StateNotifierProvider<MePageViewModel, MePageModelState> provider;
+
+  MyProfilePage({
     Key? key,
-  }) : super(key: key);
+  }) : super(key: key) {
+    provider = StateNotifierProvider((ref) {
+      User? user = ref.read(globalUserInfoProvider);
+      return MePageViewModel(MePageModelState.init(user!.id, user: user));
+    });
+  }
 
   @override
-  ConsumerState createState() => _UserCenterPageState();
+  ConsumerState createState() => _MyProfilePageState();
 }
 
-class _UserCenterPageState extends ConsumerState<UserCenterPage> {
-  final List<BoxShadow> cardShadow = [BoxShadow(color: Color(0x00000000).withAlpha((255 * 0.2).toInt()), blurRadius: 10, spreadRadius: -4)];
+class _MyProfilePageState extends ConsumerState<MyProfilePage> {
+  final List<BoxShadow> cardShadow = [BoxShadow(color: const Color(0x00000000).withAlpha((255 * 0.2).toInt()), blurRadius: 10, spreadRadius: -4)];
+  final RefreshController _refreshController = RefreshController(initialRefresh: false);
 
   @override
   void initState() {
@@ -110,22 +127,26 @@ class _UserCenterPageState extends ConsumerState<UserCenterPage> {
 
   @override
   Widget build(BuildContext context) {
+    MePageModelState modelState = ref.watch(widget.provider);
+    MePageViewModel model = ref.read(widget.provider.notifier);
     TextStyle? titleTextStyle = TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: designColors.dark_01.auto(ref));
-    User user = ref.watch(globalUserInfoProvider)!;
-    bool loading = user.username == null || user.badgeImageUrl == null;
+    bool loading = modelState.user == null;
     if (loading) {
-      return Center(
+      return const Center(
         child: CircularProgressIndicator(),
       );
     }
-
+    User user = modelState.user!;
+    String? title = user.name;
+    double avatarSize = 72;
+    double badgeOffset = 22;
     return Scaffold(
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              user.name,
+              title,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: designColors.dark_01.auto(ref)),
             ),
             Text(
@@ -136,17 +157,33 @@ class _UserCenterPageState extends ConsumerState<UserCenterPage> {
         ),
         actions: [
           IconButton(
-              onPressed: () {},
-              icon: HoohIcon(
-                "assets/images/icon_me_message.svg",
-                width: 24,
-                height: 24,
-                color: designColors.dark_01.auto(ref),
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => SystemNotificationScreen())).then((value) {
+                  refreshPage(ref.read(widget.provider.notifier));
+                });
+              },
+              icon: Badge(
+                badgeColor: designColors.orange.auto(ref),
+                padding: EdgeInsets.all(4),
+                position: BadgePosition.topEnd(end: -4, top: -6),
+                showBadge: (modelState.unread?.unreadCount ?? 0) != 0,
+                badgeContent: Text(
+                  "${modelState.unread?.unreadCount ?? 0}",
+                  style: TextStyle(fontSize: 10),
+                ),
+                child: HoohIcon(
+                  "assets/images/icon_me_message.svg",
+                  width: 24,
+                  height: 24,
+                  color: designColors.dark_01.auto(ref),
+                ),
               ))
         ],
         leading: IconButton(
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen())).then((value) {
+                refreshPage(ref.read(widget.provider.notifier));
+              });
             },
             icon: HoohIcon(
               "assets/images/icon_me_setting.svg",
@@ -156,105 +193,139 @@ class _UserCenterPageState extends ConsumerState<UserCenterPage> {
             )),
         centerTitle: true,
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(
-                  height: 16,
-                ),
-                Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 24,
+      body: SmartRefresher(
+        enablePullDown: true,
+        enablePullUp: false,
+        header: MainStyles.getRefresherHeader(ref),
+        onRefresh: () async {
+          refreshPage(model);
+        },
+        controller: _refreshController,
+        child: CustomScrollView(
+          slivers: [
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Center(
+                          child: SizedBox(
+                            width: avatarSize + badgeOffset * 2,
+                            height: avatarSize,
+                            child: Stack(
+                              children: [
+                                Center(
+                                  child: HoohImage(
+                                    imageUrl: user.avatarUrl ?? "",
+                                    cornerRadius: 100,
+                                    width: avatarSize,
+                                    height: avatarSize,
+                                  ),
+                                ),
+                                Positioned(
+                                    left: 0,
+                                    bottom: 0,
+                                    child: HoohImage(
+                                      imageUrl: user.badgeImageUrl ?? "",
+                                      width: 32,
+                                      height: 36,
+                                    ))
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: SizedBox(
+                      height: 80,
+                      child: Row(
+                        children: [
+                          Expanded(child: buildFollowerCard(AppLocalizations.of(context)!.me_following, user.followingCount)),
+                          const SizedBox(
+                            width: 8,
+                          ),
+                          Expanded(child: buildFollowerCard(AppLocalizations.of(context)!.me_follower, user.followerCount)),
+                        ],
+                      ),
                     ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        HoohImage(
-                          imageUrl: user.avatarUrl ?? "",
-                          cornerRadius: 100,
-                          width: 72,
-                          height: 72,
-                        ),
-                        const Spacer(),
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              AppLocalizations.of(context)!.me_following,
-                              style: TextStyle(fontSize: 12, color: designColors.light_06.auto(ref)),
-                            ),
-                            Text(
-                              formatAmount(user.followingCount ?? 0),
-                              style: titleTextStyle,
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              AppLocalizations.of(context)!.me_follower,
-                              style: TextStyle(fontSize: 12, color: designColors.light_06.auto(ref)),
-                            ),
-                            Text(
-                              formatAmount(user.followerCount ?? 0),
-                              style: titleTextStyle,
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                        const SizedBox(
-                          width: 17,
-                        ),
-                      ],
-                    )),
-                const SizedBox(
-                  height: 32,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Text(
-                    AppLocalizations.of(context)!.me_personal_social_icon,
-                    style: titleTextStyle,
                   ),
-                ),
-                SizedBox(
-                  height: 8,
-                ),
-                buildBadgeBar(user),
-                SizedBox(
-                  height: 32,
-                ),
-                buildProfileCard(user, titleTextStyle),
-                SizedBox(
-                  height: 32,
-                ),
-                buildWalletCard(user, titleTextStyle),
-                SizedBox(
-                  height: 32,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
-                  child: Text(
-                    "Title?",
-                    style: titleTextStyle,
+                  const SizedBox(
+                    height: 32,
                   ),
-                ),
-                SizedBox(
-                  height: 8,
-                ),
-                buildTileButtons(user),
-                SizedBox(
-                  height: 96,
-                ),
-              ],
-            ),
-          )
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Text(
+                      AppLocalizations.of(context)!.me_personal_social_icon,
+                      style: titleTextStyle,
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  buildBadgeBar(user),
+                  const SizedBox(
+                    height: 32,
+                  ),
+                  buildProfileCard(user, titleTextStyle),
+                  const SizedBox(
+                    height: 32,
+                  ),
+                  buildWalletCard(user, modelState.wallet, titleTextStyle),
+                  const SizedBox(
+                    height: 32,
+                  ),
+                  buildTileButtons(user),
+                  const SizedBox(
+                    height: 96,
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  void refreshPage(MePageViewModel model) {
+    model.refresh(callback: () {
+      _refreshController.refreshCompleted();
+      _refreshController.resetNoData();
+    });
+  }
+
+  Container buildFollowerCard(String title, int? amount) {
+    return Container(
+      decoration: buildCardDecoration(),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Spacer(
+            flex: 22,
+          ),
+          Text(
+            title,
+            style: TextStyle(fontSize: 12, color: designColors.light_06.auto(ref)),
+          ),
+          const SizedBox(
+            height: 4,
+          ),
+          Text(
+            formatAmount(amount ?? 0),
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: designColors.dark_01.auto(ref)),
+          ),
+          const Spacer(
+            flex: 12,
+          ),
         ],
       ),
     );
@@ -262,17 +333,25 @@ class _UserCenterPageState extends ConsumerState<UserCenterPage> {
 
   Widget buildTileButtons(User user) {
     List<Tuple4<String, String, bool, void Function()?>> configs = [
-      Tuple4("Post", "assets/images/icon_user_center_post.svg", true, () {}),
-      Tuple4("Contents", "assets/images/icon_user_center_contents.svg", true, () {}),
-      Tuple4("NFTs", "assets/images/icon_user_center_nft.svg", false, null),
-      Tuple4("Collection", "assets/images/icon_user_center_fav.svg", true, () {}),
-      Tuple4("Liked", "assets/images/icon_user_center_liked.svg", true, () {}),
-      Tuple4("Trends", "assets/images/icon_user_center_trends.svg", true, () {}),
+      Tuple4(globalLocalizations.me_tile_posts, "assets/images/icon_user_center_post.svg", true, () {}),
+      Tuple4(globalLocalizations.me_tile_templates, "assets/images/icon_user_center_contents.svg", true, () {}),
+      Tuple4(globalLocalizations.me_tile_nfts, "assets/images/icon_user_center_nft.svg", false, null),
+      Tuple4(globalLocalizations.me_tile_bookmarks, "assets/images/icon_user_center_fav.svg", true, () {}),
+      Tuple4(globalLocalizations.me_tile_liked, "assets/images/icon_user_center_liked.svg", true, () {}),
+      Tuple4(globalLocalizations.me_tile_trends, "assets/images/icon_user_center_trends.svg", true, () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => UserActivityScreen(userId: user.id))).then((value) {
+          refreshPage(ref.read(widget.provider.notifier));
+        });
+      }),
     ];
-    LinearGradient gradient = const LinearGradient(colors: [
-      Color(0xFF0167F9),
-      Color(0xFF20E0C2),
-    ], begin: Alignment.topLeft, end: Alignment.bottomRight);
+    List<Color> colors = [
+      const Color(0xFF0167F9),
+      const Color(0xFF20E0C2),
+    ];
+    if (MainStyles.isDarkMode(ref)) {
+      colors = colors.map((e) => e.withAlpha(globalDarkModeImageAlpha)).toList();
+    }
+    LinearGradient gradient = LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight);
     Color disabledColor = designColors.dark_03.auto(ref);
     // return Padding(
     //   padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -329,9 +408,9 @@ class _UserCenterPageState extends ConsumerState<UserCenterPage> {
       child: SizedBox(
         height: itemSize * rowCount + spacing * (rowCount - 1),
         child: GridView.builder(
-          physics: NeverScrollableScrollPhysics(),
-          gridDelegate:
-              SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: columnCount, mainAxisSpacing: spacing, crossAxisSpacing: spacing, childAspectRatio: 1),
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: columnCount, mainAxisSpacing: spacing, crossAxisSpacing: spacing, childAspectRatio: 1),
           itemBuilder: (context, index) {
             Tuple4<String, String, bool, void Function()?> config = configs[index];
             return Material(
@@ -351,14 +430,14 @@ class _UserCenterPageState extends ConsumerState<UserCenterPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Padding(
-                              padding: EdgeInsets.only(top: 12, left: 12),
+                              padding: const EdgeInsets.only(top: 12, left: 12),
                               child: HoohIcon(
                                 config.item2,
                                 width: 48,
                                 height: 48,
                               ),
                             ),
-                            Spacer()
+                            const Spacer()
                           ],
                         ),
                       ),
@@ -366,7 +445,7 @@ class _UserCenterPageState extends ConsumerState<UserCenterPage> {
                         child: Center(
                           child: Text(
                             config.item1,
-                            style: TextStyle(fontSize: 16, color: Colors.white),
+                            style: const TextStyle(fontSize: 16, color: Colors.white),
                           ),
                         ),
                       )
@@ -382,40 +461,129 @@ class _UserCenterPageState extends ConsumerState<UserCenterPage> {
     );
   }
 
-  Widget buildCard(Widget child) {
+  BoxDecoration buildCardDecoration() => BoxDecoration(boxShadow: cardShadow, borderRadius: BorderRadius.circular(20), color: designColors.light_01.auto(ref));
+
+  Widget buildMainCard(Widget child) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
-        padding: EdgeInsets.only(left: 20, right: 20, bottom: 20, top: 12),
-        decoration: BoxDecoration(boxShadow: cardShadow, borderRadius: BorderRadius.circular(20), color: designColors.light_01.auto(ref)),
+        padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20, top: 12),
+        decoration: buildCardDecoration(),
         child: child,
       ),
     );
   }
 
-  Widget buildWalletCard(User user, TextStyle titleTextStyle) {
-    return buildCard(Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      SizedBox(
+  Widget buildWalletCard(User user, UserWalletResponse? wallet, TextStyle titleTextStyle) {
+    if (wallet == null) {
+      return Container();
+    }
+    double total = wallet.totalEarnedPow + wallet.totalEarnedReputation;
+    double yesterday = wallet.yesterdayEarnedPow + wallet.yesterdayEarnedReputation;
+    double totalPowPercentage = total == 0 ? 0 : (wallet.totalEarnedPow / total);
+    double totalReputationPercentage = total == 0 ? 0 : (wallet.totalEarnedReputation / total);
+    double yesterdayPowPercentage = yesterday == 0 ? 0 : (wallet.yesterdayEarnedPow / yesterday);
+    double yesterdayReputationPercentage = yesterday == 0 ? 0 : (wallet.yesterdayEarnedReputation / yesterday);
+    debugPrint("total=$total,"
+        "yesterday=$yesterday,"
+        "totalPowPercentage=$totalPowPercentage,"
+        "totalReputationPercentage=$totalReputationPercentage,"
+        "yesterdayPowPercentage=$yesterdayPowPercentage,"
+        "yesterdayReputationPercentage=$yesterdayReputationPercentage,");
+    return buildMainCard(Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      const SizedBox(
         height: 16,
       ),
       Text(
-        "Wallet",
+        globalLocalizations.me_wallet,
         style: titleTextStyle,
       ),
+      const SizedBox(
+        height: 8,
+      ),
+      Row(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(globalLocalizations.me_wallet_balance, style: TextStyle(color: designColors.dark_01.auto(ref), fontSize: 16)),
+          Spacer(),
+          HoohIcon(
+            "assets/images/common_ore.svg",
+            width: 24,
+            height: 24,
+          ),
+          SizedBox(
+            width: 4,
+          ),
+          Text(sprintf(globalLocalizations.me_wallet_ore_amount, [wallet.balance]),
+              style: TextStyle(color: designColors.feiyu_blue.auto(ref), fontSize: 16, fontWeight: FontWeight.bold)),
+        ],
+      ),
       SizedBox(
-        height: 24,
+        height: 8,
       ),
-      Center(
-        child: Text(
-          "Empty...",
-          style: titleTextStyle,
-        ),
-      ),
+      Row(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          buildEarnDetail(globalLocalizations.me_wallet_total_earn, total, totalPowPercentage, totalReputationPercentage),
+          buildEarnDetail(globalLocalizations.me_wallet_yesterday_earn, yesterday, yesterdayPowPercentage, yesterdayReputationPercentage),
+        ],
+      )
     ]));
   }
 
+  Widget buildEarnDetail(String title, double amount, double powPercentage, double reputationPercentage) {
+    String pow = sprintf("%.0f%%", [powPercentage * 100]);
+    String reputation = sprintf("%.0f%%", [reputationPercentage * 100]);
+    return Expanded(
+        child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(color: designColors.dark_01.auto(ref), fontSize: 16),
+        ),
+        SizedBox(
+          height: 4,
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            HoohIcon(
+              "assets/images/common_ore.svg",
+              width: 24,
+              height: 24,
+            ),
+            SizedBox(
+              width: 4,
+            ),
+            Text(sprintf(globalLocalizations.me_wallet_ore_amount, [amount]),
+                style: TextStyle(color: designColors.feiyu_blue.auto(ref), fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        SizedBox(
+          height: 8,
+        ),
+        Text(
+          sprintf(globalLocalizations.me_wallet_pow_percentage, [pow]),
+          style: TextStyle(color: designColors.light_06.auto(ref), fontSize: 14),
+        ),
+        SizedBox(
+          height: 4,
+        ),
+        Text(
+          sprintf(globalLocalizations.me_wallet_reputation_percentage, [reputation]),
+          style: TextStyle(color: designColors.light_06.auto(ref), fontSize: 14),
+        ),
+      ],
+    ));
+  }
+
   Widget buildProfileCard(User user, TextStyle titleTextStyle) {
-    return buildCard(Column(
+    return buildMainCard(Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -424,14 +592,15 @@ class _UserCenterPageState extends ConsumerState<UserCenterPage> {
           mainAxisSize: MainAxisSize.max,
           children: [
             Text(
-              "Profile",
+              globalLocalizations.me_profile,
               style: titleTextStyle,
             ),
-            Spacer(),
+            const Spacer(),
             TextButton(
+              style: MainStyles.textButtonStyle(ref),
               onPressed: () {},
               child: Text(
-                "Edit Profile",
+                globalLocalizations.me_profile_edit,
                 style: TextStyle(fontSize: 14, color: designColors.blue_dark.auto(ref), fontWeight: FontWeight.normal, decoration: TextDecoration.underline),
               ),
             )
@@ -450,11 +619,11 @@ class _UserCenterPageState extends ConsumerState<UserCenterPage> {
               height: 24,
               color: designColors.dark_01.auto(ref),
             ),
-            SizedBox(
+            const SizedBox(
               width: 8,
             ),
             Text(
-              "${DateUtil.getZonedDateString(user.createdAt!, format: "d MMMM yyyy")} Joined",
+              sprintf(globalLocalizations.me_profile_joined, [DateUtil.getZonedDateString(user.createdAt!, format: "d MMMM yyyy")]),
               style: TextStyle(fontSize: 16, color: designColors.dark_01.auto(ref)),
             )
           ],
@@ -462,8 +631,9 @@ class _UserCenterPageState extends ConsumerState<UserCenterPage> {
         Visibility(
           visible: (user.signature?.trim() ?? "").isNotEmpty,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SizedBox(
+              const SizedBox(
                 height: 8,
               ),
               Text(
@@ -492,14 +662,21 @@ class _UserCenterPageState extends ConsumerState<UserCenterPage> {
 
   Widget buildBadgeBar(User user) {
     const double height = 64;
-    const double middleSpacing = 12;
+    const double middleSpacing = 16;
     const double paddingLeft = 20;
-    const double outerSpacing = 16;
+    const double paddingRight = 8;
+    const double outerSpacing = 24;
     const double buttonSize = 36;
     const double badgeWidth = 32;
     double screenWidth = MediaQuery.of(context).size.width;
-    int maxBadgeCount = (screenWidth - (paddingLeft * 2 + height + outerSpacing * 2 + buttonSize) + middleSpacing) ~/ (badgeWidth + middleSpacing);
-
+    int maxBadgeCount = (screenWidth - (paddingLeft + outerSpacing * 2 + buttonSize + paddingRight) + middleSpacing) ~/ (badgeWidth + middleSpacing);
+    // debugPrint("maxBadgeCount=${maxBadgeCount}");
+    // var temp = user.receivedBadges!;
+    // user.receivedBadges = [
+    //   ...temp,
+    //   ...temp,
+    //   ...temp,
+    // ];
     List<Widget>? badges = user.receivedBadges
         ?.take(maxBadgeCount)
         .map((e) => [
@@ -508,7 +685,7 @@ class _UserCenterPageState extends ConsumerState<UserCenterPage> {
                 width: badgeWidth,
                 isBadge: true,
               ),
-              SizedBox(
+              const SizedBox(
                 width: middleSpacing,
               )
             ])
@@ -518,35 +695,41 @@ class _UserCenterPageState extends ConsumerState<UserCenterPage> {
       badges.removeLast();
     }
     var list = [
-      buildMyBadge(user, height),
-      SizedBox(
+      // buildMyBadge(user, height),
+      const SizedBox(
         width: outerSpacing,
       ),
       ...?badges,
-      SizedBox(
-        width: outerSpacing,
-      ),
-      Spacer(),
+      // SizedBox(
+      //   width: outerSpacing,
+      // ),
+      const Spacer(),
       IconButton(
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => BadgesScreen(userId: user.id)));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => BadgesScreen(userId: user.id))).then((value) {
+              refreshPage(ref.read(widget.provider.notifier));
+            });
           },
           icon: Icon(
             Icons.more_horiz_rounded,
             color: designColors.dark_03.auto(ref),
-            size: 26,
-          ))
+            size: 32,
+          )),
+      const SizedBox(
+        width: paddingRight,
+      ),
     ];
 
     return Padding(
       padding: const EdgeInsets.only(left: paddingLeft),
       child: Container(
+        height: height,
         decoration: BoxDecoration(
           color: designColors.light_01.auto(ref),
           boxShadow: cardShadow,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24),
-            bottomLeft: Radius.circular(24),
+          borderRadius: const BorderRadius.only(
+            topLeft: const Radius.circular(24),
+            bottomLeft: const Radius.circular(24),
           ),
         ),
         child: Material(
@@ -555,40 +738,6 @@ class _UserCenterPageState extends ConsumerState<UserCenterPage> {
             mainAxisSize: MainAxisSize.max,
             children: list,
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget buildMyBadge(User user, double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        gradient: MainStyles.badgeGradient(),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(
-              height: 6,
-            ),
-            HoohImage(
-              imageUrl: user.badgeImageUrl!,
-              isBadge: true,
-              height: 36,
-            ),
-            SizedBox(
-              height: 2,
-            ),
-            Text(
-              "mine",
-              style: TextStyle(color: Colors.white, fontSize: 12),
-            )
-          ],
         ),
       ),
     );

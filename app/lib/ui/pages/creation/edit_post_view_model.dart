@@ -120,6 +120,7 @@ class PostImageSetting {
   final File? imageFile;
   final String? imageUrl;
   final String? text;
+  final String? templateId;
   final Color textColor;
   final double frameX;
   final double frameY;
@@ -138,6 +139,7 @@ class PostImageSetting {
       {this.imageFile,
       this.imageUrl,
       this.text,
+      this.templateId,
       required this.textColor,
       required this.frameX,
       required this.frameY,
@@ -166,6 +168,7 @@ class PostImageSetting {
   factory PostImageSetting.withTemplate(Template template, {String? text}) => PostImageSetting(
       imageUrl: template.imageUrl,
       text: text,
+      templateId: template.id,
       textColor: HexColor.fromHex(template.textColor),
       fontSize: CreationStrategy.calculateFontSize(text ?? ""),
       lineHeight: CreationStrategy.calculateLineHeight(text ?? ""),

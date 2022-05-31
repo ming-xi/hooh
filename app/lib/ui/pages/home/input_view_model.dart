@@ -44,7 +44,7 @@ class InputPageViewModel extends StateNotifier<InputPageModelState> {
 
   List<String> readFromDraft({bool needsUpdate = true}) {
     List<String> strings = (json.decode(preferences.getString(Preferences.KEY_USER_DRAFT) ?? "[]") as List<dynamic>).map((e) => e.toString()).toList();
-    debugPrint("load draft: $strings");
+    // debugPrint("load draft: $strings");
     if (needsUpdate) {
       updateState(state.copyWith(inputStrings: strings, isStartButtonEnabled: strings.isNotEmpty && strings[0].isNotEmpty));
     }
@@ -62,7 +62,7 @@ class InputPageViewModel extends StateNotifier<InputPageModelState> {
   }
 
   void saveDraft(String text) {
-    debugPrint("save draft: $text");
+    // debugPrint("save draft: $text");
     preferences.putString(Preferences.KEY_USER_DRAFT, json.encode([text]));
   }
 }

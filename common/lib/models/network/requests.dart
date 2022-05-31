@@ -101,13 +101,14 @@ class CreateTemplateRequest {
   String imageKey;
   String textColor;
 
-  CreateTemplateRequest({required this.frameHeight,
-    required this.frameWidth,
-    required this.frameX,
-    required this.frameY,
-    this.tags,
-    required this.imageKey,
-    required this.textColor});
+  CreateTemplateRequest(
+      {required this.frameHeight,
+      required this.frameWidth,
+      required this.frameX,
+      required this.frameY,
+      this.tags,
+      required this.imageKey,
+      required this.textColor});
 
   factory CreateTemplateRequest.fromJson(Map<String, dynamic> json) => _$CreateTemplateRequestFromJson(json);
 
@@ -127,13 +128,15 @@ class RefreshTokenRequest {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class CreatePostRequest {
-  bool allowDownload;
-  bool visible;
-  bool joinWaitingList;
   List<CreateImageRequest> images;
   List<String> tags;
+  bool allowDownload;
+  bool visible;
+  String? templateId;
+  bool joinWaitingList;
 
-  CreatePostRequest(this.allowDownload, this.visible, this.joinWaitingList, this.images, this.tags);
+  CreatePostRequest(
+      {required this.images, required this.tags, required this.allowDownload, required this.visible, this.templateId, required this.joinWaitingList});
 
   factory CreatePostRequest.fromJson(Map<String, dynamic> json) => _$CreatePostRequestFromJson(json);
 

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:app/extensions/extensions.dart';
+import 'package:app/global.dart';
 import 'package:app/ui/pages/creation/template_add_tag_view_model.dart';
 import 'package:app/ui/pages/creation/template_done.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
@@ -32,6 +33,8 @@ class TemplateAddTagScreen extends ConsumerStatefulWidget {
 
 class _TemplateAddTagScreenState extends ConsumerState<TemplateAddTagScreen> with TickerProviderStateMixin {
   TextEditingController controller = TextEditingController();
+  FocusNode listenerNode = FocusNode();
+  FocusNode inputNode = FocusNode();
 
   @override
   void initState() {
@@ -44,7 +47,7 @@ class _TemplateAddTagScreenState extends ConsumerState<TemplateAddTagScreen> wit
     TemplateAddTagPageViewModel model = ref.read(widget.provider.notifier);
     return Scaffold(
       appBar: AppBar(
-        title: Text("add tag"),
+        title: Text(globalLocalizations.template_add_tag_title),
       ),
       body: CustomScrollView(
         slivers: [
@@ -65,40 +68,52 @@ class _TemplateAddTagScreenState extends ConsumerState<TemplateAddTagScreen> wit
                 Padding(
                   padding: EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 6),
                   child: Text(
-                    "Tag photos for easier search and reference",
+                    globalLocalizations.template_add_tag_description,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref)),
                   ),
                 ),
                 Container(
                   color: designColors.light_02.auto(ref),
-                  child: TextField(
-                    controller: controller,
-                    maxLines: 3,
-                    minLines: 1,
-                    maxLengthEnforcement: MaxLengthEnforcement.enforced,
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (text) {
-                      model.addTag(text);
-                      controller.text = "";
+                  child: RawKeyboardListener(
+                    focusNode: listenerNode,
+                    onKey: (event) {
+                      if (event.logicalKey == LogicalKeyboardKey.enter) {
+                        model.addTag(controller.text);
+                        controller.text = "";
+                        inputNode.requestFocus();
+                      }
                     },
-                    // onEditingComplete: () {
-                    //   // keep keyboard open
-                    // },
-                    inputFormatters: [LengthLimitingTextInputFormatter(200), FilteringTextInputFormatter.deny(RegExp("\n"))],
-                    style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
-                    decoration: InputDecoration(
-                      prefixIcon: Padding(
-                        padding: const EdgeInsets.only(left: 20.0, right: 8, top: 4),
-                        child: Text(
-                          "#",
-                          style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
+                    child: TextField(
+                      focusNode: inputNode,
+                      controller: controller,
+                      maxLines: 3,
+                      minLines: 1,
+                      maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                      textInputAction: TextInputAction.done,
+                      // onSubmitted: (text) {
+                      //   model.addTag(text);
+                      //   controller.text = "";
+                      // },
+                      onEditingComplete: () {
+                        model.addTag(controller.text);
+                        controller.text = "";
+                      },
+                      inputFormatters: [LengthLimitingTextInputFormatter(200), FilteringTextInputFormatter.deny(RegExp("\n"))],
+                      style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
+                      decoration: InputDecoration(
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.only(left: 20.0, right: 8, top: 4),
+                          child: Text(
+                            "#",
+                            style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
+                          ),
                         ),
+                        prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
+                        contentPadding: EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 6),
+                        hintStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        border: InputBorder.none,
                       ),
-                      prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
-                      contentPadding: EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 6),
-                      hintStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      border: InputBorder.none,
                     ),
                   ),
                 ),
@@ -127,7 +142,7 @@ class _TemplateAddTagScreenState extends ConsumerState<TemplateAddTagScreen> wit
                             modelState.uploading
                                 ? null
                                 : () {
-                                    Toast.showSnackBar(context, "uploading");
+                              Toast.showSnackBar(context, globalLocalizations.common_uploading);
                                     TemplateTextSettingModelState textSettingState = ref.read(widget.textSettingProvider);
                                     model.saveTemplate(
                                         frameX: textSettingState.frameX,

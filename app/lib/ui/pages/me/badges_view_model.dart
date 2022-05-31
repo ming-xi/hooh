@@ -90,7 +90,7 @@ class BadgesScreenViewModel extends StateNotifier<BadgesScreenModelState> {
         error: error,
         statsPageState: PageState.inited,
       ));
-      debugPrint("error");
+      // debugPrint("error");
     });
   }
 
@@ -122,13 +122,13 @@ class BadgesScreenViewModel extends StateNotifier<BadgesScreenModelState> {
         } else {
           updateState(state.copyWith(pageState: isRefresh ? PageState.empty : PageState.noMore));
         }
-        debugPrint("${state.pageState}");
+        // debugPrint("${state.pageState}");
       } else {
         //has data
         if (isRefresh) {
-          updateState(state.copyWith(pageState: PageState.dataLoaded, receivedBadges: newData, page: 1));
+          updateState(state.copyWith(pageState: PageState.dataLoaded, receivedBadges: newData, page: state.page + 1));
         } else {
-          updateState(state.copyWith(pageState: PageState.dataLoaded, receivedBadges: state.receivedBadges..addAll(newData), page: state.page + 1));
+          updateState(state.copyWith(pageState: PageState.dataLoaded, receivedBadges: [...state.receivedBadges, ...newData], page: state.page + 1));
         }
       }
       if (callback != null) {

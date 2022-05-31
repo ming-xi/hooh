@@ -1,3 +1,4 @@
+import 'package:app/global.dart';
 import 'package:app/ui/pages/me/badges_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/utils/design_colors.dart';
@@ -9,6 +10,7 @@ import 'package:common/utils/date_util.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:sprintf/sprintf.dart';
 
 class BadgesScreen extends ConsumerStatefulWidget {
   late final StateNotifierProvider<BadgesScreenViewModel, BadgesScreenModelState> templatesProvider;
@@ -39,28 +41,26 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
     BadgesScreenModelState modelState = ref.watch(widget.templatesProvider);
     BadgesScreenViewModel model = ref.read(widget.templatesProvider.notifier);
     return Scaffold(
-      appBar: AppBar(title: Text("Social Icon")),
+      appBar: AppBar(title: Text(globalLocalizations.badges_title)),
       body: SmartRefresher(
         enablePullDown: true,
         enablePullUp: true,
-        header: MaterialClassicHeader(
-          // offset: totalHeight,
-          color: designColors.feiyu_blue.auto(ref),
-        ),
+        header: MainStyles.getRefresherHeader(ref),
         onRefresh: () async {
           model.getBadges((state) {
-            debugPrint("refresh state=$state");
+            // debugPrint("refresh state=$state");
             _refreshController.refreshCompleted();
+            _refreshController.resetNoData();
           });
         },
         onLoading: () async {
           model.getBadges((state) {
             if (state == PageState.noMore) {
               _refreshController.loadNoData();
-              debugPrint("load no more state=$state");
+              // debugPrint("load no more state=$state");
             } else {
               _refreshController.loadComplete();
-              debugPrint("load complete state=$state");
+              // debugPrint("load complete state=$state");
             }
           }, isRefresh: false);
         },
@@ -71,7 +71,7 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
               child: Padding(
                 padding: const EdgeInsets.only(left: padding, right: padding, top: 28, bottom: padding),
                 child: Text(
-                  "Personal Social Icon ${modelState.createdBadgeCount}",
+                  sprintf(globalLocalizations.badges_created_count, [modelState.createdBadgeCount]),
                   style: titleTextStyle,
                 ),
               ),
@@ -82,7 +82,7 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
                 child: ListView.separated(
                   padding: EdgeInsets.symmetric(horizontal: padding),
                   scrollDirection: Axis.horizontal,
-                  itemBuilder: (context, index) => buildCreatedBadge(modelState.createdBadges[index]),
+                  itemBuilder: (context, index) => buildCreatedBadge(modelState.createdBadges[index], ended: index != 0),
                   itemCount: modelState.createdBadges.length,
                   separatorBuilder: (context, index) => SizedBox(
                     width: spacing,
@@ -93,7 +93,7 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.only(left: padding, right: padding, top: 36, bottom: padding),
-                child: Text("Possess Social Icon ${modelState.receivedBadgeCount}", style: titleTextStyle),
+                child: Text(sprintf(globalLocalizations.badges_received_count, [modelState.receivedBadgeCount]), style: titleTextStyle),
               ),
             ),
             SliverPadding(
@@ -111,31 +111,30 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
     );
   }
 
-  Widget buildCreatedBadge(UserCreatedBadge badge) {
-    return BadgeView(imageUrl: badge.imageUrl, ratio: 165 / 180, content: [
+  Widget buildCreatedBadge(UserCreatedBadge badge, {bool ended = true}) {
+    String template;
+    TextStyle textStyle;
+    if (ended) {
+      template = globalLocalizations.badges_amt_ended;
+      textStyle = TextStyle(fontSize: 14, color: designColors.light_06.auto(ref));
+    } else {
+      template = globalLocalizations.badges_amt;
+      textStyle = TextStyle(fontSize: 14, color: designColors.light_01.auto(ref), fontWeight: FontWeight.bold);
+    }
+    return BadgeView(imageUrl: badge.imageUrl, ratio: 165 / 180, ended: ended, content: [
       SizedBox(
         height: 16,
       ),
       Text(
         badge.displayDate,
-        style: TextStyle(fontSize: 12, color: designColors.light_06.auto(ref)),
+        style: textStyle.copyWith(fontSize: 12),
       ),
       SizedBox(
         height: 6,
       ),
-      Row(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            "Number : ",
-            style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
-          ),
-          Text(
-            formatAmount(badge.ownerAmount),
-            style: TextStyle(fontSize: 14, color: designColors.dark_01.auto(ref), fontWeight: FontWeight.bold),
-          ),
-        ],
+      Text(
+        sprintf(template, [formatAmount(badge.ownerAmount)]),
+        style: textStyle,
       ),
     ]);
   }
@@ -153,7 +152,7 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                "From : ",
+                globalLocalizations.badges_from,
                 style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
               ),
               ClipOval(
@@ -187,19 +186,9 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
       SizedBox(
         height: 6,
       ),
-      Row(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            "#No.  ",
-            style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
-          ),
-          Text(
-            badge.serialNumber.toString(),
-            style: TextStyle(fontSize: 14, color: designColors.dark_01.auto(ref)),
-          ),
-        ],
+      Text(
+        sprintf(globalLocalizations.badges_serial_number, [badge.serialNumber]),
+        style: TextStyle(fontSize: 14, color: designColors.dark_01.auto(ref)),
       ),
     ]);
   }
@@ -209,24 +198,49 @@ class BadgeView extends ConsumerWidget {
   final String imageUrl;
   final List<Widget> content;
   final double ratio;
+  final bool ended;
 
   const BadgeView({
     required this.imageUrl,
     required this.content,
     required this.ratio,
+    this.ended = true,
     Key? key,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     const double radius = 20;
-    return AspectRatio(
-      aspectRatio: ratio,
-      child: Container(
-        padding: EdgeInsets.all(1),
-        decoration: BoxDecoration(gradient: MainStyles.badgeGradient(), borderRadius: BorderRadius.circular(radius)),
+    if (ended) {
+      return AspectRatio(
+        aspectRatio: ratio,
         child: Container(
-          decoration: BoxDecoration(color: designColors.light_01.auto(ref), borderRadius: BorderRadius.circular(radius - 1)),
+          padding: EdgeInsets.all(1),
+          decoration: BoxDecoration(gradient: MainStyles.badgeGradient(ref), borderRadius: BorderRadius.circular(radius)),
+          child: Container(
+            decoration: BoxDecoration(color: designColors.light_01.auto(ref), borderRadius: BorderRadius.circular(radius - 1)),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  HoohImage(
+                    imageUrl: imageUrl,
+                    isBadge: true,
+                    width: 80,
+                  ),
+                  ...content
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    } else {
+      return AspectRatio(
+        aspectRatio: ratio,
+        child: Container(
+          decoration: BoxDecoration(gradient: MainStyles.badgeGradient(ref), borderRadius: BorderRadius.circular(radius)),
           child: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -242,7 +256,7 @@ class BadgeView extends ConsumerWidget {
             ),
           ),
         ),
-      ),
-    );
+      );
+    }
   }
 }

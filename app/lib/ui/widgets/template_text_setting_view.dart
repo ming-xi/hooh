@@ -136,7 +136,7 @@ class _TemplateTextSettingViewState extends ConsumerState<TemplateTextSettingVie
 }
 
 class _CanvasPainter extends CustomPainter {
-  final Color frameColor = Color(0xFFDBDBDB);
+  late final Color frameColor;
   final double textPadding = 8;
 
   final ui.Image buttonImage = scaleButtonImage;
@@ -159,6 +159,7 @@ class _CanvasPainter extends CustomPainter {
     required this.textColor,
     this.frameLocked = false,
   }) {
+    frameColor = designColors.dark_03.auto(ref);
     p.strokeCap = StrokeCap.square;
     p.strokeWidth = 1;
     p.style = PaintingStyle.stroke;

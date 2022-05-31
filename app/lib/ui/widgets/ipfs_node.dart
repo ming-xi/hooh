@@ -108,12 +108,12 @@ class _IpfsWebpageState extends State<IpfsWebpage> {
         JavascriptChannel(
             name: "logHandler",
             onMessageReceived: (JavascriptMessage message) {
-              debugPrint("[webview] ${message.message}");
+              // debugPrint("[webview] ${message.message}");
             }),
         JavascriptChannel(
             name: "onNodeReady",
             onMessageReceived: (JavascriptMessage message) {
-              debugPrint("onNodeReady");
+              // debugPrint("onNodeReady");
               setState(() {
                 widget.ipfsController._isReady = true;
               });
@@ -126,7 +126,7 @@ class _IpfsWebpageState extends State<IpfsWebpage> {
               Map map = jsonDecode(json);
               String cid = map['cid'];
               int taskId = map['task_id'];
-              debugPrint("onUploadComplete task_id=$taskId, cid=$cid");
+              // debugPrint("onUploadComplete task_id=$taskId, cid=$cid");
               if (widget.ipfsController._callbackMap[taskId]?.onComplete != null) {
                 widget.ipfsController._callbackMap[taskId]?.onComplete!(cid);
               }

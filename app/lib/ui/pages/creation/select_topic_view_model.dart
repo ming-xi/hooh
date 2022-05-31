@@ -1,7 +1,6 @@
 import 'package:app/extensions/extensions.dart';
 import 'package:common/utils/network.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 part 'select_topic_view_model.g.dart';
@@ -28,14 +27,15 @@ class SelectTopicScreenViewModel extends StateNotifier<SelectTopicScreenModelSta
 
   void getRecommendedTags({Function(String)? onError}) {
     network.requestAsync<List<String>>(network.getRecommendedPublishPostTags(), (data) {
-      debugPrint("tags=$data");
-      List<String> list = [];
-      list.addAll([...data.map((e) => e + "1")]);
-      list.addAll([...data.map((e) => e + "2")]);
-      list.addAll([...data.map((e) => e + "3")]);
-      list.addAll([...data.map((e) => e + "4")]);
-      list.addAll([...data.map((e) => e + "5")]);
-      updateState(state.copyWith(recommendedTags: list));
+      // debugPrint("tags=$data");
+      // List<String> list = [];
+      // list.addAll([...data.map((e) => e + "1")]);
+      // list.addAll([...data.map((e) => e + "2")]);
+      // list.addAll([...data.map((e) => e + "3")]);
+      // list.addAll([...data.map((e) => e + "4")]);
+      // list.addAll([...data.map((e) => e + "5")]);
+      // updateState(state.copyWith(recommendedTags: list));
+      updateState(state.copyWith(recommendedTags: data));
     }, (error) {
       if (onError != null) {
         onError(error.message);
@@ -44,7 +44,8 @@ class SelectTopicScreenViewModel extends StateNotifier<SelectTopicScreenModelSta
   }
 
   void addTag(String text) {
-    if (state.userTags.contains(text)) {
+    text = text.trim();
+    if (text.isEmpty || state.userTags.contains(text)) {
       return;
     }
     updateState(state.copyWith(userTags: [...state.userTags, text]));

@@ -1,9 +1,11 @@
+import 'package:app/global.dart';
 import 'package:app/ui/pages/creation/select_topic_view_model.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sprintf/sprintf.dart';
 
 class SelectTopicScreen extends ConsumerStatefulWidget {
   late final StateNotifierProvider<SelectTopicScreenViewModel, SelectTopicScreenModelState> provider;
@@ -23,6 +25,8 @@ class SelectTopicScreen extends ConsumerStatefulWidget {
 
 class _SelectTopicScreenState extends ConsumerState<SelectTopicScreen> {
   TextEditingController controller = TextEditingController();
+  FocusNode listenerNode = FocusNode();
+  FocusNode inputNode = FocusNode();
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +35,7 @@ class _SelectTopicScreenState extends ConsumerState<SelectTopicScreen> {
     List<String> unselectedRecommendedTags = [...modelState.recommendedTags]..removeWhere((element) => modelState.userTags.contains(element));
     return Scaffold(
       appBar: AppBar(
-        title: Text("Topics"),
+        title: Text(globalLocalizations.select_topic_title),
         actions: [
           IconButton(
               onPressed: () {
@@ -49,34 +53,46 @@ class _SelectTopicScreenState extends ConsumerState<SelectTopicScreen> {
         children: [
           Container(
             color: designColors.light_02.auto(ref),
-            child: TextField(
-              controller: controller,
-              maxLines: 3,
-              minLines: 1,
-              maxLengthEnforcement: MaxLengthEnforcement.enforced,
-              textInputAction: TextInputAction.done,
-              onSubmitted: (text) {
-                addTag(text);
-                controller.text = "";
+            child: RawKeyboardListener(
+              focusNode: listenerNode,
+              onKey: (event) {
+                if (event.logicalKey == LogicalKeyboardKey.enter) {
+                  model.addTag(controller.text);
+                  controller.text = "";
+                  inputNode.requestFocus();
+                }
               },
-              // onEditingComplete: () {
-              //   // keep keyboard open
-              // },
-              inputFormatters: [LengthLimitingTextInputFormatter(24), FilteringTextInputFormatter.deny(RegExp("\n"))],
-              style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
-              decoration: InputDecoration(
-                prefixIcon: Padding(
-                  padding: const EdgeInsets.only(left: 20.0, right: 8, top: 4),
-                  child: Text(
-                    "#",
-                    style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
+              child: TextField(
+                controller: controller,
+                focusNode: inputNode,
+                maxLines: 3,
+                minLines: 1,
+                maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                textInputAction: TextInputAction.done,
+                // onSubmitted: (text) {
+                //   addTag(text);
+                //   controller.text = "";
+                // },
+                onEditingComplete: () {
+                  addTag(controller.text);
+                  controller.text = "";
+                },
+                inputFormatters: [LengthLimitingTextInputFormatter(24), FilteringTextInputFormatter.deny(RegExp("\n"))],
+                style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
+                decoration: InputDecoration(
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.only(left: 20.0, right: 8, top: 4),
+                    child: Text(
+                      "#",
+                      style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
+                    ),
                   ),
+                  prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
+                  contentPadding: EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 6),
+                  hintStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  border: InputBorder.none,
                 ),
-                prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
-                contentPadding: EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 6),
-                hintStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                border: InputBorder.none,
               ),
             ),
           ),
@@ -123,7 +139,7 @@ class _SelectTopicScreenState extends ConsumerState<SelectTopicScreen> {
   void addTag(String tag) {
     SelectTopicScreenModelState modelState = ref.read(widget.provider);
     if (modelState.userTags.length >= SelectTopicScreenViewModel.MAX_SELECTED_TAGS) {
-      Toast.showSnackBar(context, "max tag count is ${SelectTopicScreenViewModel.MAX_SELECTED_TAGS}");
+      Toast.showSnackBar(context, sprintf(globalLocalizations.select_topic_reach_max_tag_limit, [SelectTopicScreenViewModel.MAX_SELECTED_TAGS]));
       return;
     }
     SelectTopicScreenViewModel model = ref.read(widget.provider.notifier);

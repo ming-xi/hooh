@@ -3,10 +3,10 @@ import 'dart:io';
 
 import 'package:app/extensions/extensions.dart';
 import 'package:app/global.dart';
+import 'package:app/ui/pages/creation/edit_post.dart';
 import 'package:app/ui/pages/creation/edit_post_view_model.dart';
 import 'package:app/ui/pages/creation/template_adjust.dart';
 import 'package:app/ui/pages/gallery/search.dart';
-import 'package:app/ui/pages/home/home_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/template_compose_view.dart';
 import 'package:app/ui/widgets/toast.dart';
@@ -27,11 +27,11 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import 'templates_view_model.dart';
 
-class GalleryPage extends ConsumerStatefulWidget {
-  final StateNotifierProvider<TemplatesPageViewModel, TemplatesPageModelState> templatesProvider = StateNotifierProvider((ref) {
-    return TemplatesPageViewModel(TemplatesPageModelState.init());
-  });
+final StateNotifierProvider<TemplatesPageViewModel, TemplatesPageModelState> homeTemplatesProvider = StateNotifierProvider((ref) {
+  return TemplatesPageViewModel(TemplatesPageModelState.init());
+});
 
+class GalleryPage extends ConsumerStatefulWidget {
   GalleryPage({
     Key? key,
   }) : super(key: key);
@@ -51,15 +51,15 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("build page");
+    // debugPrint("build page");
     final ScrollController _controller = ScrollController();
     int imageWidth = MediaQuery.of(context).size.width ~/ 3;
 
-    TemplatesPageModelState modelState = ref.watch(widget.templatesProvider);
-    TemplatesPageViewModel model = ref.read(widget.templatesProvider.notifier);
+    TemplatesPageModelState modelState = ref.watch(homeTemplatesProvider);
+    TemplatesPageViewModel model = ref.read(homeTemplatesProvider.notifier);
 
     double safePadding = MediaQuery.of(context).padding.top;
-    debugPrint("safePadding=$safePadding");
+    // debugPrint("safePadding=$safePadding");
     double padding = 16.0;
     double iconSize = 24.0;
     double listHeight = 40.0;
@@ -69,34 +69,34 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
     var categoryBar = buildTags(padding, listHeight, _controller, model, modelState);
     Widget listWidget = modelState.selectedTag == null ? Container() : buildListWidget(model, modelState, imageWidth, totalHeight + safePadding);
     return Scaffold(
-      floatingActionButton: SafeArea(
-        minimum: EdgeInsets.only(bottom: 100),
-        child: FloatingActionButton.extended(
-          label: Container(
-            constraints: BoxConstraints(minHeight: 64, minWidth: 128),
-            child: Center(
-                child: Text(
-              "Upload",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-            )),
-            decoration: MainStyles.gradientButtonDecoration(cornerRadius: 22),
-          ),
-          // shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(20), bottomLeft: Radius.circular(20))),
-          // child: Text("Upload"),
-          elevation: 0,
-          isExtended: true,
-          extendedPadding: EdgeInsets.all(0),
-          onPressed: () {
-            if (!(preferences.getBool(Preferences.KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED) ?? false)) {
-              showUploadDialog();
-              return;
-            } else {
-              _showLocalOptionActionSheet();
-            }
-          },
-          backgroundColor: Colors.transparent,
-        ),
-      ),
+      // floatingActionButton: SafeArea(
+      //   minimum: EdgeInsets.only(bottom: 100),
+      //   child: FloatingActionButton.extended(
+      //     label: Container(
+      //       constraints: BoxConstraints(minHeight: 64, minWidth: 128),
+      //       child: Center(
+      //           child: Text(
+      //         globalLocalizations.templates_title,
+      //         style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+      //       )),
+      //       decoration: MainStyles.gradientButtonDecoration(ref, cornerRadius: 22),
+      //     ),
+      //     // shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(20), bottomLeft: Radius.circular(20))),
+      //     // child: Text("Upload"),
+      //     elevation: 0,
+      //     isExtended: true,
+      //     extendedPadding: EdgeInsets.all(0),
+      //     onPressed: () {
+      //       if (!(preferences.getBool(Preferences.KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED) ?? false)) {
+      //         showUploadDialog();
+      //         return;
+      //       } else {
+      //         _showLocalOptionActionSheet();
+      //       }
+      //     },
+      //     backgroundColor: Colors.transparent,
+      //   ),
+      // ),
       extendBodyBehindAppBar: true,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(totalHeight),
@@ -119,35 +119,98 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
       body: SafeArea(
         top: false,
         bottom: false,
-        child: listWidget,
+        child: Builder(builder: (context) {
+          double buttonMarginBottom = 100;
+          double labelMarginBottom = buttonMarginBottom + 48;
+          double labelMarginRight = 22;
+          double arrowMarginRight = labelMarginRight + 12;
+          double arrowMarginBottom = labelMarginBottom - 8;
+
+          return Stack(
+            children: [
+              Positioned.fill(child: listWidget),
+              Positioned(
+                  right: 0,
+                  bottom: buttonMarginBottom,
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: Ink(
+                      width: 128,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        gradient: MainStyles.buttonGradient(ref, enabled: true),
+                        borderRadius: BorderRadius.only(topLeft: Radius.circular(22), bottomLeft: Radius.circular(22)),
+                      ),
+                      child: InkWell(
+                        borderRadius: BorderRadius.only(topLeft: Radius.circular(22), bottomLeft: Radius.circular(22)),
+                        onTap: () {
+                          if (!(preferences.getBool(Preferences.KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED) ?? false)) {
+                            showUploadDialog();
+                            return;
+                          } else {
+                            _showLocalOptionActionSheet();
+                          }
+                        },
+                        child: Center(
+                            child: Text(
+                          globalLocalizations.templates_title,
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                        )),
+                      ),
+                    ),
+                  )),
+              Positioned(
+                  right: labelMarginRight,
+                  bottom: labelMarginBottom,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(color: designColors.light_01.auto(ref), borderRadius: BorderRadius.circular(10.5)),
+                        child: Text(
+                          globalLocalizations.templates_reward,
+                          style: TextStyle(fontSize: 16, color: designColors.orange.auto(ref), fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  )),
+              Positioned(
+                  bottom: arrowMarginBottom,
+                  right: arrowMarginRight,
+                  child: HoohIcon(
+                    'assets/images/figure_template_reward_arrow.svg',
+                    color: designColors.light_01.auto(ref),
+                  ))
+            ],
+          );
+        }),
       ),
     );
   }
 
-  Widget buildListWidget(TemplatesPageViewModel viewModel, TemplatesPageModelState modelState, int width, double totalHeight) {
+  Widget buildListWidget(TemplatesPageViewModel model, TemplatesPageModelState modelState, int width, double totalHeight) {
     Widget listWidget;
 
     listWidget = SmartRefresher(
       enablePullDown: true,
       enablePullUp: true,
-      header: MaterialClassicHeader(
-        offset: totalHeight,
-        color: designColors.feiyu_blue.auto(ref),
-      ),
+      header: MainStyles.getRefresherHeader(ref, offset: totalHeight),
       onRefresh: () async {
-        viewModel.getImageList((state) {
-          debugPrint("refresh state=$state");
+        model.getImageList((state) {
+          // debugPrint("refresh state=$state");
           _refreshController.refreshCompleted();
         });
       },
       onLoading: () async {
-        viewModel.getImageList((state) {
+        model.getImageList((state) {
           if (state == PageState.noMore) {
             _refreshController.loadNoData();
-            debugPrint("load no more state=$state");
+            // debugPrint("load no more state=$state");
           } else {
             _refreshController.loadComplete();
-            debugPrint("load complete state=$state");
+            // debugPrint("load complete state=$state");
           }
         }, isRefresh: false);
       },
@@ -174,8 +237,8 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
           } else {
             TemplateViewSetting viewSetting = TemplateView.generateViewSetting(TemplateView.SCENE_GALLERY_HOME);
             viewSetting.buttons[TemplateView.EDGE_BUTTON_TYPE_FAVORITE]!.onPress = (newState) {
-              debugPrint("newState=$newState index=${index - 1}");
-              viewModel.setFavorite(index - 1, newState);
+              // debugPrint("newState=$newState index=${index - 1}");
+              model.setFavorite(index - 1, newState);
             };
             Template template = modelState.templates[index - 1];
             return GestureDetector(
@@ -192,7 +255,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
     return listWidget;
   }
 
-  Widget buildTags(double padding, double listHeight, ScrollController _controller, TemplatesPageViewModel viewModel, TemplatesPageModelState modelState) {
+  Widget buildTags(double padding, double listHeight, ScrollController _controller, TemplatesPageViewModel model, TemplatesPageModelState modelState) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: padding),
       child: SizedBox(
@@ -203,24 +266,25 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
           itemBuilder: (context, index) {
             return GestureDetector(
               onTap: () {
-                // TemplateTagItem selectedTag;
-                for (var item in modelState.tags) {
-                  item.selected = false;
-                }
-                modelState.tags[index].selected = true;
-                // selectedTag = modelState.tags[index];
-                // 因为categories其实还是原来的list，所以给state赋值无效。所以要构建一个新的list赋值，有3种写法：
-                // #1
-                // List<TemplateTagItemItem> newList = [];
-                // newList.addAll(categories);
-                // ref.read(galleryCategoriesProvider.state).state = newList;
-
-                // #2 这个叫联什么什么写法，就是两个点，代表要对这个对象进行后面的操作
-                // ref.read(galleryCategoriesProvider.state).state = []..addAll(categories);
-
-                // #3 dart把#2优化成了3个点的，叫spread，一个意思，语法糖
-                viewModel.updateState(modelState.copyWith(tags: [...modelState.tags]));
-                viewModel.getImageList((state) => null);
+                // // TemplateTagItem selectedTag;
+                // for (var item in modelState.tags) {
+                //   item.selected = false;
+                // }
+                // modelState.tags[index].selected = true;
+                // // selectedTag = modelState.tags[index];
+                // // 因为categories其实还是原来的list，所以给state赋值无效。所以要构建一个新的list赋值，有3种写法：
+                // // #1
+                // // List<TemplateTagItemItem> newList = [];
+                // // newList.addAll(categories);
+                // // ref.read(galleryCategoriesProvider.state).state = newList;
+                //
+                // // #2 这个叫联什么什么写法，就是两个点，代表要对这个对象进行后面的操作
+                // // ref.read(galleryCategoriesProvider.state).state = []..addAll(categories);
+                //
+                // // #3 dart把#2优化成了3个点的，叫spread，一个意思，语法糖
+                // viewModel.updateState(modelState.copyWith(tags: [...modelState.tags]));
+                // viewModel.getImageList((state) => null);
+                model.setSelectedTag(index);
                 _refreshController.resetNoData();
                 _imageScrollController.jumpTo(0);
                 // _controller.animateTo(125, duration: Duration(milliseconds: 250), curve: Curves.ease);
@@ -241,7 +305,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(200),
-          color: const Color(0xFFEAEAEA),
+          color: designColors.light_02.auto(ref),
         ),
         child: GestureDetector(
           onTap: () {
@@ -253,12 +317,17 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
           },
           child: Row(
             children: [
-              HoohIcon('assets/images/icon_search.svg', height: iconSize, width: iconSize),
+              HoohIcon(
+                'assets/images/icon_search.svg',
+                height: iconSize,
+                width: iconSize,
+                color: designColors.dark_01.auto(ref),
+              ),
               SizedBox(width: padding),
-              const Expanded(
+              Expanded(
                   child: Text(
-                'search',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF707070)),
+                globalLocalizations.templates_search,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref)),
               ))
             ],
           ),
@@ -270,7 +339,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
 
   Future<void> _galleryItemTouched(int index) async {
     if (index == 0) {
-      debugPrint("插入图片");
+      // debugPrint("插入图片");
       // FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image, allowCompression: false);
       // if (result != null) {
       //   File file = File(result.files.single.path!);
@@ -284,7 +353,9 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
         _showLocalOptionActionSheet();
       }
     } else {
-      debugPrint("进入做图");
+      TemplatesPageModelState modelState = ref.watch(homeTemplatesProvider);
+      Template template = modelState.templates[index - 1];
+      Navigator.push(context, MaterialPageRoute(builder: (context) => EditPostScreen(setting: PostImageSetting.withTemplate(template, text: ""))));
     }
   }
 
@@ -300,7 +371,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
           CupertinoActionSheetAction(
             child: const Text('Camera'),
             onPressed: () {
-              debugPrint("camera");
+              // debugPrint("camera");
               Navigator.pop(context);
               openImagePicker(ImageSource.camera);
             },
@@ -308,7 +379,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
           CupertinoActionSheetAction(
             child: const Text('Gallery'),
             onPressed: () {
-              debugPrint("gallery");
+              // debugPrint("gallery");
               Navigator.pop(context);
               openImagePicker(ImageSource.gallery);
             },
@@ -317,7 +388,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
         cancelButton: CupertinoActionSheetAction(
           child: const Text('Cancel'),
           onPressed: () {
-            debugPrint("cancel");
+            // debugPrint("cancel");
             Navigator.pop(context);
           },
         ),
@@ -329,25 +400,25 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
       showModalBottomSheet(
           context: context,
           builder: (context) => Wrap(
-            children: [
-              ListTile(
-                leading: Icon(Icons.camera),
-                title: Text("Camera"),
-                onTap: () {
-                  Navigator.pop(context);
-                  openImagePicker(ImageSource.camera);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.image),
-                title: Text("Gallery"),
-                onTap: () {
-                  Navigator.pop(context);
-                  openImagePicker(ImageSource.gallery);
-                },
-              ),
-            ],
-          ));
+                children: [
+                  ListTile(
+                    leading: Icon(Icons.camera),
+                    title: Text(globalLocalizations.templates_choose_from_camera),
+                    onTap: () {
+                      Navigator.pop(context);
+                      openImagePicker(ImageSource.camera);
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.image),
+                    title: Text(globalLocalizations.templates_choose_from_gallery),
+                    onTap: () {
+                      Navigator.pop(context);
+                      openImagePicker(ImageSource.gallery);
+                    },
+                  ),
+                ],
+              ));
     }
   }
 
@@ -386,8 +457,8 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
         builder: (context) {
           return Consumer(
             builder: (context, ref, child) {
-              TemplatesPageModelState modelState = ref.watch(widget.templatesProvider);
-              TemplatesPageViewModel model = ref.read(widget.templatesProvider.notifier);
+              TemplatesPageModelState modelState = ref.watch(homeTemplatesProvider);
+              TemplatesPageViewModel model = ref.read(homeTemplatesProvider.notifier);
               return AlertDialog(
                 insetPadding: EdgeInsets.all(20),
                 title: Text(
@@ -419,7 +490,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
 2. Fail to upload a material to get x ore
 3. After the material is approved, it will appear in the gallery.
 4. Additional rewards for being successfully cited""",
-                                    style: TextStyle(fontSize: 16, color: Color(0xFF8E8E93)),
+                                    style: TextStyle(fontSize: 16, color: designColors.light_06.auto(ref)),
                                   ),
                                 )
                               ],
@@ -448,7 +519,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
                               width: 8,
                             ),
                             Text(
-                              "Don't prompt next time",
+                              globalLocalizations.templates_don_t_prompt_next_time,
                               style: TextStyle(color: designColors.dark_01.auto(ref), fontSize: 16),
                             ),
                           ],
@@ -460,7 +531,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
                           mainAxisSize: MainAxisSize.max,
                           children: [
                             Expanded(
-                              child: MainStyles.outlinedTextButton(ref, "Cancel", () {
+                              child: MainStyles.outlinedTextButton(ref, globalLocalizations.common_cancel, () {
                                 Navigator.pop(context);
                               }),
                             ),
@@ -468,7 +539,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
                               width: 12,
                             ),
                             Expanded(
-                              child: MainStyles.gradientButton(ref, "Confirm", () {
+                              child: MainStyles.gradientButton(ref, globalLocalizations.common_confirm, () {
                                 preferences.putBool(Preferences.KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED, modelState.agreementChecked);
                                 Navigator.pop(context);
                                 _showLocalOptionActionSheet();
@@ -527,20 +598,20 @@ class _AddLocalImageViewState extends ConsumerState<AddLocalImageView> {
     return Stack(children: [
       Container(
           decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: const Color(0xFF0167F9),
+            borderRadius: BorderRadius.circular(20),
+        color: designColors.feiyu_blue.auto(ref),
       )),
       Center(
           child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: const [
+            children: [
           Icon(
             Icons.add,
             color: Colors.white,
             size: 36,
           ),
           Text(
-            "Insert picture",
+            globalLocalizations.templates_insert_picture,
             style: TextStyle(
               color: Colors.white,
               fontSize: 14,
@@ -554,4 +625,3 @@ class _AddLocalImageViewState extends ConsumerState<AddLocalImageView> {
     ]);
   }
 }
-

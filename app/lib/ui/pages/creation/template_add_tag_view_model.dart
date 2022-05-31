@@ -29,7 +29,7 @@ class TemplateAddTagPageViewModel extends StateNotifier<TemplateAddTagPageModelS
 
   void addTag(String text) {
     text = text.trim();
-    if (state.tags.contains(text)) {
+    if (text.isEmpty || state.tags.contains(text)) {
       return;
     }
     updateState(state.copyWith(tags: [...state.tags, text]));

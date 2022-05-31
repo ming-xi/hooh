@@ -1,15 +1,80 @@
+import 'package:app/global.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class MainStyles {
-  static LinearGradient badgeGradient() => const LinearGradient(colors: [
-        Color(0xFFFFD840),
-        Color(0xFFF3ACFF),
-        Color(0xFF48E1FF),
-      ], begin: Alignment.bottomLeft, end: Alignment.topRight);
+  static Widget getRefresherHeader(WidgetRef ref, {double? offset}) {
+    return MaterialClassicHeader(
+      offset: offset ?? 0,
+      color: designColors.feiyu_blue.auto(ref),
+      backgroundColor: designColors.light_01.auto(ref),
+    );
+  }
+
+  static LinearGradient badgeGradient(WidgetRef ref) {
+    List<Color> colors;
+    if (isDarkMode(ref)) {
+      colors = [
+        const Color(0xFFBCA036),
+        const Color(0xFFB381BC),
+        const Color(0xFF3BA7BC),
+      ];
+    } else {
+      colors = [
+        const Color(0xFFFFD840),
+        const Color(0xFFF3ACFF),
+        const Color(0xFF48E1FF),
+      ];
+    }
+    return LinearGradient(colors: colors, begin: Alignment.bottomLeft, end: Alignment.topRight);
+  }
+
+  static LinearGradient buttonGradient(WidgetRef ref, {bool enabled = true}) {
+    List<Color> colors;
+    if (isDarkMode(ref)) {
+      colors = [
+        const Color(0xFF0A51B7),
+        const Color(0xFF1FA691),
+      ];
+    } else {
+      colors = [
+        const Color(0xFF0167F9),
+        const Color(0xFF20E0C2),
+      ];
+    }
+    if (!enabled) {
+      colors = colors.map((e) => e.withOpacity(0.5)).toList();
+    }
+    return LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight);
+  }
+
+  static bool isDarkMode(WidgetRef ref) {
+    int darkMode = ref.watch(globalDarkModeProvider.state).state;
+    switch (darkMode) {
+      case DARK_MODE_LIGHT:
+        return false;
+      case DARK_MODE_DARK:
+        return true;
+      case DARK_MODE_SYSTEM:
+      default:
+        Brightness brightness = SchedulerBinding.instance.window.platformBrightness;
+        return brightness != Brightness.light;
+    }
+  }
+
+  static ButtonStyle textButtonStyle(WidgetRef ref) {
+    return TextButton.styleFrom(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(100.0)),
+      ),
+      minimumSize: const Size(72, 32),
+    );
+  }
 
   static Widget buildListDivider(WidgetRef ref) {
     return Container(
@@ -24,14 +89,14 @@ class MainStyles {
         title,
         style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
       ),
-      Spacer(),
+      const Spacer(),
     ];
     if (tailText != null) {
       children.add(Text(
         tailText,
         style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref), fontWeight: FontWeight.bold),
       ));
-      children.add(SizedBox(
+      children.add(const SizedBox(
         width: 8,
       ));
     }
@@ -62,16 +127,9 @@ class MainStyles {
     );
   }
 
-  static BoxDecoration gradientButtonDecoration({double cornerRadius = 24, bool enabled = true}) {
-    var colors = [
-      const Color(0xFF0167F9),
-      const Color(0xFF20E0C2),
-    ];
-    if (!enabled) {
-      colors = colors.map((e) => e.withOpacity(0.5)).toList();
-    }
+  static BoxDecoration gradientButtonDecoration(WidgetRef ref, {double cornerRadius = 24, bool enabled = true}) {
     return BoxDecoration(
-      gradient: LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight),
+      gradient: buttonGradient(ref, enabled: enabled),
       borderRadius: BorderRadius.circular(cornerRadius),
     );
   }
@@ -81,11 +139,11 @@ class MainStyles {
       type: MaterialType.transparency,
       child: Ink(
         decoration: onPressed != null
-            ? gradientButtonDecoration(cornerRadius: cornerRadius, enabled: true)
+            ? gradientButtonDecoration(ref, cornerRadius: cornerRadius, enabled: true)
             : BoxDecoration(
-          color: designColors.dark_03.auto(ref),
-          borderRadius: BorderRadius.circular(cornerRadius),
-        ),
+                color: designColors.dark_03.auto(ref),
+                borderRadius: BorderRadius.circular(cornerRadius),
+              ),
         child: InkWell(
           borderRadius: BorderRadius.all(Radius.circular(cornerRadius)),
           onTap: onPressed,
@@ -93,9 +151,9 @@ class MainStyles {
             constraints: const BoxConstraints(minHeight: 64),
             child: Center(
                 child: Text(
-                  text,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
-                )),
+              text,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+            )),
           ),
         ),
       ),
@@ -107,7 +165,7 @@ class MainStyles {
       onPressed: onPressed,
       child: Text(
         text,
-        style: TextStyle(fontFamily: 'Linotte'),
+        style: const TextStyle(fontFamily: 'Linotte'),
       ),
       style: RegisterStyles.blueButtonStyle(ref, cornerRadius: cornerRadius)
           .copyWith(textStyle: MaterialStateProperty.all(const TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
@@ -134,7 +192,7 @@ class MainStyles {
           borderRadius: BorderRadius.circular(12),
         ),
         child: InkWell(
-          borderRadius: BorderRadius.all(Radius.circular(12)),
+          borderRadius: const BorderRadius.all(const Radius.circular(12)),
           onTap: onPressed,
           child: HoohIcon(
             iconAssetName,
@@ -238,23 +296,23 @@ class RegisterStyles {
       {String? helperText, String? errorText, bool passwordVisible = false, Function()? onTogglePasswordVisible}) {
     return commonInputDecoration(hint, ref, helperText: helperText, errorText: errorText).copyWith(
         suffixIcon: IconButton(
-      icon: Icon(
-        // Based on passwordVisible state choose the icon
-        passwordVisible ? Icons.visibility : Icons.visibility_off,
-      ),
-      onPressed: onTogglePasswordVisible,
-    ));
+          icon: Icon(
+            // Based on passwordVisible state choose the icon
+            passwordVisible ? Icons.visibility : Icons.visibility_off,
+          ),
+          onPressed: onTogglePasswordVisible,
+        ));
   }
 
   static ButtonStyle blueButtonStyle(WidgetRef ref, {double? cornerRadius}) {
     return TextButton.styleFrom(
-        // primary: designColors.light_01.auto(ref),
-        // onSurface: designColors.light_01.auto(ref),
+      // primary: designColors.light_01.auto(ref),
+      // onSurface: designColors.light_01.auto(ref),
         shape: cornerRadius == null
             ? null
             : RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(cornerRadius)),
-              ),
+          borderRadius: BorderRadius.all(Radius.circular(cornerRadius)),
+        ),
         primary: Colors.white,
         onSurface: Colors.white,
         minimumSize: const Size.fromHeight(64),
@@ -264,15 +322,18 @@ class RegisterStyles {
 
   static ButtonStyle appbarTextButtonStyle(WidgetRef ref) {
     return TextButton.styleFrom(
+        shape: const RoundedRectangleBorder(
+          borderRadius: const BorderRadius.all(Radius.zero),
+        ),
         primary: designColors.feiyu_blue.auto(ref),
         onSurface: designColors.feiyu_blue.auto(ref),
         backgroundColor: Colors.transparent,
-        textStyle: const TextStyle(fontSize: 16));
+        textStyle: const TextStyle(fontSize: 16, fontFamily: 'Linotte', fontWeight: FontWeight.bold));
   }
 
   static ButtonStyle blackButtonStyle(WidgetRef ref) {
     var color = MaterialStateProperty.all(designColors.light_01.auto(ref));
-    debugPrint("blackButtonStyle result=$color");
+    // debugPrint("blackButtonStyle result=$color");
     return ButtonStyle(
         backgroundColor: MaterialStateProperty.resolveWith<Color>((states) {
           if (states.contains(MaterialState.disabled)) {
@@ -301,8 +362,8 @@ class RegisterStyles {
   }
 
   static ButtonStyle blackOutlineButtonStyle(WidgetRef ref) {
-    var color = MaterialStateProperty.all(designColors.light_01.auto(ref));
-    debugPrint("blackOutlineButtonStyle result=$color");
+    // var color = MaterialStateProperty.all(designColors.light_01.auto(ref));
+    // debugPrint("blackOutlineButtonStyle result=$color");
     // return TextButton.styleFrom(
     //     primary: designColors.dark_01.auto(ref),
     //     onSurface: designColors.dark_01.auto(ref),
@@ -326,7 +387,7 @@ class RegisterStyles {
             return designColors.dark_01.auto(ref);
           }
         }),
-        overlayColor: MaterialStateProperty.all(designColors.dark_01.auto(ref).withOpacity(0.2)),
+        overlayColor: MaterialStateProperty.all(designColors.light_06.auto(ref).withOpacity(0.2)),
         shape: MaterialStateProperty.resolveWith<OutlinedBorder>((states) {
           if (states.contains(MaterialState.disabled)) {
             return RoundedRectangleBorder(borderRadius: const BorderRadius.all(Radius.circular(22.0)), side: BorderSide(color: designColors.dark_03.auto(ref)));
@@ -351,11 +412,7 @@ class RegisterStyles {
   static Widget rainbowButton(WidgetRef ref, {Widget? label, Widget? icon, Function()? onPress}) {
     const double radius = 24;
     final gradient = BoxDecoration(
-      gradient: const LinearGradient(colors: [
-        Color(0xFFFFD840),
-        Color(0xFFF3ACFF),
-        Color(0xFF48E1FF),
-      ], begin: Alignment.bottomLeft, end: Alignment.topRight),
+      gradient: MainStyles.badgeGradient(ref),
       borderRadius: BorderRadius.circular(radius),
     );
     var buttonStyle = TextButton.styleFrom(

@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:ui' as ui;
 
+import 'package:app/global.dart';
 import 'package:app/ui/pages/creation/edit_post_view_model.dart';
 import 'package:app/ui/pages/creation/publish_post.dart';
 import 'package:app/ui/pages/user/register/draw_badge_view_model.dart';
@@ -33,7 +34,7 @@ class EditPostScreen extends ConsumerStatefulWidget {
     Color(0xFF50DCC6),
     Color(0xFFFF14D9),
   ];
-  late StateNotifierProvider<EditPostScreenViewModel, EditPostScreenModelState> provider;
+  late final StateNotifierProvider<EditPostScreenViewModel, EditPostScreenModelState> provider;
 
   // final PostImageSetting setting;
 
@@ -93,7 +94,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
     double tabbarHeight = 54;
     double statusbarHeight = MediaQuery.of(context).viewPadding.top;
     AppBar appBar = AppBar(
-      title: Text("Edit"),
+      title: Text(globalLocalizations.common_edit),
       actions: [
         IconButton(
             onPressed: () async {

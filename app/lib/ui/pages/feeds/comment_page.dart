@@ -1,3 +1,4 @@
+import 'package:app/global.dart';
 import 'package:app/ui/widgets/comment_view.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:common/models/post_comment.dart';
@@ -41,7 +42,7 @@ class _CommentPageState extends ConsumerState<CommentPage> {
           case LoadMoreStatus.idle:
             return "";
           case LoadMoreStatus.loading:
-            return "loading...";
+            return globalLocalizations.comment_page_loading;
           case LoadMoreStatus.fail:
             return "";
           case LoadMoreStatus.nomore:

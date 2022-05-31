@@ -76,15 +76,15 @@ class MainListPageViewModel extends StateNotifier<MainListPageModelState> {
 
     network.requestAsync<List<Post>>(network.getMainListPosts(trending: state.isTrending, date: date), (newData) {
       if (newData.isEmpty) {
-        //has data
+        //no data
         if (isRefresh) {
           updateState(state.copyWith(pageState: isRefresh ? PageState.empty : PageState.noMore, posts: []));
         } else {
           updateState(state.copyWith(pageState: isRefresh ? PageState.empty : PageState.noMore));
         }
-        debugPrint("${state.pageState}");
+        // debugPrint("${state.pageState}");
       } else {
-        //no data
+        //has data
         if (isRefresh) {
           updateState(state.copyWith(
             pageState: PageState.dataLoaded,
@@ -95,7 +95,7 @@ class MainListPageViewModel extends StateNotifier<MainListPageModelState> {
           updateState(state.copyWith(
             pageState: PageState.dataLoaded,
             lastTimestamp: newData.last.createdAt,
-            posts: state.posts..addAll(newData),
+            posts: [...state.posts, ...newData],
           ));
         }
       }

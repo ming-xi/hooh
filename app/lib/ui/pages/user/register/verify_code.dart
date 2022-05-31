@@ -39,7 +39,7 @@ class _VerifyCodeScreenState extends ConsumerState<VerifyCodeScreen> {
     // TODO: implement dispose
     super.dispose();
     _tapGestureRecognizer.dispose();
-    debugPrint("sign up dispose");
+    // debugPrint("sign up dispose");
   }
 
   @override

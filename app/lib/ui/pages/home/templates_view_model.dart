@@ -8,7 +8,6 @@ import 'package:common/utils/date_util.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 part 'templates_view_model.g.dart';
@@ -78,7 +77,7 @@ class TemplatesPageViewModel extends StateNotifier<TemplatesPageModelState> {
         error: error,
         tagsPageState: PageState.inited,
       ));
-      debugPrint("error");
+      // debugPrint("error");
     });
   }
 
@@ -131,7 +130,7 @@ class TemplatesPageViewModel extends StateNotifier<TemplatesPageModelState> {
         } else {
           updateState(state.copyWith(templatesPageState: isRefresh ? PageState.empty : PageState.noMore));
         }
-        debugPrint("${state.templatesPageState}");
+        // debugPrint("${state.templatesPageState}");
       } else {
         //has data
         if (isRefresh) {
@@ -140,7 +139,7 @@ class TemplatesPageViewModel extends StateNotifier<TemplatesPageModelState> {
           updateState(state.copyWith(
               templatesPageState: PageState.dataLoaded,
               lastTimestamp: newData.last.featuredAt,
-              templates: state.templates..addAll(newData),
+              templates: [...state.templates, ...newData],
               page: state.page + 1));
         }
       }
@@ -162,6 +161,16 @@ class TemplatesPageViewModel extends StateNotifier<TemplatesPageModelState> {
     updateState(state.copyWith(agreementChecked: checked));
   }
 
+  void setSelectedTag(int index) {
+    List<TemplateTagItem> tags = state.tags;
+    for (var item in tags) {
+      item.selected = false;
+    }
+    tags[index].selected = true;
+    updateState(state.copyWith(tags: [...tags]));
+    getImageList((state) => null);
+  }
+
   void setFavorite(int itemIndex, bool favorite) {
     // Future<void> request = favorite ? network.favoriteTemplate(state.templates[itemIndex].id) : network.cancelFavoriteTemplate(state.templates[itemIndex].id);
     // network.requestAsync(request, (data) {
@@ -180,29 +189,29 @@ class TemplatesPageViewModel extends StateNotifier<TemplatesPageModelState> {
 
     if (favorite) {
       network.requestAsync(network.favoriteTemplate(state.templates[itemIndex].id), (data) {
-        debugPrint("setFavorite 1");
+        // debugPrint("setFavorite 1");
         state.templates[itemIndex].favorited = favorite;
         if (state.selectedTag()?.type == Network.SEARCH_TEMPLATE_TYPE_FAVORITED) {
-          debugPrint("Favorite");
+          // debugPrint("Favorite");
           state.templates.removeAt(itemIndex);
         }
         updateState(state.copyWith(templates: [...state.templates]));
       }, (error) {
-        debugPrint("setFavorite 2");
+        // debugPrint("setFavorite 2");
         state.templates[itemIndex].favorited = !favorite;
         updateState(state.copyWith(templates: [...state.templates]));
       });
     } else {
       network.requestAsync(network.cancelFavoriteTemplate(state.templates[itemIndex].id), (data) {
-        debugPrint("setFavorite 3");
+        // debugPrint("setFavorite 3");
         state.templates[itemIndex].favorited = favorite;
         if (state.selectedTag()?.type == Network.SEARCH_TEMPLATE_TYPE_FAVORITED) {
-          debugPrint("Favorite");
+          // debugPrint("Favorite");
           state.templates.removeAt(itemIndex);
         }
         updateState(state.copyWith(templates: [...state.templates]));
       }, (error) {
-        debugPrint("setFavorite 4");
+        // debugPrint("setFavorite 4");
         state.templates[itemIndex].favorited = !favorite;
         updateState(state.copyWith(templates: [...state.templates]));
       });

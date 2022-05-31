@@ -6,12 +6,10 @@ import 'package:app/ui/pages/user/register/register_view_model.dart';
 import 'package:app/ui/pages/user/register/set_badge.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/pages/user/web_view.dart';
-import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/utils/preferences.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -29,7 +27,7 @@ class RegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
-  final TapGestureRecognizer _tapGestureRecognizer = TapGestureRecognizer();
+  // final TapGestureRecognizer _tapGestureRecognizer = TapGestureRecognizer();
   TextEditingController usernameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -39,13 +37,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   FocusNode passwordNode = FocusNode();
   FocusNode passwordConfirmNode = FocusNode();
 
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-    _tapGestureRecognizer.dispose();
-    debugPrint("sign up dispose");
-  }
+  // @override
+  // void dispose() {
+  //   // TODO: implement dispose
+  //   super.dispose();
+  //   _tapGestureRecognizer.dispose();
+  //   // debugPrint("sign up dispose");
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -61,11 +59,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               },
               style: RegisterStyles.appbarTextButtonStyle(ref),
               child: Text(
-                'Login',
+                globalLocalizations.login_login,
               )),
-          // Icon(
-          //     Icons.more_vert
-          // ),
         ],
       ),
       // body: Container(
@@ -92,7 +87,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   Row(
                     children: [
                       Text(
-                        "Create net account",
+                        globalLocalizations.register_welcome,
                         style: RegisterStyles.titleTextStyle(ref),
                       ),
                     ],
@@ -104,8 +99,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     controller: usernameController,
                     focusNode: usernameNode,
                     style: RegisterStyles.inputTextStyle(ref),
-                    decoration: RegisterStyles.commonInputDecoration("Username", ref,
-                        helperText: "It cannot be modified after registration", errorText: modelState.usernameErrorText),
+                    decoration: RegisterStyles.commonInputDecoration(globalLocalizations.login_username, ref,
+                        helperText: globalLocalizations.register_username_hint, errorText: modelState.usernameErrorText),
                     onChanged: (text) {
                       model.checkAll(text, emailController.text, passwordController.text, passwordConfirmController.text);
                     },
@@ -117,7 +112,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     controller: emailController,
                     focusNode: emailNode,
                     style: RegisterStyles.inputTextStyle(ref),
-                    decoration: RegisterStyles.commonInputDecoration("Email", ref, errorText: modelState.emailErrorText),
+                    decoration: RegisterStyles.commonInputDecoration(globalLocalizations.register_email, ref, errorText: modelState.emailErrorText),
                     onChanged: (text) {
                       model.checkAll(usernameController.text, text, passwordController.text, passwordConfirmController.text);
                     },
@@ -129,8 +124,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     controller: passwordController,
                     focusNode: passwordNode,
                     style: RegisterStyles.inputTextStyle(ref),
-                    decoration: RegisterStyles.passwordInputDecoration("Enter password", ref,
-                        helperText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters",
+                    decoration: RegisterStyles.passwordInputDecoration(globalLocalizations.login_password, ref,
+                        helperText: globalLocalizations.register_password_hint,
                         errorText: modelState.passwordErrorText,
                         passwordVisible: modelState.passwordVisible, onTogglePasswordVisible: () {
                       model.togglePasswordVisible();
@@ -147,7 +142,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     style: RegisterStyles.inputTextStyle(ref),
                     controller: passwordConfirmController,
                     focusNode: passwordConfirmNode,
-                    decoration: RegisterStyles.passwordInputDecoration("Confirmed password", ref,
+                    decoration: RegisterStyles.passwordInputDecoration(globalLocalizations.register_confirm_password, ref,
                         errorText: modelState.confirmPasswordErrorText, passwordVisible: modelState.confirmPasswordVisible, onTogglePasswordVisible: () {
                       model.toggleConfirmPasswordVisible();
                     }),
@@ -174,7 +169,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               ref.read(globalUserInfoProvider.state).state = user;
                               preferences.putString(Preferences.KEY_USER_INFO, json.encode(user.toJson()));
                               Navigator.of(context).pop();
-                              Toast.showSnackBar(context, "注册成功");
+                              // Toast.showSnackBar(context, "注册成功");
                               Navigator.pushAndRemoveUntil(
                                 context,
                                 MaterialPageRoute(builder: (context) => SetBadgeScreen()),
@@ -189,32 +184,63 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               }
                             });
                           },
-                    child: const Text('Agree and sign up'),
+                    child: Text(globalLocalizations.register_agree),
                   ),
                   const SizedBox(
                     height: 10,
                   ),
-                  RichText(
-                      text: TextSpan(
-                          style: TextStyle(
-                            color: designColors.dark_01.auto(ref),
-                            fontSize: 12,
-                          ),
-                          text: 'I read and agree ',
-                          children: [
-                        TextSpan(
-                          style: TextStyle(
-                            color: designColors.blue_dark.auto(ref),
-                          ),
-                          text: 'User Agreement and Privacy Policy',
-                          recognizer: _tapGestureRecognizer
-                            ..onTap = () {
-                              debugPrint("点击了隐私协议");
-                              Navigator.push(context,
-                                  MaterialPageRoute(builder: (context) => const WebViewScreen('User Agreement and Privacy Policy', 'https://www.baidu.com')));
-                            },
-                        )
-                      ]))
+                  Builder(builder: (context) {
+                    TextStyle defaultTextStyle = TextStyle(
+                      color: designColors.dark_01.auto(ref),
+                      fontSize: 12,
+                    );
+                    TextStyle highlightedStyle = TextStyle(color: designColors.blue_dark.auto(ref), fontSize: 12, decoration: TextDecoration.underline);
+                    String template = globalLocalizations.register_read_agreements;
+                    String userAgreement = globalLocalizations.register_user_agreement;
+                    String privacyPolicy = globalLocalizations.register_privacy_policy;
+                    return HoohLocalizedRichText(
+                        template: template,
+                        keys: [
+                          HoohLocalizedKey(
+                              key: "%1\$s",
+                              text: userAgreement,
+                              style: highlightedStyle,
+                              onTap: (text) {
+                                Navigator.push(
+                                    context, MaterialPageRoute(builder: (context) => const WebViewScreen('User Agreement', 'https://www.baidu.com')));
+                              }),
+                          HoohLocalizedKey(
+                              key: "%2\$s",
+                              text: privacyPolicy,
+                              style: highlightedStyle,
+                              onTap: (text) {
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => const WebViewScreen('Privacy Policy', 'https://www.163.com')));
+                              }),
+                        ],
+                        defaultTextStyle: defaultTextStyle);
+
+                    // return RichText(
+                    //     text: TextSpan(
+                    //         style: TextStyle(
+                    //           color: designColors.dark_01.auto(ref),
+                    //           fontSize: 12,
+                    //         ),
+                    //         text: 'I read and agree ',
+                    //         children: [
+                    //       TextSpan(
+                    //         style: TextStyle(
+                    //           color: designColors.blue_dark.auto(ref),
+                    //         ),
+                    //         text: 'User Agreement and Privacy Policy',
+                    //         recognizer: _tapGestureRecognizer
+                    //           ..onTap = () {
+                    //             debugPrint("点击了隐私协议");
+                    //             Navigator.push(context,
+                    //                 MaterialPageRoute(builder: (context) => const WebViewScreen('User Agreement and Privacy Policy', 'https://www.baidu.com')));
+                    //           },
+                    //       )
+                    //     ]));
+                  })
                 ],
               ),
             ),

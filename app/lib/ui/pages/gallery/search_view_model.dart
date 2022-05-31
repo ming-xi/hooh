@@ -72,7 +72,7 @@ class SearchPageViewModel extends StateNotifier<SearchPageModelState> {
       if (isRefresh) {
         list = newData;
       } else {
-        list = state.images..addAll(newData);
+        list = [...state.images, ...newData];
       }
       state = state.copyWith(
         pageState: PageState.dataLoaded,
@@ -81,7 +81,7 @@ class SearchPageViewModel extends StateNotifier<SearchPageModelState> {
       );
     }, (error) {
       state = state.copyWith(error: error);
-      debugPrint("error");
+      // debugPrint("error");
     });
   }
 }

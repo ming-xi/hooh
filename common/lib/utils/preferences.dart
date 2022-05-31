@@ -15,6 +15,7 @@ class Preferences {
   static const KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED = "KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED";
   static const KEY_VOTE_POST_DIALOG_CHECKED = "KEY_VOTE_POST_DIALOG_CHECKED";
   static const KEY_USER_DRAFT = "KEY_USER_DRAFT";
+  static const KEY_LAST_SYSTEM_NOTIFICATIONS_READ = "KEY_LAST_SYSTEM_NOTIFICATIONS_READ";
 
   Future<void> init() async {
     // SharedPreferences.getInstance().then((value) {

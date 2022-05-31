@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:app/global.dart';
 import 'package:app/ui/pages/home/feeds.dart';
 import 'package:app/ui/pages/home/home_view_model.dart';
@@ -7,6 +9,9 @@ import 'package:app/ui/pages/home/templates.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:blur/blur.dart';
+import 'package:common/models/user.dart';
+import 'package:common/utils/network.dart';
+import 'package:common/utils/preferences.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -53,6 +58,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       null,
       null,
     ];
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(seconds: 1), () {
+        User? user = ref.read(globalUserInfoProvider);
+        if (user != null) {
+          network.requestAsync<User>(network.getUserInfo(user.id), (data) {
+            if (mounted) {
+              ref.read(globalUserInfoProvider.state).state = data;
+              preferences.putString(Preferences.KEY_USER_INFO, json.encode(user.toJson()));
+            }
+          }, (error) {});
+        }
+      });
+    });
     // User? user = ref.read(globalUserInfoProvider);
     // if (user != null) {
     //   network.requestAsync<User>(network.getUserInfo(user.id), (data) {
@@ -71,7 +89,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     HomePageModelState modelState = ref.watch(homePageProvider);
-    debugPrint("home tab_index=${modelState.tabIndex}");
+    User? currentUser = ref.watch(globalUserInfoProvider);
+    // debugPrint("home tab_index=${modelState.tabIndex}");
+    double avatarSize = 14.4;
+    double avatarStrokeWidth = 1.8;
+    Widget meTabIcon = currentUser == null
+        ? HoohIcon(
+            "assets/images/default_avatar_1.jpg",
+            width: avatarSize,
+            height: avatarSize,
+          )
+        : HoohImage(
+            imageUrl: currentUser.avatarUrl ?? "",
+            width: avatarSize,
+            height: avatarSize,
+          );
+    meTabIcon = Container(
+      child: ClipOval(child: meTabIcon),
+      decoration: BoxDecoration(border: Border.all(color: designColors.light_06.auto(ref), width: avatarStrokeWidth), shape: BoxShape.circle),
+    );
     return Scaffold(
       floatingActionButton: floatingButtons[modelState.tabIndex],
       extendBody: true,
@@ -94,20 +130,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     modelState.tabIndex != 0 ? "assets/images/icon_tab_creation_off.svg" : "assets/images/icon_tab_creation_on.svg",
                     color: modelState.tabIndex != 0 ? designColors.light_06.auto(ref) : null,
                   ),
-                  label: "input"),
+                  label: ""),
               BottomNavigationBarItem(
                   icon: HoohIcon(
                     modelState.tabIndex != 1 ? "assets/images/icon_tab_templates_off.svg" : "assets/images/icon_tab_templates_on.svg",
                     color: modelState.tabIndex != 1 ? designColors.light_06.auto(ref) : null,
                   ),
-                  label: "album"),
+                  label: ""),
               BottomNavigationBarItem(
                   icon: HoohIcon(
                     modelState.tabIndex != 2 ? "assets/images/icon_tab_feeds_off.svg" : "assets/images/icon_tab_feeds_on.svg",
                     color: modelState.tabIndex != 2 ? designColors.light_06.auto(ref) : null,
                   ),
-                  label: "explore"),
-              BottomNavigationBarItem(icon: Icon(Icons.person), label: "person"),
+                  label: ""),
+              // BottomNavigationBarItem(icon: Icon(Icons.person),
+              //     label: ""
+              // ),
+              BottomNavigationBarItem(icon: meTabIcon, label: ""),
             ],
             // selectedItemColor: designColors.feiyu_blue.auto(ref),
             // unselectedItemColor: designColors.dark_03.auto(ref),
@@ -134,18 +173,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  String getTitle(int index) {
-    switch (index) {
-      case 0:
-        return "input";
-      case 1:
-        return "gallery";
-      case 2:
-        return "social";
-      case 3:
-        return "me";
-      default:
-        return "";
-    }
-  }
+// String getTitle(int index) {
+//   switch (index) {
+//     case 0:
+//       return "input";
+//     case 1:
+//       return "gallery";
+//     case 2:
+//       return "social";
+//     case 3:
+//       return "me";
+//     default:
+//       return "";
+//   }
+// }
 }

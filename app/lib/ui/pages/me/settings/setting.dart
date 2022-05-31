@@ -39,7 +39,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               buildTile(AppLocalizations.of(context)!.setting_account,
                   showArrow: true, showDot: true, onPress: () {
-                debugPrint("account");
+                // debugPrint("account");
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => AccountScreen()));
               }),

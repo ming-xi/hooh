@@ -34,7 +34,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("_LoginScreenState build");
+    // debugPrint("_LoginScreenState build");
     LoginModelState modelState = ref.watch(widget.provider);
     LoginViewModel model = ref.read(widget.provider.notifier);
     return Scaffold(
@@ -47,7 +47,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               },
               style: RegisterStyles.appbarTextButtonStyle(ref),
               child: Text(
-                'Sign Up',
+                globalLocalizations.login_register,
               )),
           // Icon(
           //     Icons.more_vert
@@ -66,7 +66,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Row(
                     children: [
                       Text(
-                        "Welcome to HOOH",
+                        globalLocalizations.login_welcome,
                         style: RegisterStyles.titleTextStyle(ref),
                       ),
                     ],
@@ -79,7 +79,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     focusNode: usernameNode,
                     style: RegisterStyles.inputTextStyle(ref),
                     decoration: RegisterStyles.commonInputDecoration(
-                      "Username",
+                      globalLocalizations.login_username,
                       ref,
                     ),
                     onChanged: (text) {
@@ -94,7 +94,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     focusNode: passwordNode,
                     style: RegisterStyles.inputTextStyle(ref),
                     decoration:
-                    RegisterStyles.passwordInputDecoration("Enter password", ref, passwordVisible: modelState.passwordVisible, onTogglePasswordVisible: () {
+                    RegisterStyles.passwordInputDecoration(globalLocalizations.login_password, ref, passwordVisible: modelState.passwordVisible,
+                        onTogglePasswordVisible: () {
                       model.togglePasswordVisible();
                     }),
                     obscureText: !modelState.passwordVisible,
@@ -121,17 +122,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         preferences.putString(Preferences.KEY_USER_INFO, json.encode(user.toJson()));
                         Navigator.of(context).pop();
                         Toast.showSnackBar(context, "登录成功");
-                        if (user.hasFinishedRegisterSteps()) {
+                              if (user.hasFinishedRegisterSteps()) {
                                 // Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeScreen()), (route) => false);
                                 popToHomeScreen(context);
                               } else {
-                          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => SetBadgeScreen()), (route) => false);
-                        }
-                      }, onFailed: () {
-                        Navigator.of(context).pop();
-                      });
-                    },
-                    child: const Text('Login'),
+                                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => SetBadgeScreen()), (route) => false);
+                              }
+                            }, onFailed: () {
+                              Navigator.of(context).pop();
+                            });
+                          },
+                    child: Text(globalLocalizations.login_login),
                   ),
                   GestureDetector(
                     onTap: () {
@@ -140,7 +141,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Text(
-                        "Forgot Password",
+                        globalLocalizations.login_forget_password,
                         style: TextStyle(color: designColors.blue_dark.auto(ref), decoration: TextDecoration.underline),
                       ),
                     ),

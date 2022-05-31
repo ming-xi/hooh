@@ -1,3 +1,4 @@
+import 'package:app/global.dart';
 import 'package:app/ui/pages/feeds/main_list.dart';
 import 'package:app/ui/pages/feeds/waiting_list.dart';
 import 'package:app/ui/pages/home/home.dart';
@@ -75,13 +76,13 @@ class _FeedsPageState extends ConsumerState<FeedsPage> with TickerProviderStateM
               Expanded(
                 child: TabBar(controller: tabController, tabs: [
                   Tab(
-                    text: "Following",
+                    text: globalLocalizations.feeds_tag_following,
                   ),
                   Tab(
-                    text: "Main",
+                    text: globalLocalizations.feeds_tag_main,
                   ),
                   Tab(
-                    text: "Waiting",
+                    text: globalLocalizations.feeds_tag_waiting_list,
                   ),
                 ]),
               ),

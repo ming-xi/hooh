@@ -15,8 +15,19 @@ class SolidColor extends DesignColor {
   const SolidColor(this.generic);
 
   @override
-  Color auto(WidgetRef? ref) {
+  Color auto(WidgetRef ref) {
     return generic;
+    // int darkMode = ref.watch(globalDarkModeProvider.state).state;
+    // switch (darkMode) {
+    //   case DARK_MODE_LIGHT:
+    //     return generic;
+    //   case DARK_MODE_DARK:
+    //     return generic.withAlpha(globalDarkModeImageAlpha);
+    //   case DARK_MODE_SYSTEM:
+    //   default:
+    //     Brightness brightness = SchedulerBinding.instance.window.platformBrightness;
+    //     return brightness == Brightness.light ? generic : generic.withAlpha(globalDarkModeImageAlpha);
+    // }
   }
 }
 
@@ -37,7 +48,6 @@ class DayNightColor extends DesignColor {
       case DARK_MODE_SYSTEM:
       default:
       Brightness brightness = SchedulerBinding.instance.window.platformBrightness;
-        // debugPrint("DesignColor brightness=$brightness");
         return brightness == Brightness.light ? light : dark;
     }
   }

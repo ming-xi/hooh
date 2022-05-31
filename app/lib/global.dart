@@ -4,8 +4,8 @@ import 'package:app/utils/design_colors.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 void handleUserLogout({WidgetRef? ref}) {
   if (ref != null) {
@@ -20,10 +20,14 @@ void openLink(BuildContext context, String url) async {
   // launchUrlString(url);
 }
 
-bool globalIsKeyboardVisible = false;
+late AppLocalizations globalLocalizations;
+// bool globalIsKeyboardVisible = false;
 bool globalHomeScreenIsInStack = false;
+double globalDarkModeImageOpacity = 0.7;
+int globalDarkModeImageAlpha = (255 * globalDarkModeImageOpacity).toInt();
 
 void popToHomeScreen(BuildContext context) {
+  debugPrint("globalHomeScreenIsInStack=$globalHomeScreenIsInStack");
   if (globalHomeScreenIsInStack) {
     Navigator.popUntil(context, ModalRoute.withName("/home"));
   } else {
@@ -38,6 +42,7 @@ void popToHomeScreen(BuildContext context) {
   }
 }
 
+final StateProvider<bool> globalKeyboardInfoProvider = StateProvider<bool>((ref) => false);
 final StateProvider<User?> globalUserInfoProvider = StateProvider<User?>((ref) => null);
 const DARK_MODE_SYSTEM = 0;
 const DARK_MODE_LIGHT = 1;
@@ -58,6 +63,7 @@ final globalLightTheme = ThemeData(
     fontFamily: 'Linotte',
     appBarTheme: AppBarTheme(
       elevation: 0,
+      centerTitle: true,
       backgroundColor: designColors.bar90_1.light,
       titleTextStyle: TextStyle(color: designColors.dark_01.light, fontFamily: 'Linotte', fontWeight: FontWeight.bold, fontSize: 16),
       actionsIconTheme: IconThemeData(color: designColors.dark_01.light),
@@ -110,8 +116,10 @@ final globalDarkTheme = ThemeData(
     brightness: Brightness.dark,
     backgroundColor: designColors.light_00.dark,
     fontFamily: 'Linotte',
+    toggleableActiveColor: designColors.feiyu_blue.generic,
     appBarTheme: AppBarTheme(
       elevation: 0,
+      centerTitle: true,
       backgroundColor: designColors.bar90_1.dark,
       titleTextStyle: TextStyle(color: designColors.dark_01.dark, fontFamily: 'Linotte', fontWeight: FontWeight.bold, fontSize: 16),
       actionsIconTheme: IconThemeData(color: designColors.dark_01.dark),
