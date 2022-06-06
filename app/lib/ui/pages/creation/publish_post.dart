@@ -122,16 +122,22 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
                     SizedBox(
                       width: 24,
                     ),
-                    Text(
-                      globalLocalizations.publish_post_spends_ore_part1,
-                      style: bottomTextStyle,
-                    ),
-                    HoohIcon(
-                      "assets/images/common_ore.svg",
-                      width: 18,
-                      height: 18,
-                    ),
-                    Text(globalLocalizations.publish_post_spends_ore_part2, style: bottomTextStyle),
+                    HoohLocalizedRichText(
+                        text: globalLocalizations.publish_post_spends_ore,
+                        keys: [
+                          HoohLocalizedWidgetKey(
+                            key: globalLocalizations.publish_post_spends_ore_placeholder,
+                            widget: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              child: HoohIcon(
+                                "assets/images/common_ore.svg",
+                                width: 18,
+                                height: 18,
+                              ),
+                            ),
+                          )
+                        ],
+                        defaultTextStyle: bottomTextStyle),
                     IconButton(
                         onPressed: () {
                           showDialog(
@@ -176,7 +182,7 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
         publishToWaitingList: publishToWaitingList,
         onSuccess: (post) {
           // Navigator.popUntil(context, ModalRoute.withName("/home"));
-          Future.delayed(Duration(seconds: 1), () {
+          Future.delayed(Duration(seconds: 3), () {
             Navigator.of(context).pop();
             Toast.showSnackBar(context, globalLocalizations.publish_post_success);
             if (publishToWaitingList) {

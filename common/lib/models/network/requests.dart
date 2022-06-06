@@ -132,11 +132,10 @@ class CreatePostRequest {
   List<String> tags;
   bool allowDownload;
   bool visible;
-  String? templateId;
+
   bool joinWaitingList;
 
-  CreatePostRequest(
-      {required this.images, required this.tags, required this.allowDownload, required this.visible, this.templateId, required this.joinWaitingList});
+  CreatePostRequest({required this.images, required this.tags, required this.allowDownload, required this.visible, required this.joinWaitingList});
 
   factory CreatePostRequest.fromJson(Map<String, dynamic> json) => _$CreatePostRequestFromJson(json);
 
@@ -147,8 +146,9 @@ class CreatePostRequest {
 class CreateImageRequest {
   String imageKey;
   String content;
+  String? templateId;
 
-  CreateImageRequest(this.imageKey, this.content);
+  CreateImageRequest(this.imageKey, this.content, {this.templateId});
 
   factory CreateImageRequest.fromJson(Map<String, dynamic> json) => _$CreateImageRequestFromJson(json);
 

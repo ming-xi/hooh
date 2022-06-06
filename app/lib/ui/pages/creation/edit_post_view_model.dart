@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:app/extensions/extensions.dart';
+import 'package:app/ui/pages/creation/edit_post.dart';
 import 'package:app/ui/pages/user/register/draw_badge_view_model.dart';
 import 'package:app/ui/widgets/template_text_setting_view.dart';
 import 'package:app/utils/creation_strategy.dart';
@@ -11,18 +12,32 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 part 'edit_post_view_model.g.dart';
 
+class FontItem {
+  final String fontFamily;
+  bool selected;
+
+  FontItem({required this.fontFamily, this.selected = false});
+}
+
 @CopyWith()
 class EditPostScreenModelState {
   final int selectedTab;
   final PostImageSetting setting;
   final List<PaletteItem> paletteItems;
+  final List<FontItem> fontItems;
   final bool frameLocked;
   final bool touchingFrame;
 
-  EditPostScreenModelState({required this.selectedTab, required this.setting, required this.paletteItems, this.frameLocked = true, this.touchingFrame = false});
+  EditPostScreenModelState(
+      {required this.selectedTab,
+      required this.setting,
+      required this.paletteItems,
+      required this.fontItems,
+      this.frameLocked = true,
+      this.touchingFrame = false});
 
-  factory EditPostScreenModelState.init(List<PaletteItem> paletteItems, PostImageSetting setting) {
-    return EditPostScreenModelState(selectedTab: 0, setting: setting, paletteItems: paletteItems, frameLocked: false);
+  factory EditPostScreenModelState.init(List<PaletteItem> paletteItems, List<FontItem> fontItems, PostImageSetting setting) {
+    return EditPostScreenModelState(selectedTab: 0, setting: setting, paletteItems: paletteItems, fontItems: fontItems, frameLocked: false);
   }
 // factory EditPostScreenModelState.withTemplate(List<PaletteItem> paletteItems, Template template, {String? text}) {
 //   return EditPostScreenModelState(selectedTab: 0, setting: PostImageSetting.withTemplate(template, text: text), paletteItems: paletteItems);
@@ -100,6 +115,14 @@ class EditPostScreenViewModel extends StateNotifier<EditPostScreenModelState> {
     return state.paletteItems[index].color;
   }
 
+  void setSelectedFont(int index) {
+    for (var value in state.fontItems) {
+      value.selected = false;
+    }
+    state.fontItems[index].selected = true;
+    updateState(state.copyWith(fontItems: [...state.fontItems], setting: state.setting.copyWith(fontFamily: state.fontItems[index].fontFamily)));
+  }
+
   void setFrameLocked(bool locked) {
     updateState(state.copyWith(frameLocked: locked));
   }
@@ -126,6 +149,7 @@ class PostImageSetting {
   final double frameY;
   final double frameW;
   final double frameH;
+  final String fontFamily;
   final double fontSize;
   final TextAlignment alignment;
   final bool shadow;
@@ -145,6 +169,7 @@ class PostImageSetting {
       required this.frameY,
       required this.frameW,
       required this.frameH,
+      required this.fontFamily,
       required this.fontSize,
       this.alignment = TextAlignment.left,
       this.shadow = false,
@@ -159,6 +184,7 @@ class PostImageSetting {
       text: text,
       textColor: textColor,
       fontSize: CreationStrategy.calculateFontSize(text ?? ""),
+      fontFamily: EditPostScreen.FONTS.random(),
       lineHeight: CreationStrategy.calculateLineHeight(text ?? ""),
       frameX: TemplateTextSettingView.MIN_MARGIN_PERCENT,
       frameY: TemplateTextSettingView.MIN_MARGIN_PERCENT,
@@ -171,16 +197,12 @@ class PostImageSetting {
       templateId: template.id,
       textColor: HexColor.fromHex(template.textColor),
       fontSize: CreationStrategy.calculateFontSize(text ?? ""),
+      fontFamily: EditPostScreen.FONTS.random(),
       lineHeight: CreationStrategy.calculateLineHeight(text ?? ""),
       frameX: double.tryParse(template.frameX)!,
       frameY: double.tryParse(template.frameY)!,
       frameW: double.tryParse(template.frameWidth)!,
       frameH: double.tryParse(template.frameHeight)!);
-
-  @override
-  String toString() {
-    return 'PostImageSetting{imageFile: $imageFile, imageUrl: $imageUrl, text: $text, textColor: $textColor, frameX: $frameX, frameY: $frameY, frameW: $frameW, frameH: $frameH, fontSize: $fontSize, alignment: $alignment, shadow: $shadow, stroke: $stroke, mask: $mask, bold: $bold, blur: $blur, letterSpacing: $lineHeight}';
-  }
 }
 
 enum TextAlignment { left, center, right }

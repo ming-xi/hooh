@@ -5,7 +5,6 @@ import 'package:app/ui/pages/user/register/login.dart';
 import 'package:app/ui/pages/user/register/register_view_model.dart';
 import 'package:app/ui/pages/user/register/set_badge.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
-import 'package:app/ui/pages/user/web_view.dart';
 import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
@@ -192,54 +191,57 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   Builder(builder: (context) {
                     TextStyle defaultTextStyle = TextStyle(
                       color: designColors.dark_01.auto(ref),
+                      fontFamily: 'Linotte',
                       fontSize: 12,
                     );
-                    TextStyle highlightedStyle = TextStyle(color: designColors.blue_dark.auto(ref), fontSize: 12, decoration: TextDecoration.underline);
+                    TextStyle highlightedStyle = TextStyle(
+                      color: designColors.blue_dark.auto(ref),
+                      fontSize: 12,
+                      decoration: TextDecoration.underline,
+                      fontFamily: 'Linotte',
+                    );
                     String template = globalLocalizations.register_read_agreements;
                     String userAgreement = globalLocalizations.register_user_agreement;
                     String privacyPolicy = globalLocalizations.register_privacy_policy;
                     return HoohLocalizedRichText(
-                        template: template,
+                        text: template,
                         keys: [
-                          HoohLocalizedKey(
+                          HoohLocalizedTextKey(
                               key: "%1\$s",
                               text: userAgreement,
                               style: highlightedStyle,
-                              onTap: (text) {
-                                Navigator.push(
-                                    context, MaterialPageRoute(builder: (context) => const WebViewScreen('User Agreement', 'https://www.baidu.com')));
+                              onTap: () {
+                                openLink(context, 'https://www.baidu.com', title: userAgreement);
                               }),
-                          HoohLocalizedKey(
+                          HoohLocalizedTextKey(
                               key: "%2\$s",
                               text: privacyPolicy,
                               style: highlightedStyle,
-                              onTap: (text) {
-                                Navigator.push(context, MaterialPageRoute(builder: (context) => const WebViewScreen('Privacy Policy', 'https://www.163.com')));
+                              onTap: () {
+                                openLink(context, 'https://www.163.com', title: privacyPolicy);
                               }),
                         ],
                         defaultTextStyle: defaultTextStyle);
-
-                    // return RichText(
-                    //     text: TextSpan(
-                    //         style: TextStyle(
-                    //           color: designColors.dark_01.auto(ref),
-                    //           fontSize: 12,
-                    //         ),
-                    //         text: 'I read and agree ',
-                    //         children: [
-                    //       TextSpan(
-                    //         style: TextStyle(
-                    //           color: designColors.blue_dark.auto(ref),
-                    //         ),
-                    //         text: 'User Agreement and Privacy Policy',
-                    //         recognizer: _tapGestureRecognizer
-                    //           ..onTap = () {
-                    //             debugPrint("点击了隐私协议");
-                    //             Navigator.push(context,
-                    //                 MaterialPageRoute(builder: (context) => const WebViewScreen('User Agreement and Privacy Policy', 'https://www.baidu.com')));
-                    //           },
-                    //       )
-                    //     ]));
+                    // return HoohLocalizedRichText(
+                    //     template: template,
+                    //     keys: [
+                    //       HoohLocalizedKey(
+                    //           key: "%1\$s",
+                    //           text: userAgreement,
+                    //           style: highlightedStyle,
+                    //           onTap: (text) {
+                    //             Navigator.push(
+                    //                 context, MaterialPageRoute(builder: (context) => const WebViewScreen('User Agreement', 'https://www.baidu.com')));
+                    //           }),
+                    //       HoohLocalizedKey(
+                    //           key: "%2\$s",
+                    //           text: privacyPolicy,
+                    //           style: highlightedStyle,
+                    //           onTap: (text) {
+                    //             Navigator.push(context, MaterialPageRoute(builder: (context) => const WebViewScreen('Privacy Policy', 'https://www.163.com')));
+                    //           }),
+                    //     ],
+                    //     defaultTextStyle: defaultTextStyle);
                   })
                 ],
               ),

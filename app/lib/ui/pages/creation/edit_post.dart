@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class EditPostScreen extends ConsumerStatefulWidget {
+  static const FONTS = ['Linotte', 'Pacifico'];
   static const PALETTE_COLORS = [
     Color(0xFFFFFFFF),
     Color(0xFF000000),
@@ -43,10 +44,12 @@ class EditPostScreen extends ConsumerStatefulWidget {
     Key? key,
   }) : super(key: key) {
     provider = StateNotifierProvider((ref) {
-      List<PaletteItem> list =
+      List<PaletteItem> colors =
           PALETTE_COLORS.map((e) => PaletteItem(color: e, type: PALETTE_COLORS.indexOf(e) < 2 ? PaletteItem.TYPE_OUTLINED : PaletteItem.TYPE_NORMAL)).toList();
-      list[0].selected = true;
-      return EditPostScreenViewModel(EditPostScreenModelState.init(list, setting));
+      colors.firstWhere((element) => element.color.value == setting.textColor.value, orElse: () => colors[0]).selected = true;
+      List<FontItem> fonts = FONTS.map((e) => FontItem(fontFamily: e)).toList();
+      fonts.firstWhere((element) => element.fontFamily == setting.fontFamily, orElse: () => fonts[0]).selected = true;
+      return EditPostScreenViewModel(EditPostScreenModelState.init(colors, fonts, setting));
     });
   }
 
@@ -413,7 +416,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
       // mainAxisSize: MainAxisSize.min,
       children: [
         Spacer(),
-        Text("fonts..."),
+        buildFonts(model, modelState),
         Spacer(),
         buildPalette(model, modelState),
         Spacer(),
@@ -489,6 +492,49 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
           model.decreaseLineHeight();
         }),
       ]),
+    );
+  }
+
+  Widget buildFonts(EditPostScreenViewModel model, EditPostScreenModelState modelState) {
+    double itemSize = 36;
+    double padding = 8;
+    double borderRadius = 12;
+
+    return SizedBox(
+      height: itemSize,
+      child: ListView.separated(
+        padding: EdgeInsets.symmetric(
+          horizontal: 16,
+        ),
+        itemCount: modelState.fontItems.length,
+        scrollDirection: Axis.horizontal,
+        separatorBuilder: (context, index) => SizedBox(
+          width: 8,
+        ),
+        itemBuilder: (context, index) {
+          FontItem item = modelState.fontItems[index];
+          return Ink(
+              decoration: BoxDecoration(
+                color: item.selected ? designColors.light_02.auto(ref) : Colors.transparent,
+                borderRadius: BorderRadius.circular(borderRadius),
+              ),
+              child: InkWell(
+                onTap: () {
+                  model.setSelectedFont(index);
+                },
+                borderRadius: BorderRadius.circular(borderRadius),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Center(
+                    child: Text(
+                      item.fontFamily,
+                      style: TextStyle(fontSize: 14, color: designColors.dark_01.auto(ref), fontFamily: item.fontFamily, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ));
+        },
+      ),
     );
   }
 

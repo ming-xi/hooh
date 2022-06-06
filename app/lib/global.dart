@@ -15,8 +15,8 @@ void handleUserLogout({WidgetRef? ref}) {
   // preferences.remove(Preferences.KEY_USER_DRAFT);
 }
 
-void openLink(BuildContext context, String url) async {
-  Navigator.push(context, MaterialPageRoute(builder: (context) => const WebViewScreen('User Agreement and Privacy Policy', 'https://www.baidu.com')));
+void openLink(BuildContext context, String url, {String? title}) async {
+  Navigator.push(context, MaterialPageRoute(builder: (context) => WebViewScreen(title ?? "", url)));
   // launchUrlString(url);
 }
 

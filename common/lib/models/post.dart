@@ -1,4 +1,5 @@
 import 'package:common/models/user.dart';
+import 'package:common/utils/serialization.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'post.g.dart';
@@ -20,18 +21,22 @@ class Post {
   int likeCount;
   int? voteCount;
   int? myVoteCount;
+  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
+  double profit;
   List<PostImage> images;
   List<String>? tags;
   bool liked;
-  bool favorited;
+  bool? favorited;
   bool visible;
   bool allowDownload;
   int publishState;
+  DateTime? likedAt;
+  DateTime? favoritedAt;
   DateTime? featuredAt;
   DateTime createdAt;
 
-  Post(this.id, this.author, this.commentCount, this.likeCount, this.voteCount, this.myVoteCount, this.images, this.tags, this.liked, this.favorited,
-      this.visible, this.allowDownload, this.publishState, this.featuredAt, this.createdAt);
+  Post(this.id, this.author, this.commentCount, this.likeCount, this.voteCount, this.myVoteCount, this.profit, this.images, this.tags, this.liked,
+      this.favorited, this.visible, this.allowDownload, this.publishState, this.likedAt, this.favoritedAt, this.featuredAt, this.createdAt);
 
   factory Post.fromJson(Map<String, dynamic> json) => _$PostFromJson(json);
 

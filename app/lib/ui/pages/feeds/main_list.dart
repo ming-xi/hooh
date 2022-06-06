@@ -153,9 +153,6 @@ class _MainListPageState extends ConsumerState<MainListPage> {
       onShare: (post, error) {
         Toast.showSnackBar(context, "share...");
       },
-      onComment: (post, error) {
-        Toast.showSnackBar(context, "comment...");
-      },
       onLike: (post, error) {
         if (error != null) {
           Toast.showSnackBar(context, error.message);
@@ -167,13 +164,6 @@ class _MainListPageState extends ConsumerState<MainListPage> {
           post.likeCount += 1;
         }
         post.liked = !post.liked;
-        model.updatePostData(post, index);
-      },
-      onVote: (post, error) {
-        if (error != null) {
-          Toast.showSnackBar(context, error.message);
-          return;
-        }
         model.updatePostData(post, index);
       },
       onFollow: (post, error) {

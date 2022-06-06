@@ -2,7 +2,11 @@ import 'package:app/global.dart';
 import 'package:app/ui/pages/me/activities.dart';
 import 'package:app/ui/pages/me/activities_view_model.dart';
 import 'package:app/ui/pages/me/badges.dart';
+import 'package:app/ui/pages/me/followers.dart';
+import 'package:app/ui/pages/user/posts.dart';
+import 'package:app/ui/pages/user/posts_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
+import 'package:app/ui/pages/user/templates.dart';
 import 'package:app/ui/pages/user/user_profile_view_model.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
@@ -14,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:sprintf/sprintf.dart';
 
 class UserProfileScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -171,6 +176,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                           child: HoohImage(
                             imageUrl: user.badgeImageUrl ?? "",
                             width: 32,
+                            isBadge: true,
                             height: 36,
                           ))
                     ],
@@ -194,11 +200,35 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               height: 80,
               child: Row(
                 children: [
-                  Expanded(child: buildFollowerCard(AppLocalizations.of(context)!.me_following, user.followingCount)),
+                  Expanded(
+                      child: buildFollowerCard(
+                          title: AppLocalizations.of(context)!.me_following,
+                          amount: user.followingCount,
+                          onClick: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => FollowerScreen(
+                                          userId: widget.userId,
+                                          isFollower: false,
+                                        )));
+                          })),
                   const SizedBox(
                     width: 8,
                   ),
-                  Expanded(child: buildFollowerCard(AppLocalizations.of(context)!.me_follower, user.followerCount)),
+                  Expanded(
+                      child: buildFollowerCard(
+                          title: AppLocalizations.of(context)!.me_follower,
+                          amount: user.followerCount,
+                          onClick: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => FollowerScreen(
+                                          userId: widget.userId,
+                                          isFollower: true,
+                                        )));
+                          })),
                 ],
               ),
             ),
@@ -227,11 +257,29 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               height: 80,
               child: Row(
                 children: [
-                  Expanded(child: buildFollowerCard(globalLocalizations.me_tile_posts, user.publicPostCount)),
+                  Expanded(
+                      child: buildFollowerCard(
+                          title: globalLocalizations.user_profile_posts,
+                          amount: user.publicPostCount,
+                          onClick: () {
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (context) => UserPostsScreen(userId: user.id, type: UserPostsScreenModelState.TYPE_CREATED)));
+                          })),
                   const SizedBox(
                     width: 8,
                   ),
-                  Expanded(child: buildFollowerCard(globalLocalizations.me_tile_templates, user.templateCount)),
+                  Expanded(
+                      child: buildFollowerCard(
+                          title: globalLocalizations.user_profile_templates,
+                          amount: user.templateCount,
+                          onClick: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => UserTemplateScreen(
+                                          userId: user.id,
+                                        )));
+                          })),
                 ],
               ),
             ),
@@ -263,7 +311,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         });
       },
       child: Text(
-        followed ? "Unfollow" : "Follow",
+        followed ? globalLocalizations.common_unfollow : globalLocalizations.common_follow,
         style: TextStyle(fontFamily: 'Linotte', fontSize: 18, fontWeight: FontWeight.bold),
       ),
       style: TextButton.styleFrom(
@@ -272,39 +320,57 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         ),
         primary: Colors.white,
         onSurface: Colors.white,
-        padding: EdgeInsets.only(top: 4),
-        fixedSize: Size(108, 40),
+        padding: EdgeInsets.zero,
+        minimumSize: Size(108, 40),
         backgroundColor: color,
       ),
     );
   }
 
-  Container buildFollowerCard(String title, int? amount) {
-    return Container(
-      decoration: buildCardDecoration(),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Spacer(
-            flex: 22,
-          ),
-          Text(
-            title,
-            style: TextStyle(fontSize: 12, color: designColors.light_06.auto(ref)),
-          ),
-          const SizedBox(
-            height: 4,
-          ),
-          Text(
-            formatAmount(amount ?? 0),
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: designColors.dark_01.auto(ref)),
-          ),
-          const Spacer(
-            flex: 12,
-          ),
-        ],
+  Widget buildFollowerCard({required String title, int? amount, Function()? onClick}) {
+    var column = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Spacer(
+          flex: 22,
+        ),
+        Text(
+          title,
+          style: TextStyle(fontSize: 12, color: designColors.light_06.auto(ref)),
+        ),
+        const SizedBox(
+          height: 4,
+        ),
+        Text(
+          formatAmount(amount ?? 0),
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: designColors.dark_01.auto(ref)),
+        ),
+        const Spacer(
+          flex: 12,
+        ),
+      ],
+    );
+    ElevatedButton card = ElevatedButton(
+      onPressed: () {
+        if (onClick != null) {
+          onClick();
+        }
+      },
+      child: column,
+      style: ElevatedButton.styleFrom(
+        padding: EdgeInsets.all(10),
+        primary: designColors.light_01.auto(ref),
+        onPrimary: designColors.light_02.auto(ref),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        // shadowColor: Colors.black.withAlpha((255 * 0.2).toInt()),
+        // elevation: 8
       ),
     );
+    return card;
+    // return Container(
+    //   decoration: buildCardDecoration(),
+    //   child: column,
+    // );
   }
 
   BoxDecoration buildCardDecoration() => BoxDecoration(boxShadow: cardShadow, borderRadius: BorderRadius.circular(20), color: designColors.light_01.auto(ref));
@@ -349,7 +415,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                     height: 24,
                     child: Center(
                       child: Text(
-                        "${DateUtil.getZonedDateString(user.createdAt!, format: "d MMMM yyyy")} Joined",
+                        sprintf(globalLocalizations.me_profile_joined,
+                            [DateUtil.getZonedDateString(user.createdAt!, format: globalLocalizations.me_profile_joined_date_format)]),
                         style: TextStyle(fontSize: 16, color: designColors.dark_01.auto(ref)),
                       ),
                     ),

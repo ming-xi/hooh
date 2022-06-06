@@ -13,6 +13,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class PostView extends ConsumerStatefulWidget {
   final Post post;
+  final bool displayAsVotingPost;
   final Function(Post post, HoohApiErrorResponse? error)? onVote;
   final Function(Post post, HoohApiErrorResponse? error)? onLike;
   final Function(Post post, HoohApiErrorResponse? error)? onComment;
@@ -22,6 +23,7 @@ class PostView extends ConsumerStatefulWidget {
 
   const PostView({
     required this.post,
+    this.displayAsVotingPost = false,
     this.onVote,
     this.onLike,
     this.onComment,
@@ -71,15 +73,24 @@ class _PostViewState extends ConsumerState<PostView> {
               color: designColors.light_01.auto(ref),
               child: Builder(builder: (context) {
                 List<Widget> widgets = [];
-                if (post.publishState == Post.PUBLISH_STATE_WAITING_LIST) {
+                if (widget.displayAsVotingPost) {
                   widgets.add(buildUserInfoRow(post));
-                } else if (post.publishState == Post.PUBLISH_STATE_MAIN_LIST) {
+                } else {
                   widgets.add(buildUserInfoRow(post));
                   widgets.add(SizedBox(
                     height: 12,
                   ));
                   widgets.add(buildButtons(post));
-                } else {}
+                }
+                // if (post.publishState == Post.PUBLISH_STATE_WAITING_LIST) {
+                //   widgets.add(buildUserInfoRow(post));
+                // } else if (post.publishState == Post.PUBLISH_STATE_MAIN_LIST) {
+                //   widgets.add(buildUserInfoRow(post));
+                //   widgets.add(SizedBox(
+                //     height: 12,
+                //   ));
+                //   widgets.add(buildButtons(post));
+                // } else {}
                 return Padding(
                   padding: const EdgeInsets.only(top: 16, bottom: 8),
                   // padding: EdgeInsets.zero,
@@ -99,23 +110,32 @@ class _PostViewState extends ConsumerState<PostView> {
   Builder buildButtons(Post post) {
     return Builder(builder: (context) {
       List<Widget> widgets = [
-        ...buildIconAndAmount("assets/images/common_ore.svg", 24, 0, null),
+        ...buildIconAndAmount(iconPath: "assets/images/common_ore.svg", size: 24, amount: post.profit),
         Spacer(),
-        ...buildIconAndAmount("assets/images/icon_post_like.svg", 32, post.likeCount, () {
-          onLikePress(post);
-        }),
+        ...buildIconAndAmount(
+            iconPath: "assets/images/icon_post_like.svg",
+            amount: post.likeCount,
+            color: post.liked ? designColors.feiyu_blue.auto(ref) : designColors.light_06.auto(ref),
+            onPress: () {
+              onLikePress(post);
+            }),
         SizedBox(
           width: 8,
         ),
-        ...buildIconAndAmount("assets/images/icon_post_comment.svg", 32, post.commentCount, () {
-          onCommentPress(post);
-        }),
+        ...buildIconAndAmount(
+            iconPath: "assets/images/icon_post_comment.svg",
+            amount: post.commentCount,
+            onPress: () {
+              onCommentPress(post);
+            }),
         SizedBox(
           width: 8,
         ),
-        ...buildIconAndAmount("assets/images/icon_post_share.svg", 32, null, () {
-          onSharePress(post);
-        }),
+        ...buildIconAndAmount(
+            iconPath: "assets/images/icon_post_share.svg",
+            onPress: () {
+              onSharePress(post);
+            }),
       ];
       return Padding(
         padding: const EdgeInsets.only(left: 4, right: 4),
@@ -170,7 +190,13 @@ class _PostViewState extends ConsumerState<PostView> {
     if (widget.onComment != null) {
       widget.onComment!(post, null);
     } else {
-      // Navigator.push(context, MaterialPageRoute(builder: (context) =>));
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => PostDetailScreen(
+                    postId: post.id,
+                    post: post,
+                  )));
     }
   }
 
@@ -190,9 +216,9 @@ class _PostViewState extends ConsumerState<PostView> {
         widgets.add(SizedBox(
           width: 8,
         ));
-        if (post.publishState == Post.PUBLISH_STATE_WAITING_LIST) {
+        if (widget.displayAsVotingPost) {
           widgets.add(buildVoteButton(post));
-        } else if (post.publishState == Post.PUBLISH_STATE_MAIN_LIST) {
+        } else {
           Widget? followButton = buildFollowButton(post);
           if (followButton != null) {
             widgets.add(followButton);
@@ -201,7 +227,19 @@ class _PostViewState extends ConsumerState<PostView> {
               height: 40,
             ));
           }
-        } else {}
+        }
+        // if (post.publishState == Post.PUBLISH_STATE_WAITING_LIST) {
+        //   widgets.add(buildVoteButton(post));
+        // } else if (post.publishState == Post.PUBLISH_STATE_MAIN_LIST) {
+        //   Widget? followButton = buildFollowButton(post);
+        //   if (followButton != null) {
+        //     widgets.add(followButton);
+        //   } else {
+        //     widgets.add(SizedBox(
+        //       height: 40,
+        //     ));
+        //   }
+        // } else {}
         return Row(
           children: widgets,
         );
@@ -209,7 +247,7 @@ class _PostViewState extends ConsumerState<PostView> {
     );
   }
 
-  List<Widget> buildIconAndAmount(String iconPath, double size, int? amount, Function()? onPress) {
+  List<Widget> buildIconAndAmount({required String iconPath, double size = 32, Color? color, num? amount, Function()? onPress}) {
     List<Widget> list = [
       IconButton(
         onPressed: onPress,
@@ -218,6 +256,7 @@ class _PostViewState extends ConsumerState<PostView> {
           iconPath,
           width: size,
           height: size,
+          color: color,
         ),
       ),
     ];
@@ -236,12 +275,13 @@ class _PostViewState extends ConsumerState<PostView> {
   List<Widget> buildUserInfo(Post post) {
     User author = post.author;
     return [
-      HoohImage(
-        imageUrl: author.avatarUrl!,
-        cornerRadius: 100,
-        width: 32,
-        height: 32,
-      ),
+      AvatarView.fromUser(author, size: 32),
+      // HoohImage(
+      //   imageUrl: author.avatarUrl!,
+      //   cornerRadius: 100,
+      //   width: 32,
+      //   height: 32,
+      // ),
       SizedBox(
         width: 8,
       ),
@@ -272,10 +312,10 @@ class _PostViewState extends ConsumerState<PostView> {
     }
     return _buildButton(
         text: Text(
-          "Follow",
+          globalLocalizations.common_follow,
           style: TextStyle(fontFamily: 'Linotte'),
         ),
-        isEnabled: (post.myVoteCount ?? 0) == 0,
+        isEnabled: true,
         onPress: () {
           onFollowPress(post);
         });
@@ -300,18 +340,17 @@ class _PostViewState extends ConsumerState<PostView> {
   Widget _buildButton({required Widget text, required bool isEnabled, required Function() onPress}) {
     ButtonStyle style = RegisterStyles.blueButtonStyle(ref, cornerRadius: 14).copyWith(
         textStyle: MaterialStateProperty.all(const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        minimumSize: MaterialStateProperty.all(Size.fromHeight(40)),
+        // fixedSize: MaterialStateProperty.all(Size(120,24)),
+        minimumSize: MaterialStateProperty.all(Size(120, 40)),
+        padding: MaterialStateProperty.all(EdgeInsets.zero),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap);
     if (!isEnabled) {
       style = style.copyWith(backgroundColor: MaterialStateProperty.all(designColors.dark_03.auto(ref)));
     }
-    return SizedBox(
-      width: 120,
-      child: TextButton(
-        onPressed: onPress,
-        child: text,
-        style: style,
-      ),
+    return TextButton(
+      onPressed: onPress,
+      child: text,
+      style: style,
     );
   }
 }

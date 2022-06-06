@@ -2,10 +2,14 @@ import 'package:app/global.dart';
 import 'package:app/ui/pages/home/me_model.dart';
 import 'package:app/ui/pages/me/activities.dart';
 import 'package:app/ui/pages/me/badges.dart';
+import 'package:app/ui/pages/me/followers.dart';
 import 'package:app/ui/pages/me/notifications.dart';
 import 'package:app/ui/pages/me/settings/setting.dart';
+import 'package:app/ui/pages/user/posts.dart';
+import 'package:app/ui/pages/user/posts_view_model.dart';
 import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
+import 'package:app/ui/pages/user/templates.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:badges/badges.dart';
@@ -117,13 +121,15 @@ class MyProfilePage extends ConsumerStatefulWidget {
 }
 
 class _MyProfilePageState extends ConsumerState<MyProfilePage> {
-  final List<BoxShadow> cardShadow = [BoxShadow(color: const Color(0x00000000).withAlpha((255 * 0.2).toInt()), blurRadius: 10, spreadRadius: -4)];
-  final RefreshController _refreshController = RefreshController(initialRefresh: false);
+  late final Color cardShadowColor;
+  late final List<BoxShadow> cardShadow;
 
-  @override
-  void initState() {
-    super.initState();
+  _MyProfilePageState() {
+    cardShadowColor = Colors.black.withAlpha((255 * 0.2).toInt());
+    cardShadow = [BoxShadow(color: cardShadowColor, blurRadius: 10, spreadRadius: -4)];
   }
+
+  final RefreshController _refreshController = RefreshController(initialRefresh: false);
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +175,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                 showBadge: (modelState.unread?.unreadCount ?? 0) != 0,
                 badgeContent: Text(
                   "${modelState.unread?.unreadCount ?? 0}",
-                  style: TextStyle(fontSize: 10),
+                  style: TextStyle(fontSize: 10, color: Colors.white),
                 ),
                 child: HoohIcon(
                   "assets/images/icon_me_message.svg",
@@ -232,6 +238,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                                     left: 0,
                                     bottom: 0,
                                     child: HoohImage(
+                                      isBadge: true,
                                       imageUrl: user.badgeImageUrl ?? "",
                                       width: 32,
                                       height: 36,
@@ -249,11 +256,11 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                       height: 80,
                       child: Row(
                         children: [
-                          Expanded(child: buildFollowerCard(AppLocalizations.of(context)!.me_following, user.followingCount)),
+                          Expanded(child: buildFollowerCard(AppLocalizations.of(context)!.me_following, user.followingCount, false)),
                           const SizedBox(
                             width: 8,
                           ),
-                          Expanded(child: buildFollowerCard(AppLocalizations.of(context)!.me_follower, user.followerCount)),
+                          Expanded(child: buildFollowerCard(AppLocalizations.of(context)!.me_follower, user.followerCount, true)),
                         ],
                       ),
                     ),
@@ -303,41 +310,69 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
     });
   }
 
-  Container buildFollowerCard(String title, int? amount) {
-    return Container(
-      decoration: buildCardDecoration(),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Spacer(
-            flex: 22,
-          ),
-          Text(
-            title,
-            style: TextStyle(fontSize: 12, color: designColors.light_06.auto(ref)),
-          ),
-          const SizedBox(
-            height: 4,
-          ),
-          Text(
-            formatAmount(amount ?? 0),
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: designColors.dark_01.auto(ref)),
-          ),
-          const Spacer(
-            flex: 12,
-          ),
-        ],
-      ),
+  Widget buildFollowerCard(String title, int? amount, bool isFollower) {
+    var column = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Spacer(
+          flex: 22,
+        ),
+        Text(
+          title,
+          style: TextStyle(fontSize: 12, color: designColors.light_06.auto(ref)),
+        ),
+        const SizedBox(
+          height: 4,
+        ),
+        Text(
+          formatAmount(amount ?? 0),
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: designColors.dark_01.auto(ref)),
+        ),
+        const Spacer(
+          flex: 12,
+        ),
+      ],
     );
+    ElevatedButton card = ElevatedButton(
+      onPressed: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => FollowerScreen(userId: ref.read(globalUserInfoProvider)!.id, isFollower: isFollower)));
+      },
+      child: column,
+      style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.all(10),
+          primary: designColors.light_01.auto(ref),
+          onPrimary: designColors.light_02.auto(ref),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shadowColor: cardShadowColor,
+          elevation: 4),
+    );
+    return card;
+    // return Container(
+    //   decoration: buildCardDecoration(),
+    //   child: column,
+    // );
   }
 
   Widget buildTileButtons(User user) {
     List<Tuple4<String, String, bool, void Function()?>> configs = [
-      Tuple4(globalLocalizations.me_tile_posts, "assets/images/icon_user_center_post.svg", true, () {}),
-      Tuple4(globalLocalizations.me_tile_templates, "assets/images/icon_user_center_contents.svg", true, () {}),
+      Tuple4(globalLocalizations.me_tile_posts, "assets/images/icon_user_center_post.svg", true, () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => UserPostsScreen(userId: user.id, type: UserPostsScreenModelState.TYPE_CREATED)));
+      }),
+      Tuple4(globalLocalizations.me_tile_templates, "assets/images/icon_user_center_contents.svg", true, () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => UserTemplateScreen(
+                      userId: user.id,
+                    )));
+      }),
       Tuple4(globalLocalizations.me_tile_nfts, "assets/images/icon_user_center_nft.svg", false, null),
-      Tuple4(globalLocalizations.me_tile_bookmarks, "assets/images/icon_user_center_fav.svg", true, () {}),
-      Tuple4(globalLocalizations.me_tile_liked, "assets/images/icon_user_center_liked.svg", true, () {}),
+      Tuple4(globalLocalizations.me_tile_bookmarks, "assets/images/icon_user_center_fav.svg", true, () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => UserPostsScreen(userId: user.id, type: UserPostsScreenModelState.TYPE_FAVORITED)));
+      }),
+      Tuple4(globalLocalizations.me_tile_liked, "assets/images/icon_user_center_liked.svg", true, () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => UserPostsScreen(userId: user.id, type: UserPostsScreenModelState.TYPE_LIKED)));
+      }),
       Tuple4(globalLocalizations.me_tile_trends, "assets/images/icon_user_center_trends.svg", true, () {
         Navigator.push(context, MaterialPageRoute(builder: (context) => UserActivityScreen(userId: user.id))).then((value) {
           refreshPage(ref.read(widget.provider.notifier));
@@ -623,7 +658,8 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
               width: 8,
             ),
             Text(
-              sprintf(globalLocalizations.me_profile_joined, [DateUtil.getZonedDateString(user.createdAt!, format: "d MMMM yyyy")]),
+              sprintf(globalLocalizations.me_profile_joined,
+                  [DateUtil.getZonedDateString(user.createdAt!, format: globalLocalizations.me_profile_joined_date_format)]),
               style: TextStyle(fontSize: 16, color: designColors.dark_01.auto(ref)),
             )
           ],

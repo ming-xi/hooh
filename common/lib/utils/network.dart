@@ -152,6 +152,46 @@ class Network {
     return _getResponseObject<User>(HttpMethod.get, _buildHoohUri("users/$userId"), deserializer: User.fromJson);
   }
 
+  Future<List<Template>> getUserCreatedTemplates(String userId, {DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
+    Map<String, dynamic> params = {
+      "size": size,
+    };
+    if (date != null) {
+      params["timestamp"] = DateUtil.getUtcDateString(date);
+    }
+    return _getResponseList<Template>(HttpMethod.get, _buildHoohUri("users/$userId/templates", params: params), deserializer: Template.fromJson);
+  }
+
+  Future<List<Post>> getUserCreatedPosts(String userId, {DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
+    Map<String, dynamic> params = {
+      "size": size,
+    };
+    if (date != null) {
+      params["timestamp"] = DateUtil.getUtcDateString(date);
+    }
+    return _getResponseList<Post>(HttpMethod.get, _buildHoohUri("users/$userId/posts/created", params: params), deserializer: Post.fromJson);
+  }
+
+  Future<List<Post>> getUserLikedPosts(String userId, {DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
+    Map<String, dynamic> params = {
+      "size": size,
+    };
+    if (date != null) {
+      params["timestamp"] = DateUtil.getUtcDateString(date);
+    }
+    return _getResponseList<Post>(HttpMethod.get, _buildHoohUri("users/$userId/posts/liked", params: params), deserializer: Post.fromJson);
+  }
+
+  Future<List<Post>> getUserFavoritedPosts(String userId, {DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
+    Map<String, dynamic> params = {
+      "size": size,
+    };
+    if (date != null) {
+      params["timestamp"] = DateUtil.getUtcDateString(date);
+    }
+    return _getResponseList<Post>(HttpMethod.get, _buildHoohUri("users/$userId/posts/favorited", params: params), deserializer: Post.fromJson);
+  }
+
   Future<UserWalletResponse> getUserWalletInfo(String userId) {
     return _getResponseObject<UserWalletResponse>(HttpMethod.get, _buildHoohUri("users/$userId/wallet"), deserializer: UserWalletResponse.fromJson);
   }

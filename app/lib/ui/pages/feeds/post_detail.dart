@@ -20,6 +20,7 @@ import 'package:sprintf/sprintf.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
   late final StateNotifierProvider<PostDetailScreenViewModel, PostDetailScreenModelState> provider;
+  late StateNotifierProvider<CommentComposeWidgetViewModel, CommentComposeWidgetModelState> composerProvider;
   final FocusNode textFieldNode = FocusNode();
 
   PostDetailScreen({
@@ -30,6 +31,11 @@ class PostDetailScreen extends ConsumerStatefulWidget {
     provider = StateNotifierProvider((ref) {
       return PostDetailScreenViewModel(PostDetailScreenModelState.init(postId, post: post));
     });
+
+    composerProvider = StateNotifierProvider((ref) {
+      PostDetailScreenModelState modelState = ref.watch(provider);
+      return CommentComposeWidgetViewModel(CommentComposeWidgetModelState.init(post: modelState.post!));
+    });
   }
 
   @override
@@ -38,6 +44,7 @@ class PostDetailScreen extends ConsumerStatefulWidget {
 
 class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with TickerProviderStateMixin {
   late TabController tabController;
+
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
   ScrollController scrollController = ScrollController();
   GlobalKey columnKey = GlobalKey();
@@ -83,9 +90,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
     debugPrint("keyboardVisible=$keyboardVisible");
     PostDetailScreenModelState modelState = ref.watch(widget.provider);
     PostDetailScreenViewModel model = ref.read(widget.provider.notifier);
-    StateNotifierProvider<CommentComposeWidgetViewModel, CommentComposeWidgetModelState> composerProvider = StateNotifierProvider((ref) {
-      return CommentComposeWidgetViewModel(CommentComposeWidgetModelState.init(post: modelState.post!));
-    });
+
     List<Widget> widgets = [
       AspectRatio(
         aspectRatio: 1,
@@ -174,6 +179,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
           icon: Text(
             commentTabText,
             style: TextStyle(
+                fontSize: 12,
                 color: modelState.selectedTab == 0 ? designColors.dark_01.auto(ref) : designColors.light_06.auto(ref),
                 fontWeight: modelState.selectedTab == 0 ? FontWeight.bold : FontWeight.normal),
           ),
@@ -182,6 +188,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
           icon: Text(
             likeTabText,
             style: TextStyle(
+                fontSize: 12,
                 color: modelState.selectedTab == 1 ? designColors.dark_01.auto(ref) : designColors.light_06.auto(ref),
                 fontWeight: modelState.selectedTab == 1 ? FontWeight.bold : FontWeight.normal),
           ),
@@ -195,7 +202,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
       CommentPage(
           scrollable: scrollable,
           comments: modelState.comments,
-          onLikeClick: (comment, newState) {},
+          onLikeClick: (comment, newState) {
+            model.onCommentLikePress(comment, newState, (msg) {
+              Toast.showSnackBar(context, msg);
+            });
+          },
           onLoadMore: () {
             model.getComments((state) {
               // debugPrint("refresh state=$state");
@@ -204,7 +215,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
           },
           noMore: modelState.commentState == PageState.noMore,
           onReplyClick: (comment) {
-            CommentComposeWidgetViewModel composerModel = ref.read(composerProvider.notifier);
+            CommentComposeWidgetViewModel composerModel = ref.read(widget.composerProvider.notifier);
             composerModel.setRepliedComment(comment);
             showKeyboard(ref, widget.textFieldNode);
           }),
@@ -236,7 +247,30 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
                   child: column,
                 ),
                 SliverPersistentHeader(
-                  delegate: _SliverTabBarDelegate(tabBar, ref),
+                  delegate: _SliverTabBarDelegate(
+                      tabBar,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          HoohIcon(
+                            "assets/images/common_ore.svg",
+                            width: 20,
+                            height: 20,
+                          ),
+                          SizedBox(
+                            width: 4,
+                          ),
+                          Text(
+                            sprintf(globalLocalizations.me_wallet_ore_amount, [formatAmount(modelState.post?.profit)]),
+                            style: TextStyle(fontSize: 12, color: designColors.light_06.auto(ref)),
+                          ),
+                          SizedBox(
+                            width: 48,
+                          )
+                        ],
+                      ),
+                      ref),
                   pinned: true,
                 ),
               ],
@@ -280,7 +314,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
                   left: 0,
                   right: 0,
                   child: CommentComposeView(
-                    provider: composerProvider,
+                    provider: widget.composerProvider,
                     textFieldNode: widget.textFieldNode,
                     onLikePress: model.onPostLikePress,
                     onFavoritePress: model.onPostFavoritePress,
@@ -394,16 +428,23 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
 
 class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;
+  final Widget rightWidget;
   final WidgetRef ref;
 
-  _SliverTabBarDelegate(this.tabBar, this.ref);
+  _SliverTabBarDelegate(this.tabBar, this.rightWidget, this.ref);
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     // debugPrint("build");
+    var stack = Stack(
+      children: [Positioned.fill(child: tabBar), Positioned(child: rightWidget)],
+    );
     return Container(
       decoration: BoxDecoration(color: designColors.bar90_1.auto(ref), border: Border(bottom: BorderSide(color: designColors.light_02.auto(ref), width: 1))),
-      child: Material(child: tabBar),
+      child: Material(
+          child: Row(
+        children: [tabBar, Spacer(), rightWidget],
+      )),
     );
   }
 

@@ -89,10 +89,9 @@ class _TestMenuScreenState extends ConsumerState<TestMenuScreen> {
             ),
             ElevatedButton(
                 onPressed: () {
-                  preferences.remove(Preferences.KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED);
-                  Toast.showSnackBar(context, "cleared");
+                  preferences.clear();
                 },
-                child: Text("clear onboarding record")),
+                child: Text("clear preferences")),
             SizedBox(
               height: 16,
             ),

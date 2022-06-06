@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:app/global.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/pages/user/user_profile.dart';
@@ -5,14 +7,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/date_util.dart';
 import 'package:common/utils/network.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:localized_rich_text/localized_rich_text.dart';
 import 'package:sprintf/sprintf.dart';
 
 void showKeyboard(WidgetRef ref, FocusNode node) {
@@ -34,12 +34,24 @@ void hideKeyboard() {
   FocusManager.instance.primaryFocus?.unfocus();
 }
 
-String formatAmount(int number) {
-  if (number > 1000000) {
-    return sprintf("%.1f", number / 1000000);
+String formatAmount(num? number) {
+  if (number == null) {
+    return "";
+  }
+  if (number is double) {
+    if (number > 1000000) {
+      return sprintf("%.1f", number / 1000000);
+    } else {
+      final formatter = NumberFormat("#,##0.0", "en_US");
+      return formatter.format(number);
+    }
   } else {
-    final formatter = NumberFormat("#,##0", "en_US");
-    return formatter.format(number);
+    if (number > 1000000) {
+      return sprintf("%.1f", number / 1000000);
+    } else {
+      final formatter = NumberFormat("#,##0", "en_US");
+      return formatter.format(number);
+    }
   }
 }
 
@@ -99,28 +111,40 @@ mixin KeyboardLogic<T extends StatefulWidget> on State<T>, WidgetsBindingObserve
         WidgetsBinding.instance.window.viewInsets,
         WidgetsBinding.instance.window.devicePixelRatio,
       ).bottom >
-      100;
-}
-
-class HoohLocalizedKey {
-  final String key;
-  final String text;
-  final TextStyle? style;
-  final void Function(String)? onTap;
-
-  HoohLocalizedKey({required this.key, required this.text, this.style, this.onTap});
+          100;
 }
 
 class HoohLocalizedRichText extends ConsumerStatefulWidget {
-  final String template;
-  final List<HoohLocalizedKey> keys;
+  final String text;
   final TextStyle defaultTextStyle;
+  final List<HoohLocalizedKey> keys;
 
-  const HoohLocalizedRichText({
-    required this.template,
-    required this.keys,
-    required this.defaultTextStyle,
+  final TextAlign textAlign;
+  final ui.TextDirection? textDirection;
+  final bool softWrap;
+  final TextOverflow overflow;
+  final double textScaleFactor;
+  final int? maxLines;
+  final Locale? locale;
+  final StrutStyle? strutStyle;
+  final TextWidthBasis textWidthBasis;
+  final TextHeightBehavior? textHeightBehavior;
+
+  HoohLocalizedRichText({
     Key? key,
+    required this.text,
+    required this.defaultTextStyle,
+    required this.keys,
+    this.textAlign = TextAlign.start,
+    this.textDirection,
+    this.softWrap = true,
+    this.overflow = TextOverflow.clip,
+    this.textScaleFactor = 1.0,
+    this.maxLines,
+    this.locale,
+    this.strutStyle,
+    this.textWidthBasis = TextWidthBasis.parent,
+    this.textHeightBehavior,
   }) : super(key: key);
 
   @override
@@ -140,40 +164,139 @@ class _HoohLocalizedRichTextState extends ConsumerState<HoohLocalizedRichText> {
 
   @override
   Widget build(BuildContext context) {
-    LocalizedRichText richText = LocalizedRichText(
-      text: widget.template,
-      defaultTextStyle: widget.defaultTextStyle,
-      keys: widget.keys
-          .map((e) => LocalizedRichTextKey(
-                key: e.key,
-                value: e.text,
-                textStyle: e.style ?? widget.defaultTextStyle,
-              ))
-          .toList(),
-    );
-    List<TextSpan> children = richText.richTextChildren;
-    for (HoohLocalizedKey key in widget.keys) {
-      if (key.onTap != null) {
-        for (int i = 0; i < children.length; i++) {
-          TextSpan span = children[i];
-          debugPrint("span.text=${span.text} key.text=${key.text}");
-          if (span.text == key.text) {
-            TapGestureRecognizer recognizer = TapGestureRecognizer();
-            recognizer.onTap = () {
-              key.onTap!(key.text);
-            };
-            TextSpan replacement = TextSpan(text: span.text, style: span.style, children: span.children, recognizer: recognizer);
-            _recognizers.add(recognizer);
-            children[i] = replacement;
-            break;
-          }
+    if (widget.keys.isEmpty) {
+      return Text(
+        widget.text,
+        style: widget.defaultTextStyle,
+      );
+    }
+    List<InlineSpan> textSpans = [];
+
+    //Text to localize
+    String localizedText = widget.text;
+
+    for (final localizedKey in widget.keys) {
+      //Key dynamic value
+      final _key = localizedKey.key;
+
+      //Check if is present a String before the first localizedKey
+      final textBeforeTheKey = localizedText.split(_key).first;
+
+      //Add the textBeforeTheKey if present
+      if (textBeforeTheKey.isNotEmpty) {
+        _addPlainTextSpan(
+          textSpans,
+          textBeforeTheKey,
+          widget.defaultTextStyle,
+        );
+      }
+
+      //Add the custom TextSpan
+      if (localizedKey is HoohLocalizedTextKey) {
+        _addTextSpan(textSpans, localizedKey);
+      } else if (localizedKey is HoohLocalizedWidgetKey) {
+        _addWidgetSpan(textSpans, localizedKey);
+      }
+
+      final textAfterTheKey = localizedText.split(_key).last;
+
+      //If is the last Key, we control if there is a String after her
+      if (localizedKey == widget.keys.last) {
+        //Add the textAfterTheKey if present
+        if (textAfterTheKey.isNotEmpty) {
+          _addPlainTextSpan(
+            textSpans,
+            textAfterTheKey,
+            widget.defaultTextStyle,
+          );
         }
+      } else {
+        localizedText = textAfterTheKey;
       }
     }
     return RichText(
-      text: TextSpan(children: children),
+      key: widget.key,
+      textAlign: widget.textAlign,
+      textDirection: widget.textDirection,
+      softWrap: widget.softWrap,
+      overflow: widget.overflow,
+      textScaleFactor: widget.textScaleFactor,
+      maxLines: widget.maxLines,
+      locale: widget.locale,
+      strutStyle: widget.strutStyle,
+      textWidthBasis: widget.textWidthBasis,
+      textHeightBehavior: widget.textHeightBehavior,
+      text: TextSpan(
+        children: textSpans,
+      ),
     );
   }
+
+  void _addPlainTextSpan(List<InlineSpan> list, String text, TextStyle? style) {
+    final textSpan = TextSpan(
+      text: text,
+      style: style,
+    );
+    return list.add(textSpan);
+  }
+
+  void _addTextSpan(List<InlineSpan> list, HoohLocalizedTextKey localizedTextKey) {
+    TapGestureRecognizer? recognizer;
+    if (localizedTextKey.onTap != null) {
+      recognizer = TapGestureRecognizer();
+      recognizer.onTap = () {
+        localizedTextKey.onTap!();
+      };
+      _recognizers.add(recognizer);
+    }
+    final textSpan = TextSpan(text: localizedTextKey.text, style: localizedTextKey.style, recognizer: recognizer);
+    return list.add(textSpan);
+  }
+
+  void _addWidgetSpan(List<InlineSpan> list, HoohLocalizedWidgetKey localizedWidgetKey) {
+    Widget result = localizedWidgetKey.widget;
+    if (localizedWidgetKey.onTap != null) {
+      result = GestureDetector(
+        child: result,
+        onTap: () {
+          localizedWidgetKey.onTap!();
+        },
+      );
+    }
+    final textSpan = WidgetSpan(
+      child: result,
+    );
+    return list.add(textSpan);
+  }
+}
+
+abstract class HoohLocalizedKey {
+  final String key;
+  final void Function()? onTap;
+
+  HoohLocalizedKey({required this.key, this.onTap});
+}
+
+class HoohLocalizedTextKey extends HoohLocalizedKey {
+  final String text;
+  final TextStyle? style;
+
+  HoohLocalizedTextKey({
+    required super.key,
+    super.onTap,
+    required this.text,
+    this.style,
+  });
+}
+
+class HoohLocalizedWidgetKey extends HoohLocalizedKey {
+  final Widget widget;
+
+  HoohLocalizedWidgetKey({
+    required super.key,
+    super.onTap,
+    required this.widget,
+  });
 }
 
 class AvatarView extends ConsumerWidget {
@@ -190,8 +313,7 @@ class AvatarView extends ConsumerWidget {
     Key? key,
   }) : super(key: key);
 
-  AvatarView.fromUser(
-    User user, {
+  AvatarView.fromUser(User user, {
     Key? key,
     required this.size,
     this.clickable = true,
@@ -210,9 +332,9 @@ class AvatarView extends ConsumerWidget {
       onPress: !clickable
           ? null
           : () {
-              // Toast.showSnackBar(context, "show user ${user.id}");
-              Navigator.push(context, MaterialPageRoute(builder: (context) => UserProfileScreen(userId: userId)));
-            },
+        // Toast.showSnackBar(context, "show user ${user.id}");
+        Navigator.push(context, MaterialPageRoute(builder: (context) => UserProfileScreen(userId: userId)));
+      },
     );
   }
 }
@@ -250,7 +372,7 @@ class HoohImage extends ConsumerWidget {
       cacheKey: network.getS3ImageKey(imageUrl),
       imageUrl: imageUrl,
       errorWidget: errorWidget ??
-          (context, url, error) {
+              (context, url, error) {
             // var color = designColors.light_06.auto(ref);
             // return Container(
             //   color: Colors.white.withOpacity(0.5),
@@ -386,8 +508,7 @@ class HoohIcon extends ConsumerWidget {
 class LoadingDialog extends ConsumerStatefulWidget {
   final LoadingDialogController _controller;
 
-  const LoadingDialog(
-    this._controller, {
+  const LoadingDialog(this._controller, {
     Key? key,
   }) : super(key: key);
 

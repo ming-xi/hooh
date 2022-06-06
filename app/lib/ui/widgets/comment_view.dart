@@ -1,4 +1,5 @@
 import 'package:app/global.dart';
+import 'package:app/ui/pages/user/user_profile.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
@@ -8,6 +9,7 @@ import 'package:common/utils/date_util.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sprintf/sprintf.dart';
 
 class CommentView extends ConsumerStatefulWidget {
   static const SUBSTITUTE = "[]";
@@ -47,13 +49,7 @@ class _CommentViewState extends ConsumerState<CommentView> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipOval(
-            child: HoohImage(
-              imageUrl: author.avatarUrl!,
-              width: 32,
-              height: 32,
-            ),
-          ),
+          AvatarView.fromUser(comment.author, size: 32),
           SizedBox(
             width: 6,
           ),
@@ -100,7 +96,7 @@ class _CommentViewState extends ConsumerState<CommentView> {
                               "assets/images/icon_post_like.svg",
                               width: 16,
                               height: 16,
-                              color: (comment.liked ?? false) ? designColors.feiyu_blue.auto(ref) : null,
+                              color: (comment.liked ?? false) ? designColors.feiyu_blue.auto(ref) : designColors.light_06.auto(ref),
                             ),
                             SizedBox(
                               width: 2,
@@ -128,7 +124,7 @@ class _CommentViewState extends ConsumerState<CommentView> {
                         }
                       },
                       child: Text(
-                        "Reply",
+                        globalLocalizations.post_detail_comment_reply,
                         style: TextStyle(color: designColors.light_06.auto(ref)),
                       ),
                       style: ElevatedButton.styleFrom(
@@ -151,63 +147,52 @@ class _CommentViewState extends ConsumerState<CommentView> {
   }
 
   Widget buildContentWidget(PostComment comment) {
-    TextStyle normalTextStyle = TextStyle(fontSize: 14, color: designColors.dark_01.auto(ref));
-    TextStyle highLightTextStyle = TextStyle(fontSize: 14, color: designColors.blue_dark.auto(ref));
-    List<Substitute> substitutes = comment.substitutes;
-    if (substitutes.isEmpty) {
-      return Text(
-        comment.content,
-        style: normalTextStyle,
-      );
+    TextStyle normalTextStyle = TextStyle(fontFamily: 'Linotte', fontSize: 14, color: designColors.dark_01.auto(ref));
+    TextStyle highLightTextStyle = TextStyle(fontFamily: 'Linotte', fontSize: 14, color: designColors.blue_dark.auto(ref), fontWeight: FontWeight.bold);
+    List<Substitute> substitutes = [...comment.substitutes];
+    String placeholder = "[@*placeholder_#*@]";
+    int index = 0;
+    String template;
+    if (comment.repliedUser != null) {
+      template = sprintf(globalLocalizations.post_detail_comment_with_reply, [placeholder.replaceAll("#", "$index"), comment.content]);
+      index++;
+      substitutes.insert(0, Substitute(comment.repliedUser!.name, comment.repliedUser!.id, Substitute.TYPE_MENTION));
     } else {
-      List<dynamic> splits = comment.content.split(RegExp(CommentView.SUBSTITUTE_REGEX)).map((e) => e as dynamic).toList();
-      int index = 0;
-      for (int i = 0; i < splits.length; i++) {
-        if (i < substitutes.length) {
-          splits.insert(i + 1, substitutes[index]);
-          index++;
-          i++;
-        }
-      }
-
-      return RichText(
-          text: TextSpan(
-              children: splits.map((e) {
-        if (e is String) {
-          return TextSpan(text: e.replaceAll(RegExp(CommentView.SUBSTITUTE_ESCAPE_REGEX), CommentView.SUBSTITUTE), style: normalTextStyle);
-        } else if (e is Substitute) {
-          if (e.type == Substitute.TYPE_MENTION) {
-            return TextSpan(
-              text: "@${e.text}",
-              style: highLightTextStyle,
-              recognizer: _tapGestureRecognizer
-                ..onTap = () {
-                  Toast.showSnackBar(context, "show user ${e.data}");
-                },
-            );
-          } else if (e.type == Substitute.TYPE_URL) {
-            return TextSpan(
-              text: e.text,
-              style: highLightTextStyle.apply(decoration: TextDecoration.underline),
-              recognizer: _tapGestureRecognizer
-                ..onTap = () {
-                  openLink(context, e.data);
-                },
-            );
-          } else {
-            return TextSpan(
-              text: e.text,
-              style: highLightTextStyle,
-              recognizer: _tapGestureRecognizer
-                ..onTap = () {
-                  Toast.showSnackBar(context, "not supported yet");
-                },
-            );
-          }
-        } else {
-          return TextSpan(text: " ? ");
-        }
-      }).toList()));
+      template = comment.content;
     }
+    template = template.replaceAllMapped(RegExp(CommentView.SUBSTITUTE_REGEX), (match) {
+      String placeholderString = placeholder.replaceAll("#", "$index");
+      index++;
+      return placeholderString;
+    });
+    return HoohLocalizedRichText(
+        text: template,
+        defaultTextStyle: normalTextStyle,
+        keys: substitutes.map((e) {
+          String key = placeholder.replaceAll("#", "${substitutes.indexOf(e)}");
+          String text;
+          TextStyle style;
+          Function() onTap;
+          if (e.type == Substitute.TYPE_MENTION) {
+            text = "@${e.text}";
+            style = highLightTextStyle;
+            onTap = () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => UserProfileScreen(userId: e.data)));
+            };
+          } else if (e.type == Substitute.TYPE_URL) {
+            text = e.text;
+            style = highLightTextStyle.apply(decoration: TextDecoration.underline);
+            onTap = () {
+              openLink(context, e.data, title: text);
+            };
+          } else {
+            text = e.text;
+            style = highLightTextStyle;
+            onTap = () {
+              Toast.showSnackBar(context, "not supported yet");
+            };
+          }
+          return HoohLocalizedTextKey(key: key, text: text, style: style, onTap: onTap);
+        }).toList());
   }
 }

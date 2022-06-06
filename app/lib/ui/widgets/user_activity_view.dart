@@ -1,3 +1,4 @@
+import 'package:app/global.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/utils/app_link.dart';
 import 'package:app/utils/design_colors.dart';
@@ -26,22 +27,22 @@ class UserActivityView extends ConsumerWidget {
     switch (activity.type) {
       case UserActivity.TYPE_CREATE_POST:
         {
-          title = "Posted";
+          title = globalLocalizations.user_activity_posted;
           child = buildLargeImage(data, 'post_image_url');
           break;
         }
       case UserActivity.TYPE_CREATE_TEMPLATE:
         {
-          title = "Posted";
+          title = globalLocalizations.user_activity_posted;
           child = buildLargeImage(data, 'template_image_url');
           break;
         }
       case UserActivity.TYPE_LIKE_POST:
         {
-          title = "Liked";
+          title = globalLocalizations.user_activity_liked;
           child = Stack(
             children: [
-              buildLargeImage(data, 'post_image_url'),
+              Positioned.fill(child: buildLargeImage(data, 'post_image_url')),
               Positioned(
                   right: 8,
                   bottom: 8,
@@ -56,7 +57,7 @@ class UserActivityView extends ConsumerWidget {
         }
       case UserActivity.TYPE_COMMENT_POST:
         {
-          title = "Posted";
+          title = globalLocalizations.user_activity_posted;
           child = Column(
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,54 +73,54 @@ class UserActivityView extends ConsumerWidget {
               ),
               Expanded(
                   child: Text(
-                data['comment_content'],
-                style: TextStyle(fontSize: 14, color: designColors.dark_01.auto(ref)),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 3,
-              ))
+                    data['comment_content'],
+                    style: TextStyle(fontSize: 14, color: designColors.dark_01.auto(ref)),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 3,
+                  ))
             ],
           );
           break;
         }
       case UserActivity.TYPE_VOTE_POST:
         {
-          title = "Voted";
+          title = globalLocalizations.user_activity_voted;
           child = buildLargeImage(data, 'post_image_url');
           break;
         }
       case UserActivity.TYPE_FAVORITE_TEMPLATE:
         {
-          title = "Bookmarked";
+          title = globalLocalizations.user_activity_bookmarked;
           child = buildLargeImage(data, 'template_image_url');
           break;
         }
       case UserActivity.TYPE_FOLLOW_USER:
         {
-          title = "Followed";
+          title = globalLocalizations.user_activity_followed;
           child = buildFollowChild(data, ref);
           break;
         }
       case UserActivity.TYPE_CANCEL_FOLLOW_USER:
         {
-          title = "Unfollowed";
+          title = globalLocalizations.user_activity_unfollowed;
           child = buildFollowChild(data, ref);
           break;
         }
       case UserActivity.TYPE_FOLLOW_TAG:
         {
-          title = "Followed";
+          title = globalLocalizations.user_activity_followed;
           child = Container();
           break;
         }
       case UserActivity.TYPE_CANCEL_FOLLOW_TAG:
         {
-          title = "Unfollowed";
+          title = globalLocalizations.user_activity_unfollowed;
           child = Container();
           break;
         }
       case UserActivity.TYPE_CREATE_BADGE:
         {
-          title = "Created";
+          title = globalLocalizations.user_activity_created;
           child = AspectRatio(
             aspectRatio: 1,
             child: Container(
@@ -138,7 +139,7 @@ class UserActivityView extends ConsumerWidget {
         }
       case UserActivity.TYPE_RECEIVE_BADGE:
         {
-          title = "Exchanged";
+          title = globalLocalizations.user_activity_exchanged;
           child = AspectRatio(
             aspectRatio: 1,
             child: Container(
@@ -173,11 +174,11 @@ class UserActivityView extends ConsumerWidget {
                         ),
                         Expanded(
                             child: Text(
-                          data['name'],
-                          style: TextStyle(fontSize: 14, color: designColors.light_01.auto(ref), fontWeight: FontWeight.bold),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ))
+                              data['name'],
+                              style: TextStyle(fontSize: 14, color: designColors.light_01.auto(ref), fontWeight: FontWeight.bold),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ))
                       ],
                     )
                   ],

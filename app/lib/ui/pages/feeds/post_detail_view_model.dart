@@ -1,5 +1,8 @@
+import 'dart:math';
+
 import 'package:app/extensions/extensions.dart';
 import 'package:app/ui/widgets/comment_view.dart';
+import 'package:app/utils/constants.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/network/requests.dart';
 import 'package:common/models/page_state.dart';
@@ -206,6 +209,23 @@ class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState
     });
   }
 
+  void onCommentLikePress(PostComment comment, bool newState, void Function(String msg)? onError) {
+    Future<void> request = newState ? network.likePostComment(comment.id) : network.cancelLikePostComment(comment.id);
+    network.requestAsync<void>(request, (data) {
+      comment.liked = newState;
+      if (newState) {
+        comment.likeCount = comment.likeCount + 1;
+      } else {
+        comment.likeCount = max(comment.likeCount - 1, 0);
+      }
+      updateState(state.copyWith(comments: [...state.comments]));
+    }, (error) {
+      if (onError != null) {
+        onError(error.message);
+      }
+    });
+  }
+
   void onPostFavoritePress(bool newState, void Function(String msg)? onError) {
     // if (state.post==null) {
     //   return;
@@ -224,7 +244,8 @@ class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState
 
   void createComment(PostComment? repliedComment, String text, void Function()? onComplete, void Function(String msg)? onError) {
     Future<PostComment> request;
-    CreatePostCommentRequest createPostCommentRequest = CreatePostCommentRequest([], getEscapedString(text));
+    // CreatePostCommentRequest createPostCommentRequest = CreatePostCommentRequest([], getEscapedString(text));
+    CreatePostCommentRequest createPostCommentRequest = prepareCommentRequest(text);
     if (repliedComment != null) {
       request = network.replyComment(repliedComment.id, createPostCommentRequest);
     } else {
@@ -244,5 +265,22 @@ class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState
 
   String getEscapedString(String text) {
     return text.replaceAll(CommentView.SUBSTITUTE, CommentView.SUBSTITUTE_REGEX);
+  }
+
+  CreatePostCommentRequest prepareCommentRequest(String text) {
+    CreatePostCommentRequest request;
+    String content = text.replaceAll(CommentView.SUBSTITUTE, CommentView.SUBSTITUTE_REGEX);
+    List<RegExpMatch> allMatches = RegExp(Constants.URL_REGEX).allMatches(content).toList();
+    List<Substitute> substitutes = [];
+    for (int i = allMatches.length - 1; i >= 0; i--) {
+      RegExpMatch match = allMatches[i];
+      int start = match.start;
+      int end = match.end;
+      String text = content.substring(start, end);
+      content = content.replaceRange(start, end, CommentView.SUBSTITUTE);
+      substitutes.add(Substitute(text, text, Substitute.TYPE_URL));
+    }
+    request = CreatePostCommentRequest(substitutes, content);
+    return request;
   }
 }

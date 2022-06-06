@@ -438,7 +438,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
       uiSettings: [
         AndroidUiSettings(
             toolbarTitle: 'Cropper',
-            toolbarColor: Colors.deepOrange,
+            toolbarColor: designColors.feiyu_blue.auto(ref),
             toolbarWidgetColor: Colors.white,
             initAspectRatio: CropAspectRatioPreset.original,
             lockAspectRatio: false),

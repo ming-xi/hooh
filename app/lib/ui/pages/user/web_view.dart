@@ -6,7 +6,9 @@ class WebViewScreen extends ConsumerStatefulWidget {
   final String url;
   final String title;
 
-  const WebViewScreen(this.title, this.url,{
+  const WebViewScreen(
+    this.title,
+    this.url, {
     Key? key,
   }) : super(key: key);
 
@@ -24,7 +26,11 @@ class _WebViewState extends ConsumerState<WebViewScreen> {
       body: WebViewPlus(
         javascriptMode: JavascriptMode.unrestricted,
         onWebViewCreated: (controller) {
-          controller.loadUrl(widget.url);
+          String url = widget.url;
+          if (!url.startsWith("https://")) {
+            url = "https://$url";
+          }
+          controller.loadUrl(url);
         },
       ),
     );

@@ -63,39 +63,41 @@ class _FeedsPageState extends ConsumerState<FeedsPage> with TickerProviderStateM
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight),
         child: SafeArea(
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              IconButton(
-                icon: Icon(
-                  Icons.search_rounded,
-                  color: Colors.transparent,
+          child: Material(
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.search_rounded,
+                    color: Colors.transparent,
+                  ),
+                  onPressed: null,
                 ),
-                onPressed: null,
-              ),
-              Expanded(
-                child: TabBar(controller: tabController, tabs: [
-                  Tab(
-                    text: globalLocalizations.feeds_tag_following,
-                  ),
-                  Tab(
-                    text: globalLocalizations.feeds_tag_main,
-                  ),
-                  Tab(
-                    text: globalLocalizations.feeds_tag_waiting_list,
-                  ),
-                ]),
-              ),
-              IconButton(
-                icon: HoohIcon(
-                  "assets/images/icon_search.svg",
-                  color: designColors.dark_01.auto(ref),
-                  width: 20,
-                  height: 20,
+                Expanded(
+                  child: TabBar(controller: tabController, tabs: [
+                    Tab(
+                      text: globalLocalizations.feeds_tag_following,
+                    ),
+                    Tab(
+                      text: globalLocalizations.feeds_tag_main,
+                    ),
+                    Tab(
+                      text: globalLocalizations.feeds_tag_waiting_list,
+                    ),
+                  ]),
                 ),
-                onPressed: () {},
-              )
-            ],
+                IconButton(
+                  icon: HoohIcon(
+                    "assets/images/icon_search.svg",
+                    color: designColors.dark_01.auto(ref),
+                    width: 20,
+                    height: 20,
+                  ),
+                  onPressed: () {},
+                )
+              ],
+            ),
           ),
         ).frosted(
           blur: 10,

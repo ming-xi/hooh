@@ -112,14 +112,14 @@ class PublishPostScreenViewModel extends StateNotifier<PublishPostScreenModelSta
       }
       return imageKey;
     }).toList());
-    List<CreateImageRequest> imageRequests = keys.map((e) => CreateImageRequest(e!, state.setting.text ?? "")).toList();
+    List<CreateImageRequest> imageRequests = keys.map((e) => CreateImageRequest(e!, state.setting.text ?? "", templateId: state.setting.templateId)).toList();
     CreatePostRequest request = CreatePostRequest(
-        allowDownload: state.allowDownload,
-        visible: !state.isPrivate,
-        joinWaitingList: publishToWaitingList,
-        images: imageRequests,
-        tags: state.tags,
-        templateId: state.setting.templateId);
+      allowDownload: state.allowDownload,
+      visible: !state.isPrivate,
+      joinWaitingList: publishToWaitingList,
+      images: imageRequests,
+      tags: state.tags,
+    );
     network.requestAsync<Post>(network.createPost(request), (post) {
       state = state.copyWith(uploading: false);
       if (onSuccess != null) {

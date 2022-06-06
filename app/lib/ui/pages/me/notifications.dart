@@ -21,30 +21,6 @@ class SystemNotificationScreen extends ConsumerStatefulWidget {
 }
 
 class _SystemNotificationScreenState extends ConsumerState<SystemNotificationScreen> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(globalLocalizations.system_notification_title)),
-      body: SystemNotificationPage(
-        provider: widget.provider,
-      ),
-    );
-  }
-}
-
-class SystemNotificationPage extends ConsumerStatefulWidget {
-  final StateNotifierProvider<SystemNotificationScreenViewModel, SystemNotificationScreenModelState> provider;
-
-  SystemNotificationPage({
-    required this.provider,
-    Key? key,
-  }) : super(key: key) {}
-
-  @override
-  ConsumerState createState() => _SystemNotificationPageState();
-}
-
-class _SystemNotificationPageState extends ConsumerState<SystemNotificationPage> {
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
 
   @override
@@ -52,34 +28,37 @@ class _SystemNotificationPageState extends ConsumerState<SystemNotificationPage>
     SystemNotificationScreenModelState modelState = ref.watch(widget.provider);
     SystemNotificationScreenViewModel model = ref.read(widget.provider.notifier);
 
-    return SmartRefresher(
-      enablePullDown: true,
-      enablePullUp: true,
-      header: MainStyles.getRefresherHeader(ref),
-      onRefresh: () async {
-        model.getNotifications((state) {
-          // debugPrint("refresh state=$state");
-          _refreshController.refreshCompleted();
-          _refreshController.resetNoData();
-        });
-      },
-      onLoading: () async {
-        model.getNotifications((state) {
-          if (state == PageState.noMore) {
-            _refreshController.loadNoData();
-            // debugPrint("load no more state=$state");
-          } else {
-            _refreshController.loadComplete();
-            // debugPrint("load complete state=$state");
-          }
-        }, isRefresh: false);
-      },
-      controller: _refreshController,
-      child: ListView.builder(
-        itemBuilder: (context, index) {
-          return SystemNotificationView(notification: modelState.notifications[index]);
+    return Scaffold(
+      appBar: AppBar(title: Text(globalLocalizations.system_notification_title)),
+      body: SmartRefresher(
+        enablePullDown: true,
+        enablePullUp: true,
+        header: MainStyles.getRefresherHeader(ref),
+        onRefresh: () async {
+          model.getNotifications((state) {
+            // debugPrint("refresh state=$state");
+            _refreshController.refreshCompleted();
+            _refreshController.resetNoData();
+          });
         },
-        itemCount: modelState.notifications.length,
+        onLoading: () async {
+          model.getNotifications((state) {
+            if (state == PageState.noMore) {
+              _refreshController.loadNoData();
+              // debugPrint("load no more state=$state");
+            } else {
+              _refreshController.loadComplete();
+              // debugPrint("load complete state=$state");
+            }
+          }, isRefresh: false);
+        },
+        controller: _refreshController,
+        child: ListView.builder(
+          itemBuilder: (context, index) {
+            return SystemNotificationView(notification: modelState.notifications[index]);
+          },
+          itemCount: modelState.notifications.length,
+        ),
       ),
     );
   }

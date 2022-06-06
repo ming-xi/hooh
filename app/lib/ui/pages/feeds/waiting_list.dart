@@ -150,6 +150,7 @@ class _WaitingListPageState extends ConsumerState<WaitingListPage> {
   Widget buildPostView(BuildContext context, int index, WaitingListPageViewModel model, WaitingListPageModelState modelState) {
     return PostView(
       post: modelState.posts[index],
+      displayAsVotingPost: true,
       onVote: (post, error) {
         if (error != null) {
           Toast.showSnackBar(context, error.message);

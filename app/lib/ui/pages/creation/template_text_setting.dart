@@ -153,10 +153,28 @@ class _TemplateTextSettingScreenState extends ConsumerState<TemplateTextSettingS
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 56.0),
                 child: Center(
-                  child: Text(
-                    globalLocalizations.template_text_setting_description,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref)),
-                  ),
+                  child: Builder(builder: (context) {
+                    return HoohLocalizedRichText(
+                        text: globalLocalizations.template_text_setting_description,
+                        keys: [
+                          HoohLocalizedWidgetKey(
+                            key: globalLocalizations.template_text_setting_description_button,
+                            widget: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              child: HoohIcon(
+                                "assets/images/icon_template_text_frame_scale.png",
+                                width: 18,
+                                height: 18,
+                              ),
+                            ),
+                          )
+                        ],
+                        defaultTextStyle: TextStyle(fontSize: 16, fontFamily: 'Linotte', fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref)));
+                    // return Text(
+                    //   globalLocalizations.template_text_setting_description,
+                    //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref)),
+                    // );
+                  }),
                 ),
               ),
               LayoutBuilder(builder: (context, constraints) {

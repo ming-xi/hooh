@@ -1,3 +1,4 @@
+import 'package:app/global.dart';
 import 'package:app/ui/widgets/comment_compose_view_model.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
@@ -6,6 +7,7 @@ import 'package:common/models/post_comment.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sprintf/sprintf.dart';
 
 class CommentComposeView extends ConsumerStatefulWidget {
   final StateNotifierProvider<CommentComposeWidgetViewModel, CommentComposeWidgetModelState> provider;
@@ -42,6 +44,7 @@ class _CommentComposeViewState extends ConsumerState<CommentComposeView> {
   Widget build(BuildContext context) {
     CommentComposeWidgetModelState modelState = ref.watch(widget.provider);
     CommentComposeWidgetViewModel model = ref.read(widget.provider.notifier);
+    debugPrint("modelState.replyingComment=${modelState.replyingComment}");
     return Container(
       color: designColors.light_01.auto(ref),
       child: Padding(
@@ -77,7 +80,9 @@ class _CommentComposeViewState extends ConsumerState<CommentComposeView> {
                     },
                     style: TextStyle(color: designColors.dark_01.auto(ref), fontSize: 12),
                     decoration: InputDecoration(
-                      hintText: modelState.replyingComment == null ? "say something" : "reply to @${modelState.replyingComment!.author.name}: ",
+                      hintText: modelState.replyingComment == null
+                          ? globalLocalizations.post_detail_comment_say_something
+                          : sprintf(globalLocalizations.post_detail_comment_reply_to, [modelState.replyingComment!.author.name]),
                       contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 9),
                       isDense: true,
                       hintStyle: TextStyle(color: designColors.light_06.auto(ref), fontSize: 12),
