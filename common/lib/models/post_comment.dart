@@ -3,7 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'post_comment.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class PostComment {
   String id;
   User author;
@@ -25,7 +25,7 @@ class PostComment {
   Map<String, dynamic> toJson() => _$PostCommentToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Substitute {
   static const TYPE_MENTION = 0;
   static const TYPE_URL = 1;

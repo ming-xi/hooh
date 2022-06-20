@@ -26,11 +26,10 @@ class LoginViewModel extends StateNotifier<LoginModelState> {
     updateState(state.copyWith(passwordVisible: !state.passwordVisible));
   }
 
-  void login(BuildContext context, String username, String password, {void Function(User)? onSuccess, Function()? onFailed}) {
+  void login(BuildContext context, String username, String password, {void Function(LoginResponse)? onSuccess, Function()? onFailed}) {
     network.requestAsync<LoginResponse>(network.login(username, password), (data) {
-      network.setUserToken(data.jwtResponse.accessToken);
       if (onSuccess != null) {
-        onSuccess(data.user);
+        onSuccess(data);
       }
     }, (error) {
       if (onFailed != null) {

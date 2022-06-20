@@ -3,7 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'social_badge.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class SocialBadgeTemplateLayer {
   int layerIndex;
 

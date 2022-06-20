@@ -2,6 +2,7 @@ import 'package:app/global.dart';
 import 'package:app/ui/pages/creation/edit_post.dart';
 import 'package:app/ui/pages/creation/edit_post_view_model.dart';
 import 'package:app/ui/pages/creation/recommended_templates_view_model.dart';
+import 'package:app/ui/pages/gallery/gallery.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/template_compose_view.dart';
 import 'package:app/ui/widgets/toast.dart';
@@ -71,7 +72,7 @@ class _RecommendedTemplatesScreenState extends ConsumerState<RecommendedTemplate
               return buildSeeMoreWidget();
             } else {
               int templateIndex = index - 1;
-              return buildTemplateWidget(modelState.templates[templateIndex], scale);
+              return buildTemplateWidget(modelState, model, templateIndex, scale);
             }
           },
           itemCount: modelState.templates.isEmpty ? 0 : modelState.templates.length + 2,
@@ -84,26 +85,47 @@ class _RecommendedTemplatesScreenState extends ConsumerState<RecommendedTemplate
     return widget.contents[0];
   }
 
-  Widget buildTemplateWidget(Template template, double scale) {
+  Widget buildTemplateWidget(RecommendedTemplatesScreenModelState modelState, RecommendedTemplatesScreenViewModel model, int index, double scale) {
+    Template template = modelState.templates[index];
     TemplateViewSetting viewSetting = TemplateView.generateViewSetting(TemplateView.SCENE_EDIT_POST_SINGLE_IMAGE_RECOMMENDATION);
+    viewSetting.buttons[TemplateView.EDGE_BUTTON_TYPE_FAVORITE]!.onPress = (newState) {
+      // debugPrint("newState=$newState index=${index - 1}");
+      model.setFavorite(index, newState);
+    };
+    PostImageSetting imageSetting = modelState.postImageSettings[index];
     return TemplateView(
-      PostImageSetting.withTemplate(template, text: getText()),
+      imageSetting,
+      // PostImageSetting.withTemplate(template, text: getText()),
       template: template,
       viewSetting: viewSetting,
       onPressBody: () {
         // debugPrint("press");
-        Navigator.push(context, MaterialPageRoute(builder: (context) => EditPostScreen(setting: PostImageSetting.withTemplate(template, text: getText()))));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => EditPostScreen(setting: imageSetting)));
       },
       scale: scale,
     );
   }
 
   Widget buildAddItemWidget() {
-    return buildSpecialItemWidget(() {}, "assets/images/select_photos.svg", globalLocalizations.recommended_templates_from_local);
+    return buildSpecialItemWidget(() {
+      showSelectLocalImageActionSheet(
+          context: context,
+          ref: ref,
+          adjustTemplateImage: true,
+          onSelected: (file) {
+            if (file == null) {
+              return;
+            }
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => EditPostScreen(setting: PostImageSetting.withLocalFile(file, Colors.white, text: getText()))));
+          });
+    }, "assets/images/select_photos.svg", globalLocalizations.recommended_templates_from_local);
   }
 
   Widget buildSeeMoreWidget() {
-    return buildSpecialItemWidget(() {}, "assets/images/to_gallery.svg", globalLocalizations.recommended_templates_see_more);
+    return buildSpecialItemWidget(() {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => GalleryScreen()));
+    }, "assets/images/to_gallery.svg", globalLocalizations.recommended_templates_see_more);
   }
 
   Widget buildSpecialItemWidget(void Function() onPress, String assetIconPath, String text) {

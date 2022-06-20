@@ -1,19 +1,29 @@
 import 'package:app/global.dart';
+import 'package:app/launcher.dart';
+import 'package:app/ui/pages/creation/edit_post.dart';
+import 'package:app/ui/pages/creation/edit_post_view_model.dart';
 import 'package:app/ui/pages/feeds/comment_page.dart';
 import 'package:app/ui/pages/feeds/likes_page.dart';
 import 'package:app/ui/pages/feeds/post_detail_view_model.dart';
+import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/comment_compose_view.dart';
 import 'package:app/ui/widgets/comment_compose_view_model.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
+import 'package:app/utils/file_utils.dart';
 import 'package:app/utils/ui_utils.dart';
+import 'package:common/models/network/requests.dart';
 import 'package:common/models/page_state.dart';
 import 'package:common/models/post.dart';
+import 'package:common/models/template.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/date_util.dart';
+import 'package:common/utils/network.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/material/refresh_indicator.dart' as refresh;
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:sprintf/sprintf.dart';
@@ -45,7 +55,7 @@ class PostDetailScreen extends ConsumerStatefulWidget {
 class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with TickerProviderStateMixin {
   late TabController tabController;
 
-  final RefreshController _refreshController = RefreshController(initialRefresh: false);
+  final RefreshController _refreshController = RefreshController(initialRefresh: true);
   ScrollController scrollController = ScrollController();
   GlobalKey columnKey = GlobalKey();
   double headerHeight = 100;
@@ -223,6 +233,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
     ]);
     SliverAppBar sliverAppBar = SliverAppBar(
       title: Text(""),
+      actions: [buildMenuButton(model, modelState)],
       pinned: true,
     );
 
@@ -262,7 +273,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
                             width: 4,
                           ),
                           Text(
-                            sprintf(globalLocalizations.me_wallet_ore_amount, [formatAmount(modelState.post?.profit)]),
+                            sprintf(globalLocalizations.me_wallet_ore_amount, [formatCurrency(modelState.post?.profitInt)]),
                             style: TextStyle(fontSize: 12, color: designColors.light_06.auto(ref)),
                           ),
                           SizedBox(
@@ -338,6 +349,201 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
     );
   }
 
+  Widget buildMenuButton(PostDetailScreenViewModel model, PostDetailScreenModelState modelState) {
+    return PopupMenuButton(
+      icon: Icon(
+        Icons.more_horiz_rounded,
+        color: designColors.dark_01.auto(ref),
+      ),
+      onSelected: (value) {},
+      // offset: Offset(0.0, appBarHeight),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(8)),
+      ),
+      itemBuilder: (ctx) {
+        TextStyle style = TextStyle(fontSize: 16, color: designColors.dark_01.auto(ref), fontWeight: FontWeight.bold);
+        PostImage currentImage = modelState.post!.images[0];
+
+        bool isAdminMode = FlavorConfig.instance.variables[Launcher.KEY_ADMIN_MODE];
+        PopupMenuItem itemDownload = PopupMenuItem(
+          onTap: () {
+            Future.delayed(Duration(milliseconds: 250), () {
+              FileUtil.saveNetworkImageToGallery(context, currentImage.imageUrl);
+            });
+          },
+          child: Text(
+            globalLocalizations.post_detail_menu_download,
+            style: style,
+          ),
+        );
+        String? templateId = currentImage.templateId;
+        PopupMenuItem itemUseTemplate = PopupMenuItem(
+          onTap: () {
+            Future.delayed(Duration(milliseconds: 250), () {
+              User? user = ref.read(globalUserInfoProvider);
+              if (user == null) {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+                return;
+              }
+              network.requestAsync<Template>(network.getTemplateInfo(templateId!), (template) {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => EditPostScreen(setting: PostImageSetting.withTemplate(template))));
+              }, (e) {
+                Toast.showSnackBar(context, e.devMessage);
+              });
+            });
+          },
+          child: Text(
+            globalLocalizations.post_detail_menu_use_template,
+            style: style,
+          ),
+        );
+        bool newFavorited = !currentImage.templateFavorited!;
+        PopupMenuItem itemChangeTemplateFavoriteStatus = PopupMenuItem(
+          onTap: () {
+            Future.delayed(Duration(milliseconds: 250), () {
+              Future<void> request;
+              if (newFavorited) {
+                request = network.favoriteTemplate(templateId!);
+              } else {
+                request = network.cancelFavoriteTemplate(templateId!);
+              }
+              network.requestAsync<void>(request, (_) {
+                model.setTemplateFavorited(newFavorited);
+                Toast.showSnackBar(
+                    context, newFavorited ? globalLocalizations.post_detail_favorite_success : globalLocalizations.post_detail_cancel_favorite_success);
+              }, (e) {
+                if (kDebugMode) {
+                  Toast.showSnackBar(context, e.devMessage);
+                } else {
+                  Toast.showSnackBar(context, globalLocalizations.post_detail_favorite_failed);
+                }
+              });
+            });
+          },
+          child: Text(
+            newFavorited ? globalLocalizations.post_detail_menu_favorite_template : globalLocalizations.post_detail_menu_cancel_favorite_template,
+            style: style,
+          ),
+        );
+        PopupMenuItem itemIntoWaitingList = PopupMenuItem(
+          onTap: () {
+            Future.delayed(Duration(milliseconds: 250), () {
+              network.requestAsync<void>(network.editPost(modelState.postId, EditPostRequest(joinWaitingList: true)), (_) {
+                model.setPublishState(Post.PUBLISH_STATE_WAITING_LIST);
+                Toast.showSnackBar(context, globalLocalizations.post_detail_join_waiting_list_success);
+              }, (e) {
+                if (kDebugMode) {
+                  Toast.showSnackBar(context, e.devMessage);
+                } else {
+                  Toast.showSnackBar(context, globalLocalizations.post_detail_join_waiting_list_failed);
+                }
+              });
+            });
+          },
+          child: Text(
+            globalLocalizations.post_detail_menu_into_waiting_list,
+            style: style,
+          ),
+        );
+        PopupMenuItem itemReport = PopupMenuItem(
+          onTap: () {},
+          child: Text(
+            globalLocalizations.post_detail_menu_report,
+            style: style,
+          ),
+        );
+        PopupMenuItem itemDelete = PopupMenuItem(
+          onTap: () {
+            Future.delayed(Duration(milliseconds: 250), () {
+              network.requestAsync<void>(network.deletePost(modelState.postId), (_) {
+                Toast.showSnackBar(context, globalLocalizations.post_detail_delete_post_success);
+                Navigator.of(context, rootNavigator: true).pop();
+              }, (e) {
+                if (kDebugMode) {
+                  Toast.showSnackBar(context, e.devMessage);
+                } else {
+                  Toast.showSnackBar(context, globalLocalizations.post_detail_delete_post_failed);
+                }
+              });
+            });
+          },
+          child: Text(
+            globalLocalizations.post_detail_menu_delete,
+            style: style,
+          ),
+        );
+        bool newVisibility = !modelState.post!.visible;
+        PopupMenuItem itemChangeVisibility = PopupMenuItem(
+          onTap: () {
+            Future.delayed(Duration(milliseconds: 250), () {
+              network.requestAsync<void>(network.editPost(modelState.postId, EditPostRequest(visible: newVisibility)), (_) {
+                Toast.showSnackBar(
+                    context, newVisibility ? globalLocalizations.post_detail_set_visible_success : globalLocalizations.post_detail_set_invisible_success);
+                model.setPostVisible(newVisibility);
+              }, (e) {
+                if (kDebugMode) {
+                  Toast.showSnackBar(context, e.devMessage);
+                } else {
+                  Toast.showSnackBar(context, globalLocalizations.post_detail_set_visible_failed);
+                }
+              });
+            });
+          },
+          child: Text(
+            newVisibility ? globalLocalizations.post_detail_menu_make_public : globalLocalizations.post_detail_menu_make_private,
+            style: style,
+          ),
+        );
+
+        PopupMenuItem itemCopyId = PopupMenuItem(
+          onTap: () {
+            FileUtil.copyToClipboard(modelState.postId);
+            Toast.showSnackBar(context, "copied!");
+          },
+          child: Text(
+            "Copy ID",
+            style: style,
+          ),
+        );
+        List<PopupMenuItem> items = [];
+        if (modelState.post != null) {
+          User? user = ref.watch(globalUserInfoProvider);
+          if (modelState.post!.author.id == user?.id) {
+            items = [
+              itemDownload,
+              itemUseTemplate,
+              itemChangeTemplateFavoriteStatus,
+              itemChangeVisibility,
+              itemDelete,
+            ];
+            if (modelState.post!.publishState == Post.PUBLISH_STATE_NORMAL) {
+              items.add(itemIntoWaitingList);
+            }
+          } else {
+            items = [
+              itemUseTemplate,
+              itemChangeTemplateFavoriteStatus,
+              itemReport,
+            ];
+          }
+          if (isAdminMode) {
+            items.add(itemCopyId);
+          }
+          if (user == null) {
+            // items.remove(itemUseTemplate);
+            items.remove(itemChangeTemplateFavoriteStatus);
+            items.remove(itemReport);
+          }
+          if (templateId == null) {
+            items.remove(itemUseTemplate);
+            items.remove(itemChangeTemplateFavoriteStatus);
+          }
+        }
+        return items;
+      },
+    );
+  }
+
   Widget buildUserInfoRow(Post post) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -401,9 +607,17 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
           globalLocalizations.common_follow,
           style: TextStyle(fontFamily: 'Linotte'),
         ),
-        isEnabled: (post.myVoteCount ?? 0) == 0,
+        isEnabled: true,
         onPress: () {
-          // onFollowPress(post);
+          User? user = ref.read(globalUserInfoProvider);
+          if (user == null) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+            return;
+          }
+          PostDetailScreenViewModel model = ref.read(widget.provider.notifier);
+          model.onFollowPress(!author.followed!, (msg) {
+            Toast.showSnackBar(context, msg);
+          });
         });
   }
 

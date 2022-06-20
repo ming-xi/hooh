@@ -8,8 +8,10 @@ import 'package:common/models/social_badge.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/network.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:image/image.dart' as img;
 
 part 'set_badge_view_model.g.dart';
 
@@ -25,6 +27,8 @@ class SetBadgeModelState {
   final List<LayerData> layers;
 
   final bool originalColor;
+
+  // user's painting image
   final Uint8List? badgeImageBytes;
 
   SetBadgeModelState({required this.layers, this.originalColor = false, this.badgeImageBytes});
@@ -58,10 +62,12 @@ class SetBadgeViewModel extends StateNotifier<SetBadgeModelState> {
     });
   }
 
-  Future<dynamic> changeUserBadge() async {
+  Future<dynamic> changeUserBadge({double? hue}) async {
     Uint8List? bytes;
     if (state.badgeImageBytes == null) {
-      bytes = FileUtil.combineImages(state.layers.map((e) => e.bytes).toList());
+      // bytes = FileUtil.combineImages(state.layers.map((e) => e.bytes).toList());
+      bytes =
+          FileUtil.combineImages(state.layers.map((e) => getImageBytesWithHue(e.bytes, double.tryParse(e.template.hue) ?? 0, state.originalColor)).toList());
     } else {
       bytes = state.badgeImageBytes;
     }
@@ -79,5 +85,31 @@ class SetBadgeViewModel extends StateNotifier<SetBadgeModelState> {
         return error;
       }
     }
+  }
+
+  Uint8List getImageBytesWithHue(Uint8List fileBytes, double hue, bool originalColor) {
+    if (originalColor) {
+      return fileBytes;
+    }
+    img.Image? image = img.decodePng(fileBytes);
+    Uint32List pixels = image!.data;
+    for (int i = 0; i < pixels.length; i++) {
+      int pixel = pixels[i];
+      Color color = Color(pixel);
+      int a = color.alpha;
+      int b = color.red;
+      int g = color.green;
+      int r = color.blue;
+      color = Color.fromARGB(a, r, g, b);
+      HSLColor hslColor = HSLColor.fromColor(color);
+      double hue2 = hslColor.hue + hue;
+      if (hue2 > 360) {
+        hue2 -= 360;
+      }
+      hslColor = hslColor.withHue(hue2);
+      color = hslColor.toColor();
+      pixels[i] = Color.fromARGB(color.alpha, color.blue, color.green, color.red).value;
+    }
+    return Uint8List.fromList(img.encodePng(image));
   }
 }

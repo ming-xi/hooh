@@ -1,5 +1,6 @@
 import 'package:app/global.dart';
 import 'package:app/ui/pages/me/followers_view_model.dart';
+import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
@@ -33,7 +34,7 @@ class _FollowerScreenState extends ConsumerState<FollowerScreen> with TickerProv
   @override
   void initState() {
     super.initState();
-    tabController = TabController(length: 2, vsync: this, initialIndex: widget.isFollower ? 0 : 1);
+    tabController = TabController(length: 2, vsync: this, initialIndex: widget.isFollower ? 1 : 0);
     tabController.addListener(() {
       setState(() {
         selectedTab = tabController.index;
@@ -42,11 +43,11 @@ class _FollowerScreenState extends ConsumerState<FollowerScreen> with TickerProv
     pages = [
       FollowerPage(
         userId: widget.userId,
-        isFollower: true,
+        isFollower: false,
       ),
       FollowerPage(
         userId: widget.userId,
-        isFollower: false,
+        isFollower: true,
       ),
     ];
   }
@@ -166,6 +167,7 @@ class _FollowerPageState extends ConsumerState<FollowerPage> {
   }
 
   Widget buildUserItem(User user) {
+    User? currentUser = ref.read(globalUserInfoProvider);
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Row(
@@ -178,13 +180,13 @@ class _FollowerPageState extends ConsumerState<FollowerPage> {
           ),
           Expanded(
               child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
                   Expanded(
                       child: Text(
                     user.name,
@@ -193,43 +195,50 @@ class _FollowerPageState extends ConsumerState<FollowerPage> {
                   SizedBox(
                     width: 8,
                   ),
-                  TextButton(
-                      onPressed: () {
-                        FollowerScreenViewModel model = ref.read(widget.provider.notifier);
-                        model.setFollowState(user.id, !(user.followed ?? false), callback: (msg) {
-                          Toast.showSnackBar(context, msg);
-                        });
-                      },
-                      child: Text(
-                        user.followed ?? false ? globalLocalizations.common_unfollow : globalLocalizations.common_follow,
-                        style: const TextStyle(fontFamily: 'Linotte'),
-                      ),
-                      style: TextButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(8)),
-                          ),
-                          primary: Colors.white,
-                          onSurface: Colors.white,
-                          minimumSize: const Size(64, 24),
-                          backgroundColor: user.followed ?? false ? designColors.dark_03.auto(ref) : designColors.feiyu_blue.auto(ref),
-                          padding: EdgeInsets.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal)))
+                  Visibility(
+                    visible: currentUser == null || currentUser.id != user.id,
+                    child: TextButton(
+                        onPressed: () {
+                          if (currentUser == null) {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+                            return;
+                          }
+                          FollowerScreenViewModel model = ref.read(widget.provider.notifier);
+                          model.setFollowState(user.id, !(user.followed ?? false), callback: (msg) {
+                            Toast.showSnackBar(context, msg);
+                          });
+                        },
+                        child: Text(
+                          user.followed ?? false ? globalLocalizations.common_unfollow : globalLocalizations.common_follow,
+                          style: const TextStyle(fontFamily: 'Linotte'),
+                        ),
+                        style: TextButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(8)),
+                            ),
+                            primary: Colors.white,
+                            onSurface: Colors.white,
+                            minimumSize: const Size(64, 24),
+                            backgroundColor: user.followed ?? false ? designColors.dark_03.auto(ref) : designColors.feiyu_blue.auto(ref),
+                            padding: EdgeInsets.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal))),
+                  )
                 ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                      child: Text(
-                    user.username == null ? "" : "@${user.username}",
-                    style: TextStyle(fontSize: 14, color: designColors.dark_01.auto(ref), overflow: TextOverflow.ellipsis),
-                  )),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                          child: Text(
+                            user.username == null ? "" : "@${user.username}",
+                            style: TextStyle(fontSize: 14, color: designColors.dark_01.auto(ref), overflow: TextOverflow.ellipsis),
+                          )),
+                    ],
+                  ),
                 ],
-              ),
-            ],
-          ))
+              ))
         ],
       ),
     );

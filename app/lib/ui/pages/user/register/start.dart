@@ -11,10 +11,14 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class StartScreen extends ConsumerStatefulWidget {
-  final bool isStandaloneScreen;
+  static const SCENE_START = 0;
+  static const SCENE_ME = 1;
+  static const SCENE_POPUP = 2;
+
+  final int scene;
 
   StartScreen({
-    this.isStandaloneScreen = true,
+    this.scene = SCENE_POPUP,
     Key? key,
   }) : super(key: key);
 
@@ -27,21 +31,25 @@ class _StartScreenState extends ConsumerState<StartScreen> {
   Widget build(BuildContext context) {
     // debugPrint("_StartScreenState build");
     TextStyle skipStyle = TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: designColors.dark_03.auto(ref));
+    TextButton settingButton = TextButton(
+      child: Text(globalLocalizations.start_settings),
+      style: RegisterStyles.appbarTextButtonStyle(ref),
+      onPressed: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
+      },
+    );
+    List<Widget> actions = [];
+    if (widget.scene == StartScreen.SCENE_ME) {
+      actions.add(settingButton);
+    }
+    AppBar? appBar = widget.scene == StartScreen.SCENE_START
+        ? null
+        : AppBar(
+            actions: actions,
+            leading: null,
+          );
     return Scaffold(
-      appBar: widget.isStandaloneScreen
-          ? null
-          : AppBar(
-              actions: [
-                TextButton(
-                  child: Text(globalLocalizations.start_settings),
-                  style: RegisterStyles.appbarTextButtonStyle(ref),
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
-                  },
-                )
-              ],
-              leading: null,
-            ),
+      appBar: appBar,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -77,7 +85,9 @@ class _StartScreenState extends ConsumerState<StartScreen> {
                 TextButton(
                     onPressed: () {
                       // Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen())).then((value) {
+                        onUserLogin(context);
+                      });
                     },
                     style: RegisterStyles.blackButtonStyle(ref),
                     child: Text(globalLocalizations.login_register)),
@@ -86,7 +96,9 @@ class _StartScreenState extends ConsumerState<StartScreen> {
                 ),
                 TextButton(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen())).then((value) {
+                      onUserLogin(context);
+                    });
                   },
                   child: Text(globalLocalizations.start_login),
                   style: RegisterStyles.blackOutlineButtonStyle(ref),
@@ -95,7 +107,7 @@ class _StartScreenState extends ConsumerState<StartScreen> {
                   height: 20,
                 ),
                 Visibility(
-                  visible: widget.isStandaloneScreen,
+                  visible: widget.scene == StartScreen.SCENE_START,
                   child: TextButton(
                       style: MainStyles.textButtonStyle(ref),
                       onPressed: () {
@@ -131,7 +143,7 @@ class _StartScreenState extends ConsumerState<StartScreen> {
                   ],
                 ),
                 SizedBox(
-                  height: !widget.isStandaloneScreen ? 72 : 24,
+                  height: widget.scene == StartScreen.SCENE_ME ? 72 : 24,
                 ),
               ],
             ),
@@ -139,5 +151,14 @@ class _StartScreenState extends ConsumerState<StartScreen> {
         ],
       ),
     );
+  }
+
+  void onUserLogin(BuildContext context) {
+    if (widget.scene == StartScreen.SCENE_START) {
+      popToHomeScreen(context);
+    } else if (widget.scene == StartScreen.SCENE_ME) {
+    } else {
+      Navigator.of(context).pop();
+    }
   }
 }

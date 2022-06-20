@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:app/extensions/extensions.dart';
 import 'package:app/global.dart';
+import 'package:app/launcher.dart';
 import 'package:app/test_uploading_view_model.dart';
 import 'package:app/ui/pages/me/activities.dart';
 import 'package:app/ui/pages/user/register/set_badge.dart';
@@ -18,6 +19,7 @@ import 'package:common/models/user.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pretty_json/pretty_json.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -65,15 +67,7 @@ class _TestMenuScreenState extends ConsumerState<TestMenuScreen> {
             ),
             ElevatedButton(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => TestUploadingAvatarScreen()));
-                },
-                child: Text("upload avatar")),
-            SizedBox(
-              height: 16,
-            ),
-            ElevatedButton(
-                onPressed: () {
-                  handleUserLogout(ref: ref);
+                  handleUserLogout(ref);
                   // ref.read(globalUserInfoProvider.state).state = null;
                   // preferences.putString(Preferences.KEY_USER_INFO, null);
                   // Navigator.pushAndRemoveUntil(
@@ -381,13 +375,6 @@ class _FirstPageState extends State<FirstPage> {
                 child: Text("insert")),
             ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => TestUploadingAvatarScreen(),
-                  ));
-                },
-                child: Text("push")),
-            ElevatedButton(
-                onPressed: () {
                   // network.getUser("283bc4ee-e489-452f-9827-a15946cf9656").catchError((error, stackTrace){
                   network.getUserInfo("4ee-e489-452f-9827-a15946cf9656").catchError((error, stackTrace) {
                     debugPrint(error.toString());
@@ -450,111 +437,6 @@ class _FirstPageState extends State<FirstPage> {
   }
 }
 
-class TestUploadingAvatarScreen extends ConsumerStatefulWidget {
-  final StateNotifierProvider<TestUploadingPageModel, TestUploadingPageModelState> provider = StateNotifierProvider((ref) {
-    return TestUploadingPageModel(TestUploadingPageModelState(uploading: false, imageUrl: null));
-  });
-
-  TestUploadingAvatarScreen({Key? key}) : super(key: key);
-
-  @override
-  ConsumerState<TestUploadingAvatarScreen> createState() => _TestScreenState();
-}
-
-class _TestScreenState extends ConsumerState<TestUploadingAvatarScreen> {
-  @override
-  Widget build(BuildContext context) {
-    TestUploadingPageModel model = ref.watch(widget.provider.notifier);
-    TestUploadingPageModelState modelState = ref.watch(widget.provider);
-    String imageUrl = modelState.imageUrl ?? "";
-    debugPrint("build page modelState.key=${network.getS3ImageKey(imageUrl)}");
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Center(
-          child: Column(
-            children: [
-              HoohImage(
-                imageUrl: imageUrl,
-                width: 100,
-                height: 100,
-              ),
-              SizedBox(
-                height: 24,
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  showDialog(
-                      context: context,
-                      builder: (context) {
-                        return LoadingDialog(LoadingDialogController());
-                      });
-                  LoginResponse loginResponse = await network.login("app_test1", "123456");
-                  network.setUserToken(loginResponse.jwtResponse.accessToken);
-                  ref.read(globalUserInfoProvider.state).state = loginResponse.user;
-                  preferences.putString(Preferences.KEY_USER_INFO, json.encode(loginResponse.user.toJson()));
-                  model.updateState(modelState.copyWith(imageUrl: loginResponse.user.avatarUrl));
-                  Navigator.of(context).pop();
-                  Toast.showSnackBar(context, "success");
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => SetBadgeScreen()));
-                },
-                child: Text("login"),
-                style: RegisterStyles.blackButtonStyle(ref),
-              ),
-              SizedBox(
-                height: 16,
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => SetBadgeScreen()));
-                },
-                child: Text("change badge"),
-                style: RegisterStyles.blackButtonStyle(ref),
-              ),
-              SizedBox(
-                height: 16,
-              ),
-              ElevatedButton(
-                onPressed: modelState.uploading
-                    ? null
-                    : () {
-                        // FileUtil.pickFile(context).then((file) {
-                        //   if (file == null) {
-                        //     return;
-                        //     model.uploadFile("da599f8e-cd49-443f-9e78-fa3f1394de0c", file!);
-                        //   }
-                        // });
-                        FileUtil.pickImage().then((file) async {
-                          if (file == null) {
-                            return;
-                          }
-                          Toast.showSnackBar(context, "uploading");
-                          String key = await model.uploadFile("da599f8e-cd49-443f-9e78-fa3f1394de0c", file);
-                          await model.changeAvatar("da599f8e-cd49-443f-9e78-fa3f1394de0c", key);
-                          Toast.showSnackBar(context, "success");
-                        });
-                      },
-                child: Text("select file to upload"),
-                style: RegisterStyles.blackButtonStyle(ref),
-              ),
-              SizedBox(
-                height: 16,
-              ),
-              ElevatedButton(
-                onPressed: () {},
-                child: Text("loading dialog"),
-                style: RegisterStyles.blackButtonStyle(ref),
-              )
-            ],
-          ),
-        ),
-      ),
-      appBar: AppBar(
-        title: Text("test"),
-      ),
-    );
-  }
-}
 
 class TestIpfsUploadingScreen extends StatefulWidget {
   final File file;

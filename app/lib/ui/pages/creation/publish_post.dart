@@ -37,7 +37,7 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
     PublishPostScreenModelState modelState = ref.watch(widget.provider);
     TemplateViewSetting viewSetting = TemplateView.generateViewSetting(TemplateView.SCENE_PUBLISH_POST_PREVIEW);
     double screenWidth = MediaQuery.of(context).size.width;
-    TextStyle bottomTextStyle = TextStyle(color: designColors.light_06.auto(ref), fontSize: 12, fontWeight: FontWeight.bold);
+    TextStyle bottomTextStyle = TextStyle(color: designColors.light_06.auto(ref), fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Linotte');
     return Scaffold(
       appBar: AppBar(
         title: Text(globalLocalizations.common_post),
@@ -185,10 +185,12 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
           Future.delayed(Duration(seconds: 3), () {
             Navigator.of(context).pop();
             Toast.showSnackBar(context, globalLocalizations.publish_post_success);
+            HomePageViewModel model = ref.read(homePageProvider.notifier);
+            model.updateTabIndex(HomeScreen.PAGE_INDEX_FEEDS);
             if (publishToWaitingList) {
-              HomePageViewModel model = ref.read(homePageProvider.notifier);
-              model.updateTabIndex(HomeScreen.PAGE_INDEX_FEEDS);
               model.updateFeedsTabIndex(FeedsPage.PAGE_INDEX_WAITING, notifyController: true);
+            } else {
+              model.updateFeedsTabIndex(FeedsPage.PAGE_INDEX_MAIN, notifyController: true);
             }
             popToHomeScreen(context);
           });

@@ -184,6 +184,8 @@ class MainStyles {
     return Material(
       type: MaterialType.transparency,
       child: Ink(
+        width: iconSize,
+        height: iconSize,
         decoration: BoxDecoration(
           color: Colors.transparent,
           border: Border.all(
@@ -289,6 +291,8 @@ class RegisterStyles {
         helperText: helperText,
         helperStyle: descriptionTextStyle(ref),
         errorStyle: errorTextStyle(ref),
+        helperMaxLines: 5,
+        errorMaxLines: 5,
         border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(22.0))));
   }
 

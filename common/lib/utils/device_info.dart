@@ -44,7 +44,7 @@ class DeviceInfo {
       iosInfo = await deviceInfo.iosInfo;
       manufacturer = "Apple";
       brand = iosInfo.model ?? "unknown";
-      model = iosInfo.name ?? "unknown";
+      model = iosInfo.utsname.machine ?? "unknown";
       os = "iOS ${iosInfo.systemVersion ?? "unknown"}";
       debugPrint(prettyJson((iosInfo.toMap())));
     }
@@ -56,5 +56,4 @@ class DeviceInfo {
     // Mozilla/5.0 (Android 10; HUAWEI; HUAWEI; ANA-AN00) hooh/1.0.0
     return "Mozilla/5.0 ($os; $manufacturer; $brand; $model) hooh/$appVersion";
   }
-
 }

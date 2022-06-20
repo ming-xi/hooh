@@ -147,7 +147,7 @@ class SystemNotificationView extends ConsumerWidget {
       child: Ink(
         child: InkWell(
           onTap: () {
-            openUniversalLink(context, notification.mainUniversalLink, ref: ref);
+            openAppLink(context, notification.mainUniversalLink, ref: ref);
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -210,6 +210,8 @@ class SystemNotificationView extends ConsumerWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Container(
+        width: 72,
+        height: 72,
         decoration: BoxDecoration(
           color: designColors.light_01.auto(ref),
           borderRadius: BorderRadius.circular(20 - 1),
@@ -235,7 +237,7 @@ class SystemNotificationView extends ConsumerWidget {
   Widget buildAvatar(BuildContext context, String? link, String? url, {String? userId}) {
     return GestureDetector(
       onTap: () {
-        openUniversalLink(context, link);
+        openAppLink(context, link);
       },
       child: ClipOval(
           child: url != null

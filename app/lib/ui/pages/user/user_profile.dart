@@ -61,7 +61,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
 
     TextStyle? titleTextStyle = TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: designColors.dark_01.auto(ref));
 
-    bool loading = modelState.user == null && modelState.isLoading;
+    // bool loading = modelState.user == null && modelState.isLoading;
+    bool loading = modelState.user == null;
+    debugPrint("loading=$loading modelState.user=${modelState.user} modelState.isLoading=${modelState.isLoading}");
     String title = "";
     String subtitle = "";
     if (!loading) {
@@ -130,16 +132,16 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           ),
         ],
       ),
-      actions: [
-        IconButton(
-            onPressed: () {},
-            icon: HoohIcon(
-              "assets/images/icon_me_message.svg",
-              width: 24,
-              height: 24,
-              color: designColors.dark_01.auto(ref),
-            ))
-      ],
+      // actions: [
+      //   IconButton(
+      //       onPressed: () {},
+      //       icon: HoohIcon(
+      //         "assets/images/icon_me_message.svg",
+      //         width: 24,
+      //         height: 24,
+      //         color: designColors.dark_01.auto(ref),
+      //       ))
+      // ],
       centerTitle: true,
     );
   }
@@ -358,13 +360,12 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       },
       child: column,
       style: ElevatedButton.styleFrom(
-        padding: EdgeInsets.all(10),
-        primary: designColors.light_01.auto(ref),
-        onPrimary: designColors.light_02.auto(ref),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        // shadowColor: Colors.black.withAlpha((255 * 0.2).toInt()),
-        // elevation: 8
-      ),
+          padding: EdgeInsets.all(10),
+          primary: designColors.light_01.auto(ref),
+          onPrimary: designColors.light_02.auto(ref),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shadowColor: Colors.black.withAlpha((255 * 0.2).toInt()),
+          elevation: 4),
     );
     return card;
     // return Container(

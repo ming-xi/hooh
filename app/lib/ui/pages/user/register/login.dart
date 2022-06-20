@@ -1,14 +1,15 @@
 import 'dart:convert';
 
 import 'package:app/global.dart';
-import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/user/register/login_view_model.dart';
 import 'package:app/ui/pages/user/register/register.dart';
 import 'package:app/ui/pages/user/register/set_badge.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
+import 'package:app/utils/push.dart';
 import 'package:app/utils/ui_utils.dart';
+import 'package:common/models/user.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -93,8 +94,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     controller: passwordController,
                     focusNode: passwordNode,
                     style: RegisterStyles.inputTextStyle(ref),
-                    decoration:
-                    RegisterStyles.passwordInputDecoration(globalLocalizations.login_password, ref, passwordVisible: modelState.passwordVisible,
+                    decoration: RegisterStyles.passwordInputDecoration(globalLocalizations.login_password, ref, passwordVisible: modelState.passwordVisible,
                         onTogglePasswordVisible: () {
                       model.togglePasswordVisible();
                     }),
@@ -111,22 +111,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     onPressed: !modelState.loginButtonEnabled
                         ? null
                         : () {
-                      showDialog(
-                          context: context,
+                            showDialog(
+                                context: context,
                                 barrierDismissible: false,
                                 builder: (context) {
                                   return LoadingDialog(LoadingDialogController());
                                 });
-                      model.login(context, usernameController.text, passwordController.text, onSuccess: (user) {
-                        ref.read(globalUserInfoProvider.state).state = user;
-                        preferences.putString(Preferences.KEY_USER_INFO, json.encode(user.toJson()));
-                        Navigator.of(context).pop();
-                        Toast.showSnackBar(context, "登录成功");
-                              if (user.hasFinishedRegisterSteps()) {
+                            model.login(context, usernameController.text, passwordController.text, onSuccess: (response) {
+                              handleUserLogin(ref, response.user, response.jwtResponse.accessToken);
+                              // ref.read(globalUserInfoProvider.state).state = user;
+                              // preferences.putString(Preferences.KEY_USER_INFO, json.encode(user.toJson()));
+                              // pushUtil.updateUserToken(ref);
+                              Navigator.of(context).pop();
+                              // Toast.showSnackBar(context, "登录成功");
+                              if (response.user.hasFinishedRegisterSteps()) {
                                 // Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeScreen()), (route) => false);
-                                popToHomeScreen(context);
+                                // popToHomeScreen(context);
+                                Navigator.of(context).pop(true);
                               } else {
-                                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => SetBadgeScreen()), (route) => false);
+                                // Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => SetBadgeScreen()), (route) => false)
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => SetBadgeScreen())).then((result) {
+                                  if (result != null && result is bool && result) {
+                                    Navigator.of(context).pop(true);
+                                  }
+                                });
                               }
                             }, onFailed: () {
                               Navigator.of(context).pop();

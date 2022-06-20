@@ -1,5 +1,6 @@
 import 'package:app/global.dart';
 import 'package:app/ui/pages/feeds/post_detail.dart';
+import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
@@ -110,13 +111,18 @@ class _PostViewState extends ConsumerState<PostView> {
   Builder buildButtons(Post post) {
     return Builder(builder: (context) {
       List<Widget> widgets = [
-        ...buildIconAndAmount(iconPath: "assets/images/common_ore.svg", size: 24, amount: post.profit),
+        ...buildIconAndAmount(iconPath: "assets/images/common_ore.svg", size: 24, amount: formatCurrency(post.profitInt)),
         Spacer(),
         ...buildIconAndAmount(
             iconPath: "assets/images/icon_post_like.svg",
-            amount: post.likeCount,
+            amount: formatAmount(post.likeCount),
             color: post.liked ? designColors.feiyu_blue.auto(ref) : designColors.light_06.auto(ref),
             onPress: () {
+              User? user = ref.read(globalUserInfoProvider);
+              if (user == null) {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+                return;
+              }
               onLikePress(post);
             }),
         SizedBox(
@@ -124,7 +130,7 @@ class _PostViewState extends ConsumerState<PostView> {
         ),
         ...buildIconAndAmount(
             iconPath: "assets/images/icon_post_comment.svg",
-            amount: post.commentCount,
+            amount: formatAmount(post.commentCount),
             onPress: () {
               onCommentPress(post);
             }),
@@ -247,7 +253,7 @@ class _PostViewState extends ConsumerState<PostView> {
     );
   }
 
-  List<Widget> buildIconAndAmount({required String iconPath, double size = 32, Color? color, num? amount, Function()? onPress}) {
+  List<Widget> buildIconAndAmount({required String iconPath, double size = 32, Color? color, String? amount, Function()? onPress}) {
     List<Widget> list = [
       IconButton(
         onPressed: onPress,
@@ -262,9 +268,9 @@ class _PostViewState extends ConsumerState<PostView> {
     ];
     if (amount != null) {
       list.add(SizedBox(
-        width: 24,
+        width: 28,
         child: Text(
-          formatAmount(amount),
+          amount,
           style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref)),
         ),
       ));
@@ -317,6 +323,11 @@ class _PostViewState extends ConsumerState<PostView> {
         ),
         isEnabled: true,
         onPress: () {
+          User? user = ref.read(globalUserInfoProvider);
+          if (user == null) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+            return;
+          }
           onFollowPress(post);
         });
   }
@@ -333,6 +344,11 @@ class _PostViewState extends ConsumerState<PostView> {
         ),
         isEnabled: (post.myVoteCount ?? 0) == 0,
         onPress: () {
+          User? user = ref.read(globalUserInfoProvider);
+          if (user == null) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+            return;
+          }
           onVotePress(post);
         });
   }

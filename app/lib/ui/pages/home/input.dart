@@ -1,13 +1,17 @@
 import 'package:app/global.dart';
+import 'package:app/launcher.dart';
 import 'package:app/test.dart';
 import 'package:app/ui/pages/creation/recommended_templates.dart';
 import 'package:app/ui/pages/home/input_view_model.dart';
+import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:blur/blur.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:common/models/user.dart';
 import 'package:common/utils/network.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class InputPage extends ConsumerStatefulWidget {
@@ -94,6 +98,11 @@ class _InputPageState extends ConsumerState<InputPage> with WidgetsBindingObserv
                                     !modelState.isStartButtonEnabled
                                         ? null
                                         : () {
+                                            User? user = ref.read(globalUserInfoProvider);
+                                            if (user == null) {
+                                              Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+                                              return;
+                                            }
                                             FocusManager.instance.primaryFocus?.unfocus();
                                             List<String> texts = updateModelText();
                                             Navigator.push(context, MaterialPageRoute(builder: (context) => RecommendedTemplatesScreen(contents: texts)));
@@ -112,17 +121,20 @@ class _InputPageState extends ConsumerState<InputPage> with WidgetsBindingObserv
           )
         ],
       ),
-      Positioned(
-        top: 16,
-        right: 16,
-        child: SafeArea(
-          child: FloatingActionButton(
-            child: Icon(Icons.code),
-            onPressed: () {
-              updateModelText();
-              FocusManager.instance.primaryFocus?.unfocus();
-              Navigator.push(context, MaterialPageRoute(builder: (context) => TestMenuScreen()));
-            },
+      Visibility(
+        visible: FlavorConfig.instance.variables[Launcher.KEY_ADMIN_MODE],
+        child: Positioned(
+          top: 16,
+          right: 16,
+          child: SafeArea(
+            child: FloatingActionButton(
+              child: Icon(Icons.code),
+              onPressed: () {
+                updateModelText();
+                FocusManager.instance.primaryFocus?.unfocus();
+                Navigator.push(context, MaterialPageRoute(builder: (context) => TestMenuScreen()));
+              },
+            ),
           ),
         ),
       )

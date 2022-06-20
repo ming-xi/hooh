@@ -3,7 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'user.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class User {
   // 注册步骤 0 完成设置密码， 1 完成设置社交徽章
   static const REGISTER_STEP_SET_SOCIAL_ICON = 0;
@@ -19,6 +19,7 @@ class User {
   int? likeCount;
   int? commentCount;
   int? templateCount;
+  bool? emailValidated;
   String? avatarUrl;
   String? badgeImageUrl;
   String? signature;
@@ -29,9 +30,10 @@ class User {
 
   DateTime? createdAt; // 创建时间
 
-  int? register_step;
+  int? registerStep;
 
-  User(this.id,
+  User(
+      this.id,
       this.name,
       this.username,
       this.followerCount,
@@ -41,6 +43,7 @@ class User {
       this.likeCount,
       this.commentCount,
       this.templateCount,
+      this.emailValidated,
       this.avatarUrl,
       this.badgeImageUrl,
       this.signature,
@@ -48,10 +51,10 @@ class User {
       this.receivedBadges,
       this.followed,
       this.createdAt,
-      this.register_step);
+      this.registerStep);
 
   bool hasFinishedRegisterSteps() {
-    return register_step! == REGISTER_STEP_COMPLETED;
+    return registerStep == REGISTER_STEP_COMPLETED;
   }
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
@@ -59,7 +62,7 @@ class User {
   Map<String, dynamic> toJson() => _$UserToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class UserBadge {
   String imageUrl;
   User designer;
@@ -73,7 +76,7 @@ class UserBadge {
   Map<String, dynamic> toJson() => _$UserBadgeToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class UserActivity {
   static const int TYPE_CREATE_POST = 0;
   static const int TYPE_CREATE_TEMPLATE = 1;
@@ -100,7 +103,7 @@ class UserActivity {
   Map<String, dynamic> toJson() => _$UserActivityToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class WalletLog {
   static const int POW_TYPE_CREATE_COMMENT = 0;
   static const int POW_TYPE_VIEW_PAGE_OF_TYPE_A = 1;
@@ -123,20 +126,18 @@ class WalletLog {
   int activityType;
   @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
   double currentProfitFactor;
-  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
-  double finalProfit;
-  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
-  double originalProfit;
+  int finalProfitInt;
+  int originalProfitInt;
   DateTime createdAt;
 
-  WalletLog(this.activityType, this.currentProfitFactor, this.finalProfit, this.originalProfit, this.createdAt);
+  WalletLog(this.activityType, this.currentProfitFactor, this.finalProfitInt, this.originalProfitInt, this.createdAt);
 
   factory WalletLog.fromJson(Map<String, dynamic> json) => _$WalletLogFromJson(json);
 
   Map<String, dynamic> toJson() => _$WalletLogToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class SystemNotification {
   static const int TYPE_POST_COMMENTED = 0;
   static const int TYPE_COMMENT_REPLIED = 1;

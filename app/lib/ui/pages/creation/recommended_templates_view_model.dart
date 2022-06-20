@@ -1,4 +1,5 @@
 import 'package:app/extensions/extensions.dart';
+import 'package:app/ui/pages/creation/edit_post_view_model.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/page_state.dart';
 import 'package:common/models/template.dart';
@@ -11,17 +12,19 @@ part 'recommended_templates_view_model.g.dart';
 @CopyWith()
 class RecommendedTemplatesScreenModelState {
   final List<Template> templates;
+  final List<PostImageSetting> postImageSettings;
   final List<String> contents;
   final PageState pageState;
 
   RecommendedTemplatesScreenModelState({
     required this.templates,
+    required this.postImageSettings,
     required this.contents,
     required this.pageState,
   });
 
   factory RecommendedTemplatesScreenModelState.init(List<String> contents) =>
-      RecommendedTemplatesScreenModelState(templates: [], contents: contents, pageState: PageState.inited);
+      RecommendedTemplatesScreenModelState(templates: [], postImageSettings: [], contents: contents, pageState: PageState.inited);
 }
 
 class RecommendedTemplatesScreenViewModel extends StateNotifier<RecommendedTemplatesScreenModelState> {
@@ -38,6 +41,7 @@ class RecommendedTemplatesScreenViewModel extends StateNotifier<RecommendedTempl
     network.requestAsync<List<Template>>(network.getRecommendedTemplates(state.contents), (data) {
       updateState(state.copyWith(
         templates: data,
+        postImageSettings: data.map((e) => PostImageSetting.withTemplate(e, text: state.contents[0])).toList(),
         pageState: PageState.dataLoaded,
       ));
       onComplete();
@@ -47,5 +51,27 @@ class RecommendedTemplatesScreenViewModel extends StateNotifier<RecommendedTempl
       ));
       onError(error);
     });
+  }
+
+  void setFavorite(int itemIndex, bool favorite) {
+    if (favorite) {
+      network.requestAsync(network.favoriteTemplate(state.templates[itemIndex].id), (data) {
+        state.templates[itemIndex].favorited = favorite;
+        updateState(state.copyWith(
+          templates: [...state.templates],
+        ));
+      }, (error) {
+        state.templates[itemIndex].favorited = !favorite;
+        updateState(state.copyWith(templates: [...state.templates]));
+      });
+    } else {
+      network.requestAsync(network.cancelFavoriteTemplate(state.templates[itemIndex].id), (data) {
+        state.templates[itemIndex].favorited = favorite;
+        updateState(state.copyWith(templates: [...state.templates]));
+      }, (error) {
+        state.templates[itemIndex].favorited = !favorite;
+        updateState(state.copyWith(templates: [...state.templates]));
+      });
+    }
   }
 }

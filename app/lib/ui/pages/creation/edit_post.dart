@@ -14,7 +14,21 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class EditPostScreen extends ConsumerStatefulWidget {
-  static const FONTS = ['Linotte', 'Pacifico'];
+  static const FONTS = [
+    'Linotte',
+    'Pacifico',
+    'Ryujinattack',
+    'Antonio',
+    'Baloo',
+    'Edo',
+    'Montserrat',
+    'Montserrat Bold',
+    'Lobster',
+    'Finserifdisplay',
+    'Abrilfatface',
+    'Heiti',
+    'Zhuokai',
+  ];
   static const PALETTE_COLORS = [
     Color(0xFFFFFFFF),
     Color(0xFF000000),
@@ -539,7 +553,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
   }
 
   Widget buildPalette(EditPostScreenViewModel model, EditPostScreenModelState modelState) {
-    double itemSize = 36;
+    double itemSize = 40;
     double padding = 8;
     double borderRadius = 12;
     double outlineBorderRadius = 14;

@@ -82,13 +82,14 @@ class _CommentViewState extends ConsumerState<CommentView> {
                     ),
                     Spacer(),
                     GestureDetector(
+                      behavior: HitTestBehavior.opaque,
                       onTap: () {
                         if (widget.onLikeClick != null) {
                           widget.onLikeClick!(comment, !comment.liked!);
                         }
                       },
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                        padding: const EdgeInsets.only(right: 4, left: 16, top: 6, bottom: 6),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [

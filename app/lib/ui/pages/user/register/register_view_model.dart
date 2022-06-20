@@ -45,11 +45,11 @@ class RegisterViewModel extends StateNotifier<RegisterModelState> {
   }
 
   void register(BuildContext context, String username, String password, String email,
-      {void Function(User)? onSuccess, Function(HoohApiErrorResponse)? onFailed}) {
+      {void Function(LoginResponse)? onSuccess, Function(HoohApiErrorResponse)? onFailed}) {
     network.requestAsync<LoginResponse>(network.register(username, password, email), (data) {
-      network.setUserToken(data.jwtResponse.accessToken);
+      // network.setUserToken(data.jwtResponse.accessToken);
       if (onSuccess != null) {
-        onSuccess(data.user);
+        onSuccess(data);
       }
     }, (error) {
       if (error.errorCode == Constants.USERNAME_ALREADY_REGISTERED) {

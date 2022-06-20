@@ -21,34 +21,34 @@ class Post {
   int likeCount;
   int? voteCount;
   int? myVoteCount;
-  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
-  double profit;
+  int profitInt;
   List<PostImage> images;
   List<String>? tags;
   bool liked;
   bool? favorited;
   bool visible;
-  bool allowDownload;
   int publishState;
   DateTime? likedAt;
   DateTime? favoritedAt;
   DateTime? featuredAt;
   DateTime createdAt;
 
-  Post(this.id, this.author, this.commentCount, this.likeCount, this.voteCount, this.myVoteCount, this.profit, this.images, this.tags, this.liked,
-      this.favorited, this.visible, this.allowDownload, this.publishState, this.likedAt, this.favoritedAt, this.featuredAt, this.createdAt);
+  Post(this.id, this.author, this.commentCount, this.likeCount, this.voteCount, this.myVoteCount, this.profitInt, this.images, this.tags, this.liked,
+      this.favorited, this.visible, this.publishState, this.likedAt, this.favoritedAt, this.featuredAt, this.createdAt);
 
   factory Post.fromJson(Map<String, dynamic> json) => _$PostFromJson(json);
 
   Map<String, dynamic> toJson() => _$PostToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class PostImage {
   String imageUrl;
+  String? templateId;
   bool hidden;
+  bool? templateFavorited;
 
-  PostImage(this.imageUrl, this.hidden);
+  PostImage(this.imageUrl, this.templateId, this.hidden, this.templateFavorited);
 
   factory PostImage.fromJson(Map<String, dynamic> json) => _$PostImageFromJson(json);
 

@@ -4,7 +4,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'template.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Template {
   String frameHeight;
   String frameWidth;
@@ -12,8 +12,7 @@ class Template {
   String frameY;
   String id;
   String imageUrl;
-  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
-  double profit;
+  int profitInt;
   int state;
   String textColor;
   DateTime? createdAt;
@@ -23,7 +22,7 @@ class Template {
   int useCount;
   User? author;
 
-  Template(this.frameHeight, this.frameWidth, this.frameX, this.frameY, this.id, this.imageUrl, this.profit, this.state, this.textColor, this.createdAt,
+  Template(this.frameHeight, this.frameWidth, this.frameX, this.frameY, this.id, this.imageUrl, this.profitInt, this.state, this.textColor, this.createdAt,
       this.featuredAt, this.favorited, this.favoriteCount, this.useCount, this.author);
 
   factory Template.fromJson(Map<String, dynamic> json) => _$TemplateFromJson(json);

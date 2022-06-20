@@ -1,15 +1,13 @@
 import 'dart:async';
-import 'dart:io';
 
-import 'package:app/extensions/extensions.dart';
 import 'package:app/global.dart';
 import 'package:app/ui/pages/creation/edit_post.dart';
 import 'package:app/ui/pages/creation/edit_post_view_model.dart';
-import 'package:app/ui/pages/creation/template_adjust.dart';
+import 'package:app/ui/pages/creation/template_text_setting.dart';
 import 'package:app/ui/pages/gallery/search.dart';
+import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/template_compose_view.dart';
-import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:blur/blur.dart';
@@ -21,8 +19,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:image_cropper/image_cropper.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import 'templates_view_model.dart';
@@ -144,11 +140,30 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
                       child: InkWell(
                         borderRadius: BorderRadius.only(topLeft: Radius.circular(22), bottomLeft: Radius.circular(22)),
                         onTap: () {
+                          User? user = ref.read(globalUserInfoProvider);
+                          if (user == null) {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+                            return;
+                          }
                           if (!(preferences.getBool(Preferences.KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED) ?? false)) {
                             showUploadDialog();
                             return;
                           } else {
-                            _showLocalOptionActionSheet();
+                            showSelectLocalImageActionSheet(
+                                context: context,
+                                adjustTemplateImage: true,
+                                ref: ref,
+                                onSelected: (file) {
+                                  if (file == null) {
+                                    return;
+                                  }
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => TemplateTextSettingScreen(
+                                                imageFile: file,
+                                              )));
+                                });
                           }
                         },
                         child: Center(
@@ -237,7 +252,11 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
           } else {
             TemplateViewSetting viewSetting = TemplateView.generateViewSetting(TemplateView.SCENE_GALLERY_HOME);
             viewSetting.buttons[TemplateView.EDGE_BUTTON_TYPE_FAVORITE]!.onPress = (newState) {
-              // debugPrint("newState=$newState index=${index - 1}");
+              User? user = ref.read(globalUserInfoProvider);
+              if (user == null) {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+                return;
+              }
               model.setFavorite(index - 1, newState);
             };
             Template template = modelState.templates[index - 1];
@@ -338,115 +357,40 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
   }
 
   Future<void> _galleryItemTouched(int index) async {
+    User? user = ref.read(globalUserInfoProvider);
+    if (user == null) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+      return;
+    }
     if (index == 0) {
-      // debugPrint("插入图片");
-      // FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image, allowCompression: false);
-      // if (result != null) {
-      //   File file = File(result.files.single.path!);
-      //
+      showSelectLocalImageActionSheet(
+          context: context,
+          ref: ref,
+          adjustTemplateImage: true,
+          onSelected: (file) {
+            if (file == null) {
+              return;
+            }
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => EditPostScreen(setting: PostImageSetting.withLocalFile(file, Colors.white, text: ""))));
+          });
+      // if (!(preferences.getBool(Preferences.KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED) ?? false)) {
+      //   showUploadDialog();
+      //   return;
+      // } else {
+      //   showSelectLocalImageActionSheet(context, ref, (file) {
+      //     Navigator.push(
+      //         context,
+      //         MaterialPageRoute(
+      //             builder: (context) => TemplateTextSettingScreen(
+      //                   imageFile: file,
+      //                 )));
+      //   });
       // }
-
-      if (!(preferences.getBool(Preferences.KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED) ?? false)) {
-        showUploadDialog();
-        return;
-      } else {
-        _showLocalOptionActionSheet();
-      }
     } else {
       TemplatesPageModelState modelState = ref.watch(homeTemplatesProvider);
       Template template = modelState.templates[index - 1];
       Navigator.push(context, MaterialPageRoute(builder: (context) => EditPostScreen(setting: PostImageSetting.withTemplate(template, text: ""))));
-    }
-  }
-
-  Future<void> _showLocalOptionActionSheet() async {
-    User? user = ref.read(globalUserInfoProvider.state).state;
-    if (user == null) {
-      Toast.showSnackBar(context, "must login first");
-      return;
-    }
-    if (Platform.isIOS || Platform.isMacOS) {
-      CupertinoActionSheet actionSheet = CupertinoActionSheet(
-        actions: [
-          CupertinoActionSheetAction(
-            child: const Text('Camera'),
-            onPressed: () {
-              // debugPrint("camera");
-              Navigator.pop(context);
-              openImagePicker(ImageSource.camera);
-            },
-          ),
-          CupertinoActionSheetAction(
-            child: const Text('Gallery'),
-            onPressed: () {
-              // debugPrint("gallery");
-              Navigator.pop(context);
-              openImagePicker(ImageSource.gallery);
-            },
-          )
-        ],
-        cancelButton: CupertinoActionSheetAction(
-          child: const Text('Cancel'),
-          onPressed: () {
-            // debugPrint("cancel");
-            Navigator.pop(context);
-          },
-        ),
-      );
-
-      /// To display an actionSheet
-      showCupertinoModalPopup(context: context, builder: (context) => actionSheet);
-    } else {
-      showModalBottomSheet(
-          context: context,
-          builder: (context) => Wrap(
-                children: [
-                  ListTile(
-                    leading: Icon(Icons.camera),
-                    title: Text(globalLocalizations.templates_choose_from_camera),
-                    onTap: () {
-                      Navigator.pop(context);
-                      openImagePicker(ImageSource.camera);
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.image),
-                    title: Text(globalLocalizations.templates_choose_from_gallery),
-                    onTap: () {
-                      Navigator.pop(context);
-                      openImagePicker(ImageSource.gallery);
-                    },
-                  ),
-                ],
-              ));
-    }
-  }
-
-  /// Open image picker
-  void openImagePicker(source) async {
-    // showLoader();
-    final XFile? pickedFile = await ImagePicker().pickImage(source: source, maxWidth: 1920, maxHeight: 1920);
-    CroppedFile? croppedFile = await ImageCropper().cropImage(
-      sourcePath: pickedFile!.path,
-      aspectRatioPresets: [
-        CropAspectRatioPreset.square,
-        CropAspectRatioPreset.ratio3x2,
-        CropAspectRatioPreset.original,
-        CropAspectRatioPreset.ratio4x3,
-        CropAspectRatioPreset.ratio16x9
-      ],
-      uiSettings: [
-        AndroidUiSettings(
-            toolbarTitle: 'Cropper',
-            toolbarColor: designColors.feiyu_blue.auto(ref),
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.original,
-            lockAspectRatio: false),
-        IOSUiSettings()
-      ],
-    );
-    if (croppedFile != null) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => AdjustTemplatePositionScreen(File(croppedFile.path))));
     }
   }
 
@@ -542,7 +486,26 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
                               child: MainStyles.gradientButton(ref, globalLocalizations.common_confirm, () {
                                 preferences.putBool(Preferences.KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED, modelState.agreementChecked);
                                 Navigator.pop(context);
-                                _showLocalOptionActionSheet();
+                                User? user = ref.read(globalUserInfoProvider);
+                                if (user == null) {
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+                                  return;
+                                }
+                                showSelectLocalImageActionSheet(
+                                    context: context,
+                                    adjustTemplateImage: true,
+                                    ref: ref,
+                                    onSelected: (file) {
+                                      if (file == null) {
+                                        return;
+                                      }
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => TemplateTextSettingScreen(
+                                                    imageFile: file,
+                                                  )));
+                                    });
                               }),
                             ),
                           ],

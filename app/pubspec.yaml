@@ -45,9 +45,9 @@ dependencies:
   flutter_svg: ^1.0.3
   cached_network_image: ^3.2.0
   pull_to_refresh: ^2.0.0
-  image_picker: ^0.8.5+2
+#  image_picker: ^0.8.5+2
   #  image_cropping: ^0.0.11
-  image_cropper: ^2.0.2
+  #  image_cropper: ^2.0.2
   copy_with_extension: ^4.0.0
   phone_form_field: ^5.0.4
   image: ^3.1.3
@@ -71,6 +71,11 @@ dependencies:
   firebase_crashlytics: ^2.8.1
   badges: ^2.0.2
   tab_indicator_styler: ^2.0.0
+  flutter_local_notifications: ^9.6.0
+  flutter_flavor: ^3.0.3
+  images_picker: ^1.2.11
+  crop_your_image: ^0.7.2
+  image_picker: ^0.8.5+3
 
 dev_dependencies:
   flutter_test:
@@ -117,6 +122,40 @@ flutter:
     - family: Pacifico
       fonts:
         - asset: assets/fonts/pacifico.ttf
+    - family: Ryujinattack
+      fonts:
+        - asset: assets/fonts/ryujinattack.otf
+    - family: Antonio
+      fonts:
+        - asset: assets/fonts/antonio_bold.ttf
+    - family: Baloo
+      fonts:
+        - asset: assets/fonts/baloo_regular.ttf
+    - family: Edo
+      fonts:
+        - asset: assets/fonts/edo.ttf
+    - family: Montserrat
+      fonts:
+        - asset: assets/fonts/montserrat_light.otf
+    - family: Montserrat Bold
+      fonts:
+        - asset: assets/fonts/montserrat_semibold.otf
+    - family: Lobster
+      fonts:
+        - asset: assets/fonts/lobster_1.3.otf
+    - family: Finserifdisplay
+      fonts:
+        - asset: assets/fonts/finserifdisplay_regular.otf
+    - family: Abrilfatface
+      fonts:
+        - asset: assets/fonts/abrilfatface_regular.otf
+    - family: Heiti
+      fonts:
+        - asset: assets/fonts/heiti.otf
+    - family: Zhuokai
+      fonts:
+        - asset: assets/fonts/zhuokai.ttf
+
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:

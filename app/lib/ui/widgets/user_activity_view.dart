@@ -73,11 +73,11 @@ class UserActivityView extends ConsumerWidget {
               ),
               Expanded(
                   child: Text(
-                    data['comment_content'],
-                    style: TextStyle(fontSize: 14, color: designColors.dark_01.auto(ref)),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 3,
-                  ))
+                data['comment_content'],
+                style: TextStyle(fontSize: 14, color: designColors.dark_01.auto(ref)),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 3,
+              ))
             ],
           );
           break;
@@ -174,11 +174,11 @@ class UserActivityView extends ConsumerWidget {
                         ),
                         Expanded(
                             child: Text(
-                              data['name'],
-                              style: TextStyle(fontSize: 14, color: designColors.light_01.auto(ref), fontWeight: FontWeight.bold),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ))
+                          data['name'],
+                          style: TextStyle(fontSize: 14, color: designColors.light_01.auto(ref), fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ))
                       ],
                     )
                   ],
@@ -224,17 +224,16 @@ class UserActivityView extends ConsumerWidget {
     // );
     ElevatedButton card = ElevatedButton(
       onPressed: () {
-        openUniversalLink(context, activity.universalLink);
+        openAppLink(context, activity.universalLink);
       },
       child: column,
       style: ElevatedButton.styleFrom(
-        padding: EdgeInsets.all(10),
-        primary: designColors.light_01.auto(ref),
-        onPrimary: designColors.light_02.auto(ref),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        // shadowColor: Colors.black.withAlpha((255 * 0.2).toInt()),
-        // elevation: 8
-      ),
+          padding: EdgeInsets.all(10),
+          primary: designColors.light_01.auto(ref),
+          onPrimary: designColors.light_02.auto(ref),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shadowColor: Colors.black.withAlpha((255 * 0.2).toInt()),
+          elevation: 4),
     );
     return AspectRatio(
       aspectRatio: UserActivityView.ITEM_RATIO,

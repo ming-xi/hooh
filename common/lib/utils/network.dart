@@ -70,7 +70,7 @@ class Network {
     });
   }
 
-  void setUserToken(String token) {
+  void setUserToken(String? token) {
     preferences.putString(Preferences.KEY_USER_ACCESS_TOKEN, token);
   }
 
@@ -223,6 +223,22 @@ class Network {
           badgeImageKey: badgeImageKey,
         ).toJson(),
         deserializer: User.fromJson);
+  }
+
+  Future<void> addFcmToken(String userId, String token) {
+    return _getResponseObject<void>(
+      HttpMethod.post,
+      _buildHoohUri("users/$userId/fcm-tokens"),
+      body: FcmTokenRequest(token).toJson(),
+    );
+  }
+
+  Future<void> deleteFcmToken(String userId, String token) {
+    return _getResponseObject<void>(
+      HttpMethod.delete,
+      _buildHoohUri("users/$userId/fcm-tokens"),
+      body: FcmTokenRequest(token).toJson(),
+    );
   }
 
   Future<RequestUploadingFileResponse> requestUploadingAvatar(String userId, File file) {
@@ -380,6 +396,10 @@ class Network {
         body: GetRecommendedTemplatesForCreationRequest(contents).toJson(), deserializer: Template.fromJson);
   }
 
+  Future<Template> getTemplateInfo(String id) {
+    return _getResponseObject(HttpMethod.get, _buildHoohUri("templates/$id"), deserializer: Template.fromJson);
+  }
+
   //endregion
   //region post
 
@@ -407,6 +427,17 @@ class Network {
     return _getResponseObject<Post>(HttpMethod.post, _buildHoohUri("posts/create"), body: request.toJson(), deserializer: Post.fromJson);
   }
 
+  Future<Post> editPost(String id, EditPostRequest request) {
+    return _getResponseObject<Post>(HttpMethod.put, _buildHoohUri("posts/$id"), body: request.toJson(), deserializer: Post.fromJson);
+  }
+
+  Future<void> deletePost(String id) {
+    return _getResponseObject<void>(
+      HttpMethod.delete,
+      _buildHoohUri("posts/$id"),
+    );
+  }
+
   Future<List<Post>> getWaitingListPosts({required bool trending, DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
     Map<String, dynamic> params = {
       "size": size,
@@ -414,7 +445,6 @@ class Network {
     if (date != null) {
       params["timestamp"] = DateUtil.getUtcDateString(date);
     }
-
     return _getResponseList<Post>(HttpMethod.get, _buildHoohUri("posts/waiting-list/${trending ? "trending" : "recent"}", params: params),
         deserializer: Post.fromJson);
   }
@@ -427,6 +457,17 @@ class Network {
       params["timestamp"] = DateUtil.getUtcDateString(date);
     }
     return _getResponseList<Post>(HttpMethod.get, _buildHoohUri("posts/main-list/${trending ? "trending" : "recent"}", params: params),
+        deserializer: Post.fromJson);
+  }
+
+  Future<List<Post>> getFollowedUserPosts({required bool trending, DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
+    Map<String, dynamic> params = {
+      "size": size,
+    };
+    if (date != null) {
+      params["timestamp"] = DateUtil.getUtcDateString(date);
+    }
+    return _getResponseList<Post>(HttpMethod.get, _buildHoohUri("posts/followed-users/${trending ? "trending" : "recent"}", params: params),
         deserializer: Post.fromJson);
   }
 
@@ -445,6 +486,20 @@ class Network {
     return _getResponseObject<void>(
       HttpMethod.delete,
       _buildHoohUri("posts/$postId/like"),
+    );
+  }
+
+  Future<void> favoritePost(String postId) {
+    return _getResponseObject<void>(
+      HttpMethod.put,
+      _buildHoohUri("posts/$postId/favorite"),
+    );
+  }
+
+  Future<void> cancelFavoritePost(String postId) {
+    return _getResponseObject<void>(
+      HttpMethod.delete,
+      _buildHoohUri("posts/$postId/favorite"),
     );
   }
 
@@ -627,6 +682,8 @@ class Network {
     }
     headers["Content-Type"] = "application/json";
     headers["User-Agent"] = deviceInfo.getUserAgent();
+    // headers["Language"] = Platform.localeName;
+    headers["Accept-Language"] = Platform.localeName;
   }
 
   Future<dynamic> _getRawResponse<M>(HttpMethod method, Uri uri,

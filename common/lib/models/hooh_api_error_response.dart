@@ -2,7 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'hooh_api_error_response.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class HoohApiErrorResponse {
   @JsonKey(name: "error_code")
   int errorCode;

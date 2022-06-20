@@ -1,18 +1,29 @@
+import 'dart:convert';
+
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/user/web_view.dart';
 import 'package:app/utils/design_colors.dart';
+import 'package:app/utils/push.dart';
 import 'package:common/models/user.dart';
+import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-void handleUserLogout({WidgetRef? ref}) {
-  if (ref != null) {
-    ref.read(globalUserInfoProvider.state).state = null;
-  }
+void handleUserLogin(WidgetRef ref, User user, String token) {
+  ref.read(globalUserInfoProvider.state).state = user;
+  network.setUserToken(token);
+  preferences.putString(Preferences.KEY_USER_INFO, json.encode(user.toJson()));
+  pushUtil.updateUserToken(ref);
+}
+
+void handleUserLogout(WidgetRef ref) {
+  pushUtil.clearUserToken(ref);
+  preferences.remove(Preferences.KEY_FCM_TOKEN);
+  ref.read(globalUserInfoProvider.state).state = null;
   preferences.remove(Preferences.KEY_USER_INFO);
-  // preferences.remove(Preferences.KEY_USER_DRAFT);
+  network.setUserToken(null);
 }
 
 void openLink(BuildContext context, String url, {String? title}) async {
@@ -37,7 +48,7 @@ void popToHomeScreen(BuildContext context) {
         builder: (context) => HomeScreen(),
         settings: const RouteSettings(name: "/home"),
       ),
-      (route) => false,
+          (route) => false,
     );
   }
 }

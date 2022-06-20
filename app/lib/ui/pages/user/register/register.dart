@@ -7,6 +7,7 @@ import 'package:app/ui/pages/user/register/set_badge.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
+import 'package:app/utils/push.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
@@ -158,22 +159,25 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     onPressed: !modelState.registerButtonEnabled
                         ? null
                         : () {
-                            showDialog(
+                      showDialog(
                                 context: context,
                                 barrierDismissible: false,
                                 builder: (context) {
                                   return LoadingDialog(LoadingDialogController());
                                 });
-                            model.register(context, usernameController.text, passwordController.text, emailController.text, onSuccess: (user) {
-                              ref.read(globalUserInfoProvider.state).state = user;
-                              preferences.putString(Preferences.KEY_USER_INFO, json.encode(user.toJson()));
+                            model.register(context, usernameController.text, passwordController.text, emailController.text, onSuccess: (response) {
+                              handleUserLogin(ref, response.user, response.jwtResponse.accessToken);
                               Navigator.of(context).pop();
                               // Toast.showSnackBar(context, "注册成功");
-                              Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(builder: (context) => SetBadgeScreen()),
-                                (route) => false,
-                              );
+                              // Navigator.pushAndRemoveUntil(
+                              //   context,
+                              //   MaterialPageRoute(builder: (context) => SetBadgeScreen()),
+                              //   (route) => false,
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => SetBadgeScreen())).then((result) {
+                                if (result != null && result is bool && result) {
+                                  Navigator.of(context).pop(true);
+                                }
+                              });
                             }, onFailed: (error) {
                               Navigator.of(context).pop();
                               if (error.errorCode == Constants.USERNAME_ALREADY_REGISTERED) {
@@ -211,7 +215,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               text: userAgreement,
                               style: highlightedStyle,
                               onTap: () {
-                                openLink(context, 'https://www.baidu.com', title: userAgreement);
+                                openLink(context, 'https://www.google.com', title: userAgreement);
                               }),
                           HoohLocalizedTextKey(
                               key: "%2\$s",

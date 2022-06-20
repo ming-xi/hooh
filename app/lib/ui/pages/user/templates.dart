@@ -1,9 +1,13 @@
+import 'dart:ui';
+
 import 'package:app/global.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/pages/user/templates_view_model.dart';
 import 'package:app/ui/widgets/template_compose_view.dart';
+import 'package:app/ui/widgets/template_detail_view.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:common/models/page_state.dart';
+import 'package:common/models/template.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -66,6 +70,14 @@ class _UserTemplateScreenState extends ConsumerState<UserTemplateScreen> {
             return TemplateDetailView(
               template: modelState.templates[index],
               type: TemplateDetailView.TYPE_FEEDS,
+              onFavorite: (template, error) {
+                if (error != null) {
+                  Toast.showSnackBar(context, error.message);
+                  return;
+                }
+                template.favorited = !template.favorited;
+                model.updateTemplateData(template, index);
+              },
               onFollow: (template, error) {
                 if (error != null) {
                   Toast.showSnackBar(context, error.message);

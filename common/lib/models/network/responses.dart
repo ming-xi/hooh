@@ -4,7 +4,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'responses.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class LoginResponse {
   User user;
   JWTResponse jwtResponse;
@@ -16,7 +16,7 @@ class LoginResponse {
   Map<String, dynamic> toJson() => _$LoginResponseToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class JWTResponse {
   String accessToken;
   String refreshToken;
@@ -30,7 +30,7 @@ class JWTResponse {
   Map<String, dynamic> toJson() => _$JWTResponseToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class ValidateAccountResponse {
   String token;
 
@@ -41,7 +41,7 @@ class ValidateAccountResponse {
   Map<String, dynamic> toJson() => _$ValidateAccountResponseToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class RequestValidationCodeResponse {
   static const typeEmail = 0;
   static const typeMobile = 1;
@@ -54,7 +54,7 @@ class RequestValidationCodeResponse {
   Map<String, dynamic> toJson() => _$RequestValidationCodeResponseToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class ValidateCodeResponse {
   String token;
 
@@ -65,7 +65,7 @@ class ValidateCodeResponse {
   Map<String, dynamic> toJson() => _$ValidateCodeResponseToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class RequestUploadingFileResponse {
   String uploadingUrl;
   String key;
@@ -77,7 +77,7 @@ class RequestUploadingFileResponse {
   Map<String, dynamic> toJson() => _$RequestUploadingFileResponseToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class RecommendedTag {
   String name;
   int? type;
@@ -89,7 +89,7 @@ class RecommendedTag {
   Map<String, dynamic> toJson() => _$RecommendedTagToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class HomepageBackgroundImageResponse {
   String imageUrl;
 
@@ -100,7 +100,7 @@ class HomepageBackgroundImageResponse {
   Map<String, dynamic> toJson() => _$HomepageBackgroundImageResponseToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class UserBadgeStatsResponse {
   int createdBadgeCount;
   int receivedBadgeCount;
@@ -113,7 +113,7 @@ class UserBadgeStatsResponse {
   Map<String, dynamic> toJson() => _$UserBadgeStatsResponseToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class UserCreatedBadge {
   String imageUrl;
   int ownerAmount;
@@ -129,7 +129,7 @@ class UserCreatedBadge {
   Map<String, dynamic> toJson() => _$UserCreatedBadgeToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class UserActivityResponse {
   User user;
   List<UserActivity> activities;
@@ -141,38 +141,29 @@ class UserActivityResponse {
   Map<String, dynamic> toJson() => _$UserActivityResponseToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class UserWalletResponse {
-  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
-  double balance;
-  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
-  double totalCost;
-  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
-  double totalEarnedPow;
-  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
-  double totalEarnedReputation;
-  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
-  double yesterdayEarnedPow;
-  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
-  double yesterdayEarnedReputation;
+  int balanceInt;
+  int totalCostInt;
+  int totalEarnedPowInt;
+  int totalEarnedReputationInt;
+  int yesterdayEarnedPowInt;
+  int yesterdayEarnedReputationInt;
 
-  UserWalletResponse(this.balance, this.totalCost, this.totalEarnedPow, this.totalEarnedReputation, this.yesterdayEarnedPow, this.yesterdayEarnedReputation);
+  UserWalletResponse(
+      this.balanceInt, this.totalCostInt, this.totalEarnedPowInt, this.totalEarnedReputationInt, this.yesterdayEarnedPowInt, this.yesterdayEarnedReputationInt);
 
   factory UserWalletResponse.fromJson(Map<String, dynamic> json) => _$UserWalletResponseFromJson(json);
 
   Map<String, dynamic> toJson() => _$UserWalletResponseToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class FeeInfoResponse {
-  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
-  double joinWaitingList;
-  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
-  double createBadge;
-  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
-  double deleteActivity;
-  @JsonKey(fromJson: Serialization.doubleFromJson, toJson: Serialization.doubleToJson)
-  double votePost;
+  int joinWaitingList;
+  int createBadge;
+  int deleteActivity;
+  int votePost;
 
   FeeInfoResponse(this.joinWaitingList, this.createBadge, this.deleteActivity, this.votePost);
 
@@ -181,7 +172,7 @@ class FeeInfoResponse {
   Map<String, dynamic> toJson() => _$FeeInfoResponseToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class UnreadNotificationCountResponse {
   int unreadCount;
 

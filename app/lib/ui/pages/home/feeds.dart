@@ -1,4 +1,5 @@
 import 'package:app/global.dart';
+import 'package:app/ui/pages/feeds/followed_users.dart';
 import 'package:app/ui/pages/feeds/main_list.dart';
 import 'package:app/ui/pages/feeds/waiting_list.dart';
 import 'package:app/ui/pages/home/home.dart';
@@ -17,9 +18,7 @@ class FeedsPage extends ConsumerStatefulWidget {
   static const double LIST_TOP_PADDING = 100;
   static const double LIST_BOTTOM_PADDING = 100;
   final List<Widget> tabWidgets = [
-    Container(
-      color: Colors.red,
-    ),
+    FollowedUserPostsPage(),
     MainListPage(),
     WaitingListPage(),
   ];

@@ -4,7 +4,10 @@ import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/home/templates.dart';
 import 'package:app/ui/pages/home/templates_view_model.dart';
 import 'package:app/ui/pages/me/badges.dart';
+import 'package:app/ui/pages/user/templates.dart';
 import 'package:app/ui/pages/user/user_profile.dart';
+import 'package:app/ui/widgets/template_detail_view.dart';
+import 'package:common/utils/network.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -17,7 +20,11 @@ const _LINK_TEMPLATES = "templates";
 const _LINK_BADGES = "badges";
 const String _UUID_REGEX = "[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}";
 
-void openUniversalLink(BuildContext context, String? link, {WidgetRef? ref}) {
+String getTemplateAppLink(String id) {
+  return "$_LINK_PREFIX/$_LINK_TEMPLATES/$id";
+}
+
+void openAppLink(BuildContext context, String? link, {WidgetRef? ref}) {
   if (link == null) {
     return;
   }
@@ -36,29 +43,31 @@ void openUniversalLink(BuildContext context, String? link, {WidgetRef? ref}) {
       Navigator.push(context, MaterialPageRoute(builder: (context) => BadgesScreen(userId: uuid)));
     }
   } else if (_isTemplateLink(link)) {
-    if (ref != null) {
-      Uri? uri = Uri.tryParse(link);
-      if (uri != null) {
+    Uri? uri = Uri.tryParse(link);
+    if (uri != null) {
+      bool hit = false;
+      if (ref != null) {
         List<TemplateTagItem> tags = ref.read(homeTemplatesProvider).tags;
         int? index;
         int? type = int.tryParse(uri.queryParameters['type'] ?? "");
+        String? tag = uri.queryParameters['tag'];
         if (type != null) {
           for (int i = 0; i < tags.length; i++) {
             TemplateTagItem item = tags[i];
             if (item.type == type) {
               index = i;
+              hit = true;
               break;
             }
           }
-        } else {
-          String? tag = uri.queryParameters['tag'];
-          if (tag != null) {
-            for (int i = 0; i < tags.length; i++) {
-              TemplateTagItem item = tags[i];
-              if (item.tag == tag) {
-                index = i;
-                break;
-              }
+        }
+        if (tag != null) {
+          for (int i = 0; i < tags.length; i++) {
+            TemplateTagItem item = tags[i];
+            if (item.tag == tag) {
+              index = i;
+              hit = true;
+              break;
             }
           }
         }
@@ -66,6 +75,13 @@ void openUniversalLink(BuildContext context, String? link, {WidgetRef? ref}) {
           ref.read(homePageProvider.notifier).updateTabIndex(1);
           ref.read(homeTemplatesProvider.notifier).setSelectedTag(index);
           popToHomeScreen(context);
+        }
+        if (!hit) {
+          String uuid = _getSingleUuid(link);
+          debugPrint("uuid=$uuid");
+          network.getTemplateInfo(uuid).then((value) {
+            TemplateDetailView.showTemplateDialog(context, ref, value);
+          });
         }
         // Navigator.push(context, MaterialPageRoute(builder: (context) => PostDetailScreen(postId: uuid)));
       }

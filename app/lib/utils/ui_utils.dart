@@ -1,19 +1,189 @@
+import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:app/global.dart';
+import 'package:app/ui/pages/creation/template_adjust.dart';
+import 'package:app/ui/pages/misc/image_cropper.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/pages/user/user_profile.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/date_util.dart';
 import 'package:common/utils/network.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:sprintf/sprintf.dart';
+
+Future<void> showSelectLocalImageActionSheet(
+    {required BuildContext context,
+    required WidgetRef ref,
+    double? cropRatio,
+    bool adjustTemplateImage = false,
+    required Function(File? file) onSelected}) async {
+  if (Platform.isIOS || Platform.isMacOS) {
+    /// To display an actionSheet
+    showCupertinoModalPopup(
+        context: context,
+        builder: (popContext) => CupertinoActionSheet(
+              actions: [
+                CupertinoActionSheetAction(
+                  child: Text(globalLocalizations.templates_choose_from_camera),
+                  onPressed: () {
+                    // debugPrint("camera");
+                    // Navigator.pop(context);
+                    Navigator.of(popContext).pop();
+                    _openImagePicker(
+                        context: context, ref: ref, adjustTemplateImage: adjustTemplateImage, cropRatio: cropRatio, useCamera: true, onSelected: onSelected);
+                  },
+                ),
+                CupertinoActionSheetAction(
+                  child: Text(globalLocalizations.templates_choose_from_gallery),
+                  onPressed: () {
+                    // debugPrint("gallery");
+                    // Navigator.pop(context);
+                    Navigator.of(popContext).pop();
+                    _openImagePicker(
+                        context: context, ref: ref, adjustTemplateImage: adjustTemplateImage, cropRatio: cropRatio, useCamera: false, onSelected: onSelected);
+                  },
+                )
+              ],
+              cancelButton: CupertinoActionSheetAction(
+                child: Text(globalLocalizations.common_cancel),
+                onPressed: () {
+                  // debugPrint("cancel");
+                  Navigator.of(popContext).pop();
+                },
+              ),
+            ));
+  } else {
+    showModalBottomSheet(
+        context: context,
+        builder: (popContext) => Wrap(
+              children: [
+                ListTile(
+                  leading: Icon(Icons.camera),
+                  title: Text(globalLocalizations.templates_choose_from_camera),
+                  onTap: () {
+                    // Navigator.pop(context);
+                    Navigator.of(popContext).pop();
+                    _openImagePicker(
+                        context: context, ref: ref, adjustTemplateImage: adjustTemplateImage, cropRatio: cropRatio, useCamera: true, onSelected: onSelected);
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.image),
+                  title: Text(globalLocalizations.templates_choose_from_gallery),
+                  onTap: () {
+                    // Navigator.pop(context);
+                    Navigator.of(popContext).pop();
+                    _openImagePicker(
+                        context: context, ref: ref, adjustTemplateImage: adjustTemplateImage, cropRatio: cropRatio, useCamera: false, onSelected: onSelected);
+                  },
+                ),
+              ],
+            ));
+  }
+}
+
+/// Open image picker
+void _openImagePicker(
+    {required BuildContext context,
+    required WidgetRef ref,
+    required bool useCamera,
+    double? cropRatio,
+    bool adjustTemplateImage = true,
+    required Function(File? file) onSelected}) async {
+  final XFile? pickedFile;
+  if (useCamera) {
+    pickedFile = await ImagePicker().pickImage(source: ImageSource.camera);
+    // files = await ImagesPicker.openCamera(
+    //   pickType: PickType.image,
+    //   cropOpt: cropOption,
+    // );
+  } else {
+    pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    // files = await ImagesPicker.pick(
+    //   pickType: PickType.image,
+    //   count: 1,
+    //   cropOpt: cropOption,
+    // );
+  }
+  if (pickedFile != null) {
+    File file = File(pickedFile.path);
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => ImageCropperScreen(
+                  imageFile: file,
+                  ratio: cropRatio,
+                ))).then((file) {
+      if (file == null) {
+        onSelected(null);
+      } else {
+        if (adjustTemplateImage) {
+          Navigator.push(context, MaterialPageRoute(builder: (context) {
+            return AdjustTemplatePositionScreen(
+              file,
+              onFileAdjusted: onSelected,
+            );
+          }));
+        } else {
+          onSelected(file);
+        }
+      }
+    });
+  }
+  // if (files != null && files.isNotEmpty) {
+  //   File selectedFile = File(files[0].path);
+  //   if (adjustTemplateImage) {
+  //     Navigator.push(context, MaterialPageRoute(builder: (context) {
+  //       return AdjustTemplatePositionScreen(
+  //         selectedFile,
+  //         onFileAdjusted: onSelected,
+  //       );
+  //     }));
+  //   } else {
+  //     onSelected(selectedFile);
+  //   }
+  // }
+  // // showLoader();
+  // final XFile? pickedFile = await ImagePicker().pickImage(source: source, maxWidth: 1920, maxHeight: 1920);
+  // CroppedFile? croppedFile = await ImageCropper().cropImage(
+  //   sourcePath: pickedFile!.path,
+  //   aspectRatioPresets: [
+  //     CropAspectRatioPreset.square,
+  //     CropAspectRatioPreset.ratio3x2,
+  //     CropAspectRatioPreset.original,
+  //     CropAspectRatioPreset.ratio4x3,
+  //     CropAspectRatioPreset.ratio16x9
+  //   ],
+  //   uiSettings: [
+  //     AndroidUiSettings(
+  //         toolbarTitle: 'Cropper',
+  //         toolbarColor: designColors.feiyu_blue.auto(ref),
+  //         toolbarWidgetColor: Colors.white,
+  //         initAspectRatio: CropAspectRatioPreset.original,
+  //         lockAspectRatio: false),
+  //     IOSUiSettings()
+  //   ],
+  // );
+  // if (croppedFile != null) {
+  //   Navigator.push(
+  //       context,
+  //       MaterialPageRoute(
+  //           builder: (context) => AdjustTemplatePositionScreen(
+  //                 File(croppedFile.path),
+  //                 onFileAdjusted: onSelected,
+  //               )));
+  // }
+}
 
 void showKeyboard(WidgetRef ref, FocusNode node) {
   if (ref.read(globalKeyboardInfoProvider)) {
@@ -30,28 +200,49 @@ void showKeyboard(WidgetRef ref, FocusNode node) {
   }
 }
 
+void showCommonRequestErrorDialog(WidgetRef ref, BuildContext context, HoohApiErrorResponse response) {
+  showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+            title: Text("Error"),
+            content: Text(response.devMessage),
+          ));
+}
+
 void hideKeyboard() {
   FocusManager.instance.primaryFocus?.unfocus();
 }
 
-String formatAmount(num? number) {
+String formatCurrency(int? currency, {bool? precise = false}) {
+  final formatter = NumberFormat("#,##0.00", "en_US");
+  if (precise ?? false) {
+    if (currency == null) {
+      return "0";
+    }
+    double value = currency / 100.0;
+    return formatter.format(value);
+  } else {
+    if (currency == null) {
+      return "";
+    }
+    double value = currency / 100.0;
+    if (value > 1000000) {
+      return sprintf("%.1f", value / 1000000);
+    } else {
+      return formatter.format(value);
+    }
+  }
+}
+
+String formatAmount(int? number) {
   if (number == null) {
     return "";
   }
-  if (number is double) {
-    if (number > 1000000) {
-      return sprintf("%.1f", number / 1000000);
-    } else {
-      final formatter = NumberFormat("#,##0.0", "en_US");
-      return formatter.format(number);
-    }
+  if (number > 1000000) {
+    return sprintf("%.1f", number / 1000000);
   } else {
-    if (number > 1000000) {
-      return sprintf("%.1f", number / 1000000);
-    } else {
-      final formatter = NumberFormat("#,##0", "en_US");
-      return formatter.format(number);
-    }
+    final formatter = NumberFormat("#,##0", "en_US");
+    return formatter.format(number);
   }
 }
 
@@ -111,7 +302,7 @@ mixin KeyboardLogic<T extends StatefulWidget> on State<T>, WidgetsBindingObserve
         WidgetsBinding.instance.window.viewInsets,
         WidgetsBinding.instance.window.devicePixelRatio,
       ).bottom >
-          100;
+      100;
 }
 
 class HoohLocalizedRichText extends ConsumerStatefulWidget {
@@ -313,7 +504,8 @@ class AvatarView extends ConsumerWidget {
     Key? key,
   }) : super(key: key);
 
-  AvatarView.fromUser(User user, {
+  AvatarView.fromUser(
+    User user, {
     Key? key,
     required this.size,
     this.clickable = true,
@@ -332,9 +524,9 @@ class AvatarView extends ConsumerWidget {
       onPress: !clickable
           ? null
           : () {
-        // Toast.showSnackBar(context, "show user ${user.id}");
-        Navigator.push(context, MaterialPageRoute(builder: (context) => UserProfileScreen(userId: userId)));
-      },
+              // Toast.showSnackBar(context, "show user ${user.id}");
+              Navigator.push(context, MaterialPageRoute(builder: (context) => UserProfileScreen(userId: userId)));
+            },
     );
   }
 }
@@ -508,7 +700,8 @@ class HoohIcon extends ConsumerWidget {
 class LoadingDialog extends ConsumerStatefulWidget {
   final LoadingDialogController _controller;
 
-  const LoadingDialog(this._controller, {
+  const LoadingDialog(
+    this._controller, {
     Key? key,
   }) : super(key: key);
 

@@ -4,6 +4,7 @@ import 'package:app/ui/pages/me/activities.dart';
 import 'package:app/ui/pages/me/badges.dart';
 import 'package:app/ui/pages/me/followers.dart';
 import 'package:app/ui/pages/me/notifications.dart';
+import 'package:app/ui/pages/me/settings/edit_profile.dart';
 import 'package:app/ui/pages/me/settings/setting.dart';
 import 'package:app/ui/pages/user/posts.dart';
 import 'package:app/ui/pages/user/posts_view_model.dart';
@@ -66,7 +67,7 @@ class GuestPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return StartScreen(
-      isStandaloneScreen: false,
+      scene: StartScreen.SCENE_ME,
     );
     // return Container(
     //   color: Colors.yellow.withAlpha(100),
@@ -171,6 +172,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
               icon: Badge(
                 badgeColor: designColors.orange.auto(ref),
                 padding: EdgeInsets.all(4),
+                elevation: 0,
                 position: BadgePosition.topEnd(end: -4, top: -6),
                 showBadge: (modelState.unread?.unreadCount ?? 0) != 0,
                 badgeContent: Text(
@@ -227,11 +229,16 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                             child: Stack(
                               children: [
                                 Center(
-                                  child: HoohImage(
-                                    imageUrl: user.avatarUrl ?? "",
-                                    cornerRadius: 100,
-                                    width: avatarSize,
-                                    height: avatarSize,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfileScreen()));
+                                    },
+                                    child: HoohImage(
+                                      imageUrl: user.avatarUrl ?? "",
+                                      cornerRadius: 100,
+                                      width: avatarSize,
+                                      height: avatarSize,
+                                    ),
                                   ),
                                 ),
                                 Positioned(
@@ -513,12 +520,12 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
     if (wallet == null) {
       return Container();
     }
-    double total = wallet.totalEarnedPow + wallet.totalEarnedReputation;
-    double yesterday = wallet.yesterdayEarnedPow + wallet.yesterdayEarnedReputation;
-    double totalPowPercentage = total == 0 ? 0 : (wallet.totalEarnedPow / total);
-    double totalReputationPercentage = total == 0 ? 0 : (wallet.totalEarnedReputation / total);
-    double yesterdayPowPercentage = yesterday == 0 ? 0 : (wallet.yesterdayEarnedPow / yesterday);
-    double yesterdayReputationPercentage = yesterday == 0 ? 0 : (wallet.yesterdayEarnedReputation / yesterday);
+    int total = wallet.totalEarnedPowInt + wallet.totalEarnedReputationInt;
+    int yesterday = wallet.yesterdayEarnedPowInt + wallet.yesterdayEarnedReputationInt;
+    double totalPowPercentage = total == 0 ? 0 : (wallet.totalEarnedPowInt / total);
+    double totalReputationPercentage = total == 0 ? 0 : (wallet.totalEarnedReputationInt / total);
+    double yesterdayPowPercentage = yesterday == 0 ? 0 : (wallet.yesterdayEarnedPowInt / yesterday);
+    double yesterdayReputationPercentage = yesterday == 0 ? 0 : (wallet.yesterdayEarnedReputationInt / yesterday);
     debugPrint("total=$total,"
         "yesterday=$yesterday,"
         "totalPowPercentage=$totalPowPercentage,"
@@ -550,7 +557,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
           SizedBox(
             width: 4,
           ),
-          Text(sprintf(globalLocalizations.me_wallet_ore_amount, [wallet.balance]),
+          Text(sprintf(globalLocalizations.me_wallet_ore_amount, [formatCurrency(wallet.balanceInt, precise: true)]),
               style: TextStyle(color: designColors.feiyu_blue.auto(ref), fontSize: 16, fontWeight: FontWeight.bold)),
         ],
       ),
@@ -568,7 +575,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
     ]));
   }
 
-  Widget buildEarnDetail(String title, double amount, double powPercentage, double reputationPercentage) {
+  Widget buildEarnDetail(String title, int amount, double powPercentage, double reputationPercentage) {
     String pow = sprintf("%.0f%%", [powPercentage * 100]);
     String reputation = sprintf("%.0f%%", [reputationPercentage * 100]);
     return Expanded(
@@ -595,7 +602,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
             SizedBox(
               width: 4,
             ),
-            Text(sprintf(globalLocalizations.me_wallet_ore_amount, [amount]),
+            Text(sprintf(globalLocalizations.me_wallet_ore_amount, [formatCurrency(amount, precise: true)]),
                 style: TextStyle(color: designColors.feiyu_blue.auto(ref), fontSize: 16, fontWeight: FontWeight.bold)),
           ],
         ),
@@ -633,7 +640,9 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
             const Spacer(),
             TextButton(
               style: MainStyles.textButtonStyle(ref),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfileScreen()));
+              },
               child: Text(
                 globalLocalizations.me_profile_edit,
                 style: TextStyle(fontSize: 14, color: designColors.blue_dark.auto(ref), fontWeight: FontWeight.normal, decoration: TextDecoration.underline),

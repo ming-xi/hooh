@@ -1,4 +1,6 @@
+import 'package:app/global.dart';
 import 'package:app/utils/design_colors.dart';
+import 'package:common/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -30,7 +32,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
               buildTile(AppLocalizations.of(context)!.account_password,tailText: AppLocalizations.of(context)!.account_change,
                   showArrow: true, onPress: () {
                     // Navigator.push(context,
-                        // MaterialPageRoute(builder: (context) => AccountScreen()));
+                    // MaterialPageRoute(builder: (context) => AccountScreen()));
                   }),
               buildTile(AppLocalizations.of(context)!.account_email,tailText: AppLocalizations.of(context)!.account_verify,
                   showArrow: true, showDot: true, onPress: () {

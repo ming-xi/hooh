@@ -67,6 +67,21 @@ class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState
     getComments(callback);
   }
 
+  void setPostVisible(bool visible) {
+    state.post!.visible = visible;
+    updateState(state.copyWith(post: Post.fromJson(state.post!.toJson())));
+  }
+
+  void setPublishState(int publishState) {
+    state.post!.publishState = publishState;
+    updateState(state.copyWith(post: Post.fromJson(state.post!.toJson())));
+  }
+
+  void setTemplateFavorited(bool favorited) {
+    state.post!.images[0].templateFavorited = favorited;
+    updateState(state.copyWith(post: Post.fromJson(state.post!.toJson())));
+  }
+
   void getPostInfo(Function(PageState)? callback) {
     if (state.postState == PageState.loading) {
       if (callback != null) {
@@ -227,17 +242,34 @@ class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState
   }
 
   void onPostFavoritePress(bool newState, void Function(String msg)? onError) {
-    // if (state.post==null) {
-    //   return;
-    // }
-    // Future<void> request = state.post!.favorited ? network.cancelLikePost(state.post!.id) : network.likePost(state.post!.id);
-    // network.requestAsync<void>(request, (data) {
-    //   updateState(state.copyWith(post: state.post!..liked=newState));
-    // }, (error) {
-    //   if (onError!=null) {
-    //     onError(error.message);
-    //   }
-    // });
+    if (state.post == null) {
+      return;
+    }
+    Future<void> request = state.post!.favorited ?? false ? network.cancelFavoritePost(state.post!.id) : network.favoritePost(state.post!.id);
+    network.requestAsync<void>(request, (data) {
+      // to create a new object
+      updateState(state.copyWith(post: Post.fromJson((state.post!..favorited = newState).toJson())));
+    }, (error) {
+      if (onError != null) {
+        onError(error.message);
+      }
+    });
+  }
+
+  void onFollowPress(bool newState, void Function(String msg)? onError) {
+    if (state.post == null) {
+      return;
+    }
+    Future<void> request = state.post!.author.followed ?? false ? network.cancelFollowUser(state.post!.author.id) : network.followUser(state.post!.author.id);
+    network.requestAsync<void>(request, (data) {
+      // to create a new object
+      state.post!.author.followed = newState;
+      updateState(state.copyWith(post: Post.fromJson(state.post!.toJson())));
+    }, (error) {
+      if (onError != null) {
+        onError(error.message);
+      }
+    });
   }
 
   void onPostSharePress() {}

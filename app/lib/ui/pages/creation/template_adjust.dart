@@ -3,7 +3,6 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:app/global.dart';
-import 'package:app/ui/pages/creation/template_text_setting.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
@@ -14,9 +13,11 @@ import 'package:path_provider/path_provider.dart';
 
 class AdjustTemplatePositionScreen extends ConsumerStatefulWidget {
   final File file;
+  final Function(File file) onFileAdjusted;
 
   const AdjustTemplatePositionScreen(
     this.file, {
+    required this.onFileAdjusted,
     Key? key,
   }) : super(key: key);
 
@@ -51,12 +52,7 @@ class _AdjustTemplatePositionScreenState extends ConsumerState<AdjustTemplatePos
           IconButton(
               onPressed: () async {
                 var file = await captureImage();
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => TemplateTextSettingScreen(
-                              imageFile: file,
-                            )));
+                widget.onFileAdjusted(file);
               },
               icon: Icon(Icons.arrow_forward))
         ],

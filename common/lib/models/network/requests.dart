@@ -3,7 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'requests.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class LoginWithPasswordRequest {
   String username;
   String encryptedPassword;
@@ -15,7 +15,7 @@ class LoginWithPasswordRequest {
   Map<String, dynamic> toJson() => _$LoginWithPasswordRequestToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class RegisterRequest {
   String username;
   String email;
@@ -28,7 +28,7 @@ class RegisterRequest {
   Map<String, dynamic> toJson() => _$RegisterRequestToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class RequestValidationCodeRequest {
   int type;
   String target;
@@ -40,7 +40,7 @@ class RequestValidationCodeRequest {
   Map<String, dynamic> toJson() => _$RequestValidationCodeRequestToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class ValidateCodeRequest {
   String target;
   String code;
@@ -52,7 +52,7 @@ class ValidateCodeRequest {
   Map<String, dynamic> toJson() => _$ValidateCodeRequestToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class ResetPasswordRequest {
   String token;
   String encryptedPassword;
@@ -64,7 +64,7 @@ class ResetPasswordRequest {
   Map<String, dynamic> toJson() => _$ResetPasswordRequestToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class RequestUploadingFileRequest {
   String md5;
   String ext;
@@ -76,7 +76,7 @@ class RequestUploadingFileRequest {
   Map<String, dynamic> toJson() => _$RequestUploadingFileRequestToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class ChangeUserInfoRequest {
   String? name;
   String? signature;
@@ -91,7 +91,18 @@ class ChangeUserInfoRequest {
   Map<String, dynamic> toJson() => _$ChangeUserInfoRequestToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
+class FcmTokenRequest {
+  String token;
+
+  FcmTokenRequest(this.token);
+
+  factory FcmTokenRequest.fromJson(Map<String, dynamic> json) => _$FcmTokenRequestFromJson(json);
+
+  Map<String, dynamic> toJson() => _$FcmTokenRequestToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CreateTemplateRequest {
   String frameHeight;
   String frameWidth;
@@ -115,7 +126,7 @@ class CreateTemplateRequest {
   Map<String, dynamic> toJson() => _$CreateTemplateRequestToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class RefreshTokenRequest {
   String refreshToken;
 
@@ -126,23 +137,33 @@ class RefreshTokenRequest {
   Map<String, dynamic> toJson() => _$RefreshTokenRequestToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CreatePostRequest {
   List<CreateImageRequest> images;
   List<String> tags;
-  bool allowDownload;
   bool visible;
-
   bool joinWaitingList;
 
-  CreatePostRequest({required this.images, required this.tags, required this.allowDownload, required this.visible, required this.joinWaitingList});
+  CreatePostRequest({required this.images, required this.tags, required this.visible, required this.joinWaitingList});
 
   factory CreatePostRequest.fromJson(Map<String, dynamic> json) => _$CreatePostRequestFromJson(json);
 
   Map<String, dynamic> toJson() => _$CreatePostRequestToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
+class EditPostRequest {
+  bool? visible;
+  bool? joinWaitingList;
+
+  EditPostRequest({this.visible, this.joinWaitingList});
+
+  factory EditPostRequest.fromJson(Map<String, dynamic> json) => _$EditPostRequestFromJson(json);
+
+  Map<String, dynamic> toJson() => _$EditPostRequestToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CreateImageRequest {
   String imageKey;
   String content;
@@ -155,7 +176,7 @@ class CreateImageRequest {
   Map<String, dynamic> toJson() => _$CreateImageRequestToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class GetRecommendedTemplatesForCreationRequest {
   List<String> contents;
 
@@ -166,7 +187,7 @@ class GetRecommendedTemplatesForCreationRequest {
   Map<String, dynamic> toJson() => _$GetRecommendedTemplatesForCreationRequestToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CreatePostCommentRequest {
   List<Substitute> substitutes;
   String content;

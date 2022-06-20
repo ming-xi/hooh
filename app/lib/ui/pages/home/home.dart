@@ -12,6 +12,7 @@ import 'package:blur/blur.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -58,7 +59,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       null,
       null,
     ];
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       Future.delayed(const Duration(seconds: 1), () {
         User? user = ref.read(globalUserInfoProvider);
         if (user != null) {
@@ -70,6 +71,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           }, (error) {});
         }
       });
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+      NotificationSettings settings = await messaging.requestPermission(
+        alert: true,
+        announcement: false,
+        badge: true,
+        carPlay: false,
+        criticalAlert: false,
+        provisional: false,
+        sound: true,
+      );
+
+      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+        print('User granted permission');
+      } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+        print('User granted provisional permission');
+      } else {
+        print('User declined or has not accepted permission');
+      }
     });
     // User? user = ref.read(globalUserInfoProvider);
     // if (user != null) {
@@ -92,7 +112,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     User? currentUser = ref.watch(globalUserInfoProvider);
     // debugPrint("home tab_index=${modelState.tabIndex}");
     double avatarSize = 14.4;
-    double avatarStrokeWidth = 1.8;
+    double avatarStrokeWidth = 2.4;
     Widget meTabIcon = currentUser == null
         ? HoohIcon(
             "assets/images/default_avatar_1.jpg",
@@ -105,6 +125,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             height: avatarSize,
           );
     meTabIcon = Container(
+      width: 28,
+      height: 28,
       child: ClipOval(child: meTabIcon),
       decoration: BoxDecoration(border: Border.all(color: designColors.light_06.auto(ref), width: avatarStrokeWidth), shape: BoxShape.circle),
     );
@@ -128,6 +150,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               BottomNavigationBarItem(
                   icon: HoohIcon(
                     modelState.tabIndex != 0 ? "assets/images/icon_tab_creation_off.svg" : "assets/images/icon_tab_creation_on.svg",
+                    width: 36,
+                    height: 36,
                     color: modelState.tabIndex != 0 ? designColors.light_06.auto(ref) : null,
                   ),
                   label: ""),
@@ -135,12 +159,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   icon: HoohIcon(
                     modelState.tabIndex != 1 ? "assets/images/icon_tab_templates_off.svg" : "assets/images/icon_tab_templates_on.svg",
                     color: modelState.tabIndex != 1 ? designColors.light_06.auto(ref) : null,
+                    width: 36,
+                    height: 36,
                   ),
                   label: ""),
               BottomNavigationBarItem(
                   icon: HoohIcon(
                     modelState.tabIndex != 2 ? "assets/images/icon_tab_feeds_off.svg" : "assets/images/icon_tab_feeds_on.svg",
                     color: modelState.tabIndex != 2 ? designColors.light_06.auto(ref) : null,
+                    width: 36,
+                    height: 36,
                   ),
                   label: ""),
               // BottomNavigationBarItem(icon: Icon(Icons.person),

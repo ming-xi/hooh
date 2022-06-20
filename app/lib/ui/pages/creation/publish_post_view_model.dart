@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:app/extensions/extensions.dart';
 import 'package:app/ui/pages/creation/edit_post_view_model.dart';
 import 'package:app/ui/widgets/template_compose_view.dart';
+import 'package:app/utils/file_utils.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/network/requests.dart';
 import 'package:common/models/network/responses.dart';
@@ -84,6 +85,9 @@ class PublishPostScreenViewModel extends StateNotifier<PublishPostScreenModelSta
       {required BuildContext context, required bool publishToWaitingList, Function(Post post)? onSuccess, Function(String msg)? onError}) async {
     state = state.copyWith(uploading: true);
     File imageFile = await _saveScreenshot(context);
+    if (state.allowDownload) {
+      FileUtil.saveImageToGallery(imageFile);
+    }
     List<String?> keys = await Future.wait([imageFile].map((file) async {
       RequestUploadingFileResponse requestUploadingFileResponse;
       try {
@@ -114,7 +118,6 @@ class PublishPostScreenViewModel extends StateNotifier<PublishPostScreenModelSta
     }).toList());
     List<CreateImageRequest> imageRequests = keys.map((e) => CreateImageRequest(e!, state.setting.text ?? "", templateId: state.setting.templateId)).toList();
     CreatePostRequest request = CreatePostRequest(
-      allowDownload: state.allowDownload,
       visible: !state.isPrivate,
       joinWaitingList: publishToWaitingList,
       images: imageRequests,

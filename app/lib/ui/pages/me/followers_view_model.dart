@@ -99,9 +99,14 @@ class FollowerScreenViewModel extends StateNotifier<FollowerScreenModelState> {
   }
 
   void setFollowState(String userId, bool newState, {Function(String)? callback}) {
-    Future<void> request = newState ? network.followUser(state.userId) : network.cancelFollowUser(state.userId);
+    Future<void> request = newState ? network.followUser(userId) : network.cancelFollowUser(userId);
+    for (var user in state.users) {
+      if (user.id == userId) {
+        user.followed = newState;
+      }
+    }
     network.requestAsync<void>(request, (newData) {
-      updateState(state.copyWith(users: [...state.users.where((element) => element.id == userId).map((e) => e..followed = newState)]));
+      updateState(state.copyWith(users: [...state.users]));
     }, (error) {
       if (callback != null) {
         callback(error.message);

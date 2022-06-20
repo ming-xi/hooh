@@ -12,6 +12,7 @@ class Constants {
   static const INVALID_USERNAME_AND_PASSWORD = 20001;
   static const USERNAME_ALREADY_REGISTERED = 20008;
   static const EMAIL_ALREADY_VALIDATED = 20009;
+  static const EDIT_NAME_TOO_OFTEN = 20016;
 }
 
 //region global variants
