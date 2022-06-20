@@ -1,4 +1,5 @@
 import 'package:app/extensions/extensions.dart';
+import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/utils/network.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -25,7 +26,7 @@ class SelectTopicScreenViewModel extends StateNotifier<SelectTopicScreenModelSta
     getRecommendedTags(onError: null);
   }
 
-  void getRecommendedTags({Function(String)? onError}) {
+  void getRecommendedTags({Function(HoohApiErrorResponse)? onError}) {
     network.requestAsync<List<String>>(network.getRecommendedPublishPostTags(), (data) {
       // debugPrint("tags=$data");
       // List<String> list = [];
@@ -38,7 +39,7 @@ class SelectTopicScreenViewModel extends StateNotifier<SelectTopicScreenModelSta
       updateState(state.copyWith(recommendedTags: data));
     }, (error) {
       if (onError != null) {
-        onError(error.message);
+        onError(error);
       }
     });
   }

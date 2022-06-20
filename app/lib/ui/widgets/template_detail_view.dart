@@ -53,7 +53,8 @@ class _TemplateDetailBottomSheetState extends ConsumerState<TemplateDetailBottom
     if (e == null) {
       model.updateTemplateData(template);
     } else {
-      Toast.showSnackBar(context, e.devMessage);
+      // Toast.showSnackBar(context, e.devMessage);
+      showCommonRequestErrorDialog(ref, context, e);
     }
   }
 }

@@ -98,7 +98,7 @@ class FollowerScreenViewModel extends StateNotifier<FollowerScreenModelState> {
     });
   }
 
-  void setFollowState(String userId, bool newState, {Function(String)? callback}) {
+  void setFollowState(String userId, bool newState, {Function(HoohApiErrorResponse error)? callback}) {
     Future<void> request = newState ? network.followUser(userId) : network.cancelFollowUser(userId);
     for (var user in state.users) {
       if (user.id == userId) {
@@ -109,7 +109,7 @@ class FollowerScreenViewModel extends StateNotifier<FollowerScreenModelState> {
       updateState(state.copyWith(users: [...state.users]));
     }, (error) {
       if (callback != null) {
-        callback(error.message);
+        callback(error);
       }
     });
   }

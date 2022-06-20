@@ -308,8 +308,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     return TextButton(
       onPressed: () {
         UserProfileScreenViewModel model = ref.read(widget.provider.notifier);
-        model.setFollowState(!followed, callback: (msg) {
-          Toast.showSnackBar(context, msg);
+        model.setFollowState(!followed, callback: (error) {
+          // Toast.showSnackBar(context, msg);
+          showCommonRequestErrorDialog(ref, context, error);
         });
       },
       child: Text(

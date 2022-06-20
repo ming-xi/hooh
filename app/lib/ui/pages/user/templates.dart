@@ -6,6 +6,7 @@ import 'package:app/ui/pages/user/templates_view_model.dart';
 import 'package:app/ui/widgets/template_compose_view.dart';
 import 'package:app/ui/widgets/template_detail_view.dart';
 import 'package:app/ui/widgets/toast.dart';
+import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/page_state.dart';
 import 'package:common/models/template.dart';
 import 'package:flutter/material.dart';
@@ -72,7 +73,8 @@ class _UserTemplateScreenState extends ConsumerState<UserTemplateScreen> {
               type: TemplateDetailView.TYPE_FEEDS,
               onFavorite: (template, error) {
                 if (error != null) {
-                  Toast.showSnackBar(context, error.message);
+                  // Toast.showSnackBar(context, error.message);
+                  showCommonRequestErrorDialog(ref, context, error);
                   return;
                 }
                 template.favorited = !template.favorited;
@@ -80,7 +82,8 @@ class _UserTemplateScreenState extends ConsumerState<UserTemplateScreen> {
               },
               onFollow: (template, error) {
                 if (error != null) {
-                  Toast.showSnackBar(context, error.message);
+                  // Toast.showSnackBar(context, error.message);
+                  showCommonRequestErrorDialog(ref, context, error);
                   return;
                 }
                 template.author!.followed = true;

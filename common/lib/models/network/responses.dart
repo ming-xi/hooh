@@ -1,5 +1,4 @@
 import 'package:common/models/user.dart';
-import 'package:common/utils/serialization.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'responses.g.dart';
@@ -170,6 +169,17 @@ class FeeInfoResponse {
   factory FeeInfoResponse.fromJson(Map<String, dynamic> json) => _$FeeInfoResponseFromJson(json);
 
   Map<String, dynamic> toJson() => _$FeeInfoResponseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
+class ChangeNameLimitInfoResponse {
+  int days;
+
+  ChangeNameLimitInfoResponse(this.days);
+
+  factory ChangeNameLimitInfoResponse.fromJson(Map<String, dynamic> json) => _$ChangeNameLimitInfoResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ChangeNameLimitInfoResponseToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)

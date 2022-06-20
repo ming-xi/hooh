@@ -573,7 +573,11 @@ class Network {
   }
 
   Future<FeeInfoResponse> getFeeInfo() {
-    return _getResponseObject(HttpMethod.get, _buildHoohUri("app/fee-info"), deserializer: FeeInfoResponse.fromJson);
+    return _getResponseObject(HttpMethod.get, _buildHoohUri("app/info/fee"), deserializer: FeeInfoResponse.fromJson);
+  }
+
+  Future<ChangeNameLimitInfoResponse> getChangeNameLimitInfo() {
+    return _getResponseObject(HttpMethod.get, _buildHoohUri("app/info/change-name-limit"), deserializer: ChangeNameLimitInfoResponse.fromJson);
   }
 
   //endregion

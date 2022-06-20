@@ -2,12 +2,14 @@ import 'package:app/global.dart';
 import 'package:app/ui/pages/me/settings/edit_profile_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/toast.dart';
+import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sprintf/sprintf.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   final StateNotifierProvider<EditProfileScreenViewModel, EditProfileScreenModelState> provider = StateNotifierProvider((ref) {
@@ -192,22 +194,7 @@ class _EditNameScreenState extends ConsumerState<EditNameScreen> {
               onPressed: modelState.error
                   ? null
                   : () {
-                      showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (context) {
-                            return LoadingDialog(LoadingDialogController());
-                          });
-                      model.changeNickname(controller.text.trim(), (user, msg) {
-                        Navigator.of(context).pop();
-                        if (user != null) {
-                          ref.read(globalUserInfoProvider.state).state = user;
-                          Toast.showSnackBar(context, globalLocalizations.edit_profile_edit_success);
-                          Navigator.of(context, rootNavigator: true).pop();
-                        } else {
-                          Toast.showSnackBar(context, msg!);
-                        }
-                      });
+                changeName(context, model);
                     },
               icon: Icon(Icons.done_rounded)),
         ],
@@ -238,6 +225,80 @@ class _EditNameScreenState extends ConsumerState<EditNameScreen> {
         ),
       ),
     );
+  }
+
+  void showChangeTooOftenDialog(BuildContext context, EditProfileScreenViewModel model) {
+    model.getChangeNameLimit((days, msg) {
+      if (days != null) {
+        showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) {
+              return AlertDialog(
+                content: Text(sprintf(globalLocalizations.edit_profile_edit_name_error_dialog_text, [days])),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text(globalLocalizations.common_ok))
+                ],
+              );
+            });
+      } else {
+        showCommonRequestErrorDialog(ref, context, msg);
+      }
+    });
+  }
+
+  void changeName(BuildContext context, EditProfileScreenViewModel model) {
+    model.getChangeNameLimit((days, msg) {
+      if (days != null) {
+        showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (popContext) {
+              return AlertDialog(
+                content: Text(sprintf(globalLocalizations.edit_profile_edit_name_confirm_dialog_text, [days])),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.of(popContext).pop();
+                        showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (context) {
+                              return LoadingDialog(LoadingDialogController());
+                            });
+                        model.changeNickname(controller.text.trim(), (user, response) {
+                          Navigator.of(context).pop();
+                          if (user != null) {
+                            ref.read(globalUserInfoProvider.state).state = user;
+                            Toast.showSnackBar(context, globalLocalizations.edit_profile_edit_success);
+                            Navigator.of(context, rootNavigator: true).pop();
+                          } else {
+                            if (response!.errorCode == Constants.EDIT_NAME_TOO_OFTEN) {
+                              showChangeTooOftenDialog(context, model);
+                            } else {
+                              // Toast.showSnackBar(context, response!.message);
+                              showCommonRequestErrorDialog(ref, context, response);
+                            }
+                          }
+                        });
+                      },
+                      child: Text(globalLocalizations.common_confirm)),
+                  TextButton(
+                      onPressed: () {
+                        Navigator.of(popContext).pop();
+                      },
+                      child: Text(globalLocalizations.common_cancel))
+                ],
+              );
+            });
+      } else {
+        showCommonRequestErrorDialog(ref, context, msg);
+      }
+    });
   }
 }
 
@@ -285,14 +346,15 @@ class _EditSignatureScreenState extends ConsumerState<EditSignatureScreen> {
                           builder: (context) {
                             return LoadingDialog(LoadingDialogController());
                           });
-                      model.changeSignature(controller.text.trim(), (user, msg) {
+                      model.changeSignature(controller.text.trim(), (user, error) {
                         Navigator.of(context).pop();
                         if (user != null) {
                           ref.read(globalUserInfoProvider.state).state = user;
                           Toast.showSnackBar(context, globalLocalizations.edit_profile_edit_success);
                           Navigator.of(context, rootNavigator: true).pop();
                         } else {
-                          Toast.showSnackBar(context, msg!);
+                          // Toast.showSnackBar(context, msg!);
+                          showCommonRequestErrorDialog(ref, context, error!);
                         }
                       });
                     },
@@ -373,14 +435,15 @@ class _EditWebsiteScreenState extends ConsumerState<EditWebsiteScreen> {
                           builder: (context) {
                             return LoadingDialog(LoadingDialogController());
                           });
-                      model.changeWebsite(controller.text.trim(), (user, msg) {
+                      model.changeWebsite(controller.text.trim(), (user, error) {
                         Navigator.of(context).pop();
                         if (user != null) {
                           ref.read(globalUserInfoProvider.state).state = user;
                           Toast.showSnackBar(context, globalLocalizations.edit_profile_edit_success);
                           Navigator.of(context, rootNavigator: true).pop();
                         } else {
-                          Toast.showSnackBar(context, msg!);
+                          // Toast.showSnackBar(context, msg!);
+                          showCommonRequestErrorDialog(ref, context, error!);
                         }
                       });
                     },

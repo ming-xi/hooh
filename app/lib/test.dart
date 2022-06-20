@@ -2,24 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:app/extensions/extensions.dart';
 import 'package:app/global.dart';
-import 'package:app/launcher.dart';
-import 'package:app/test_uploading_view_model.dart';
-import 'package:app/ui/pages/me/activities.dart';
-import 'package:app/ui/pages/user/register/set_badge.dart';
-import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/ipfs_node.dart';
-import 'package:app/ui/widgets/toast.dart';
 import 'package:app/ui/widgets/user_activity_view.dart';
-import 'package:app/utils/file_utils.dart';
 import 'package:app/utils/ui_utils.dart';
-import 'package:common/models/network/responses.dart';
+import 'package:common/models/network/requests.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pretty_json/pretty_json.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -56,12 +47,11 @@ class _TestMenuScreenState extends ConsumerState<TestMenuScreen> {
           children: [
             ElevatedButton(
                 onPressed: () {
-                  // Navigator.push(context, MaterialPageRoute(builder: (context) => TestWidgetScreen()));
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => UserActivityScreen(userId: "da599f8e-cd49-443f-9e78-fa3f1394de0c")));
-                  // Navigator.popUntil(context,ModalRoute.withName("/home"));
-                  // popToHomeScreen(context);
+                  network.requestAsync(network.changeUserInfo(ref.read(globalUserInfoProvider)!.id, website: "haha"), (data) => null, (error) {
+                    showCommonRequestErrorDialog(ref, context, error);
+                  });
                 },
-                child: Text("test screen")),
+                child: Text("test")),
             SizedBox(
               height: 16,
             ),
@@ -436,7 +426,6 @@ class _FirstPageState extends State<FirstPage> {
     );
   }
 }
-
 
 class TestIpfsUploadingScreen extends StatefulWidget {
   final File file;

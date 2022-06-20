@@ -82,7 +82,7 @@ class PublishPostScreenViewModel extends StateNotifier<PublishPostScreenModelSta
   }
 
   Future<void> publishPost(
-      {required BuildContext context, required bool publishToWaitingList, Function(Post post)? onSuccess, Function(String msg)? onError}) async {
+      {required BuildContext context, required bool publishToWaitingList, Function(Post post)? onSuccess, Function(dynamic reponse)? onError}) async {
     state = state.copyWith(uploading: true);
     File imageFile = await _saveScreenshot(context);
     if (state.allowDownload) {
@@ -93,10 +93,9 @@ class PublishPostScreenViewModel extends StateNotifier<PublishPostScreenModelSta
       try {
         requestUploadingFileResponse = await network.requestUploadingPostImage(file);
       } catch (e) {
-        print(e);
         if (onError != null) {
           if (e is HoohApiErrorResponse) {
-            onError(e.message);
+            onError(e);
           } else {
             onError("error");
           }
@@ -130,7 +129,7 @@ class PublishPostScreenViewModel extends StateNotifier<PublishPostScreenModelSta
       }
     }, (e) {
       if (onError != null) {
-        onError(e.message);
+        onError(e);
       }
       state = state.copyWith(uploading: false);
     });

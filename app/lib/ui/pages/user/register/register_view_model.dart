@@ -1,6 +1,7 @@
 import 'package:app/extensions/extensions.dart';
 import 'package:app/global.dart';
 import 'package:app/utils/constants.dart';
+import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/network/responses.dart';
 import 'package:common/models/user.dart';
@@ -73,13 +74,13 @@ class RegisterViewModel extends StateNotifier<RegisterModelState> {
           onFailed(error);
         }
       }
-      showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              content: Text(error.message),
-            );
-          });
+      // showDialog(
+      //     context: context,
+      //     builder: (context) {
+      //       return AlertDialog(
+      //         content: Text(error.message),
+      //       );
+      //     });
     });
   }
 

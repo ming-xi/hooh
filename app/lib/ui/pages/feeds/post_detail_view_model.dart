@@ -209,7 +209,7 @@ class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState
     updateState(state.copyWith(selectedTab: newTab));
   }
 
-  void onPostLikePress(bool newState, void Function(String msg)? onError) {
+  void onPostLikePress(bool newState, void Function(HoohApiErrorResponse error)? onError) {
     if (state.post == null) {
       return;
     }
@@ -219,12 +219,12 @@ class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState
       updateState(state.copyWith(post: Post.fromJson((state.post!..liked = newState).toJson())));
     }, (error) {
       if (onError != null) {
-        onError(error.message);
+        onError(error);
       }
     });
   }
 
-  void onCommentLikePress(PostComment comment, bool newState, void Function(String msg)? onError) {
+  void onCommentLikePress(PostComment comment, bool newState, void Function(HoohApiErrorResponse error)? onError) {
     Future<void> request = newState ? network.likePostComment(comment.id) : network.cancelLikePostComment(comment.id);
     network.requestAsync<void>(request, (data) {
       comment.liked = newState;
@@ -236,12 +236,12 @@ class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState
       updateState(state.copyWith(comments: [...state.comments]));
     }, (error) {
       if (onError != null) {
-        onError(error.message);
+        onError(error);
       }
     });
   }
 
-  void onPostFavoritePress(bool newState, void Function(String msg)? onError) {
+  void onPostFavoritePress(bool newState, void Function(HoohApiErrorResponse error)? onError) {
     if (state.post == null) {
       return;
     }
@@ -251,12 +251,12 @@ class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState
       updateState(state.copyWith(post: Post.fromJson((state.post!..favorited = newState).toJson())));
     }, (error) {
       if (onError != null) {
-        onError(error.message);
+        onError(error);
       }
     });
   }
 
-  void onFollowPress(bool newState, void Function(String msg)? onError) {
+  void onFollowPress(bool newState, void Function(HoohApiErrorResponse error)? onError) {
     if (state.post == null) {
       return;
     }
@@ -267,14 +267,14 @@ class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState
       updateState(state.copyWith(post: Post.fromJson(state.post!.toJson())));
     }, (error) {
       if (onError != null) {
-        onError(error.message);
+        onError(error);
       }
     });
   }
 
   void onPostSharePress() {}
 
-  void createComment(PostComment? repliedComment, String text, void Function()? onComplete, void Function(String msg)? onError) {
+  void createComment(PostComment? repliedComment, String text, void Function()? onComplete, void Function(HoohApiErrorResponse error)? onError) {
     Future<PostComment> request;
     // CreatePostCommentRequest createPostCommentRequest = CreatePostCommentRequest([], getEscapedString(text));
     CreatePostCommentRequest createPostCommentRequest = prepareCommentRequest(text);
@@ -290,7 +290,7 @@ class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState
       }
     }, (error) {
       if (onError != null) {
-        onError(error.message);
+        onError(error);
       }
     });
   }

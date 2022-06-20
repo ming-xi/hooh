@@ -1,4 +1,7 @@
 {
+  "error_network_error": "Network Error",
+  "edit_profile_edit_name_error_dialog_text": "You can't change your name right now because you've changed it within %d days.",
+  "edit_profile_edit_name_confirm_dialog_text": "Modified once in %d days，are you sure to change it now?",
   "crop_image_title": "Crop",
   "account_change": "Change",
   "account_email": "Email",

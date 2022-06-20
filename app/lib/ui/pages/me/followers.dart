@@ -77,10 +77,10 @@ class _FollowerScreenState extends ConsumerState<FollowerScreen> with TickerProv
                 unselectedLabelColor: Colors.black,
                 tabs: [
                   Tab(
-                    text: globalLocalizations.me_follower,
+                    text: globalLocalizations.me_following,
                   ),
                   Tab(
-                    text: globalLocalizations.me_following,
+                    text: globalLocalizations.me_follower,
                   ),
                 ],
               ),
@@ -204,8 +204,9 @@ class _FollowerPageState extends ConsumerState<FollowerPage> {
                             return;
                           }
                           FollowerScreenViewModel model = ref.read(widget.provider.notifier);
-                          model.setFollowState(user.id, !(user.followed ?? false), callback: (msg) {
-                            Toast.showSnackBar(context, msg);
+                          model.setFollowState(user.id, !(user.followed ?? false), callback: (error) {
+                            // Toast.showSnackBar(context, msg);
+                            showCommonRequestErrorDialog(ref, context, error);
                           });
                         },
                         child: Text(

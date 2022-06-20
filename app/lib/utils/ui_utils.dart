@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:app/global.dart';
+import 'package:app/launcher.dart';
 import 'package:app/ui/pages/creation/template_adjust.dart';
 import 'package:app/ui/pages/misc/image_cropper.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
@@ -14,6 +15,7 @@ import 'package:common/utils/network.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -200,13 +202,33 @@ void showKeyboard(WidgetRef ref, FocusNode node) {
   }
 }
 
-void showCommonRequestErrorDialog(WidgetRef ref, BuildContext context, HoohApiErrorResponse response) {
+void showCommonRequestErrorDialog(WidgetRef ref, BuildContext context, dynamic response) {
   showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-            title: Text("Error"),
-            content: Text(response.devMessage),
-          ));
+      builder: (context) {
+        String title = globalLocalizations.error_network_error;
+        String content;
+        if (response is HoohApiErrorResponse) {
+          content = response.message;
+          if (FlavorConfig.instance.variables[Launcher.KEY_ADMIN_MODE]) {
+            content = content + "\n\n[Admin Mode] dev message:\n\n" + response.devMessage;
+          }
+        } else {
+          if (response is String) {
+            content = response;
+          } else {
+            if (response == null) {
+              content = "error";
+            } else {
+              content = response.toString();
+            }
+          }
+        }
+        return AlertDialog(
+          title: Text(title),
+          content: Text(content),
+        );
+      });
 }
 
 void hideKeyboard() {

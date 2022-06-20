@@ -197,7 +197,8 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
         },
         onError: (error) {
           Navigator.of(context).pop();
-          Toast.showSnackBar(context, sprintf(globalLocalizations.publish_post_failed, [error]));
+          Toast.showSnackBar(context, sprintf(globalLocalizations.publish_post_failed, [globalLocalizations.error_network_error]));
+          showCommonRequestErrorDialog(ref, context, error);
         });
   }
 

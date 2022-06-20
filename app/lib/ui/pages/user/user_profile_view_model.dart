@@ -1,4 +1,5 @@
 import 'package:app/extensions/extensions.dart';
+import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/network.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
@@ -34,7 +35,7 @@ class UserProfileScreenViewModel extends StateNotifier<UserProfileScreenModelSta
     });
   }
 
-  void setFollowState(bool newState, {Function(String)? callback}) {
+  void setFollowState(bool newState, {Function(HoohApiErrorResponse error)? callback}) {
     if (state.user == null) {
       return;
     }
@@ -44,7 +45,7 @@ class UserProfileScreenViewModel extends StateNotifier<UserProfileScreenModelSta
       updateState(state.copyWith(user: User.fromJson(state.user!.toJson())));
     }, (error) {
       if (callback != null) {
-        callback(error.message);
+        callback(error);
       }
     });
   }

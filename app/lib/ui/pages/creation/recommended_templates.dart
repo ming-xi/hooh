@@ -56,7 +56,8 @@ class _RecommendedTemplatesScreenState extends ConsumerState<RecommendedTemplate
           model.getRecommendedTemplates(onComplete: () {
             _refreshController.refreshCompleted();
           }, onError: (error) {
-            Toast.showSnackBar(context, error.message);
+            // Toast.showSnackBar(context, error.message);
+            showCommonRequestErrorDialog(ref, context, error);
             _refreshController.refreshCompleted();
           });
         },

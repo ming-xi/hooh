@@ -9,6 +9,7 @@ import 'package:app/ui/widgets/template_text_setting_view.dart';
 import 'package:app/ui/widgets/template_text_setting_view_model.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
+import 'package:app/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -160,7 +161,8 @@ class _TemplateAddTagScreenState extends ConsumerState<TemplateAddTagScreen> wit
                                                       )));
                                         },
                                         onError: (msg) {
-                                          Toast.showSnackBar(context, msg);
+                                          // Toast.showSnackBar(context, msg);
+                                          showCommonRequestErrorDialog(ref, context, msg);
                                         });
                                   }),
                       ),

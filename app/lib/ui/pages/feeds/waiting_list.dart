@@ -5,6 +5,7 @@ import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/post_view.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
+import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/page_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -153,7 +154,8 @@ class _WaitingListPageState extends ConsumerState<WaitingListPage> {
       displayAsVotingPost: true,
       onVote: (post, error) {
         if (error != null) {
-          Toast.showSnackBar(context, error.message);
+          // Toast.showSnackBar(context, error.message);
+          showCommonRequestErrorDialog(ref, context, error);
           return;
         }
         model.updatePostData(post, index);

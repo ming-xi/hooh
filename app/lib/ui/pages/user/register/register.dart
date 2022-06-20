@@ -184,6 +184,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 usernameNode.requestFocus();
                               } else if (error.errorCode == Constants.EMAIL_ALREADY_VALIDATED) {
                                 emailNode.requestFocus();
+                              } else {
+                                showCommonRequestErrorDialog(ref, context, error);
                               }
                             });
                           },

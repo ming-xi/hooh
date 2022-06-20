@@ -4,6 +4,9 @@ import 'package:app/ui/widgets/comment_compose_view_model.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
+import 'package:common/models/hooh_api_error_response.dart';
+import 'package:common/models/hooh_api_error_response.dart';
+import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/post_comment.dart';
 import 'package:common/models/user.dart';
 import 'package:flutter/material.dart';
@@ -14,10 +17,10 @@ import 'package:sprintf/sprintf.dart';
 class CommentComposeView extends ConsumerStatefulWidget {
   final StateNotifierProvider<CommentComposeWidgetViewModel, CommentComposeWidgetModelState> provider;
   final FocusNode textFieldNode;
-  final void Function(bool newState, void Function(String msg)? onError)? onLikePress;
-  final void Function(bool newState, void Function(String msg)? onError)? onFavoritePress;
+  final void Function(bool newState, void Function(HoohApiErrorResponse error)? onError)? onLikePress;
+  final void Function(bool newState, void Function(HoohApiErrorResponse error)? onError)? onFavoritePress;
   final void Function()? onSharePress;
-  final void Function(PostComment? repliedComment, String text, void Function()? onComplete, void Function(String msg)? onError) onSendPress;
+  final void Function(PostComment? repliedComment, String text, void Function()? onComplete, void Function(HoohApiErrorResponse error)? onError) onSendPress;
 
   const CommentComposeView({
     required this.provider,
@@ -78,8 +81,9 @@ class _CommentComposeViewState extends ConsumerState<CommentComposeView> {
                         widget.onSendPress(modelState.replyingComment, controller.text.trim(), () {
                           controller.text = "";
                           model.setRepliedComment(null);
-                        }, (errorMsg) {
-                          Toast.show(context: context, message: errorMsg);
+                        }, (error) {
+                          // Toast.show(context: context, message: errorMsg);
+                          showCommonRequestErrorDialog(ref, context, error);
                         });
                       },
                       style: TextStyle(color: designColors.dark_01.auto(ref), fontSize: 12),
@@ -135,7 +139,8 @@ class _CommentComposeViewState extends ConsumerState<CommentComposeView> {
     );
   }
 
-  Widget buildButton({required String assetPath, required bool checked, required void Function(bool, void Function(String msg)? onError)? onPress}) {
+  Widget buildButton(
+      {required String assetPath, required bool checked, required void Function(bool, void Function(HoohApiErrorResponse error)? onError)? onPress}) {
     return SizedBox(
       width: 32,
       height: 32,
@@ -146,8 +151,9 @@ class _CommentComposeViewState extends ConsumerState<CommentComposeView> {
           child: InkWell(
             onTap: () {
               if (onPress != null) {
-                onPress(!checked, (errorMsg) {
-                  Toast.show(context: context, message: errorMsg);
+                onPress(!checked, (error) {
+                  // Toast.show(context: context, message: errorMsg);
+                  showCommonRequestErrorDialog(ref, context, error);
                 });
               }
             },

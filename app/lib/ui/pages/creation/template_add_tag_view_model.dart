@@ -47,7 +47,7 @@ class TemplateAddTagPageViewModel extends StateNotifier<TemplateAddTagPageModelS
     required File imageFile,
     required String textColor,
     Function(Template template)? onSuccess,
-    Function(String msg)? onError,
+    Function(dynamic msg)? onError,
   }) async {
     state = state.copyWith(uploading: true);
     RequestUploadingFileResponse requestUploadingFileResponse;
@@ -57,7 +57,7 @@ class TemplateAddTagPageViewModel extends StateNotifier<TemplateAddTagPageModelS
       print(e);
       if (onError != null) {
         if (e is HoohApiErrorResponse) {
-          onError(e.message);
+          onError(e);
         } else {
           onError("error");
         }
@@ -93,7 +93,7 @@ class TemplateAddTagPageViewModel extends StateNotifier<TemplateAddTagPageModelS
       print(e);
       if (onError != null) {
         if (e is HoohApiErrorResponse) {
-          onError(e.message);
+          onError(e);
         } else {
           onError("error");
         }

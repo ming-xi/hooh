@@ -213,8 +213,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
           scrollable: scrollable,
           comments: modelState.comments,
           onLikeClick: (comment, newState) {
-            model.onCommentLikePress(comment, newState, (msg) {
-              Toast.showSnackBar(context, msg);
+            model.onCommentLikePress(comment, newState, (error) {
+              // Toast.showSnackBar(context, msg);
+              showCommonRequestErrorDialog(ref, context, error);
             });
           },
           onLoadMore: () {
@@ -388,7 +389,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
               network.requestAsync<Template>(network.getTemplateInfo(templateId!), (template) {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => EditPostScreen(setting: PostImageSetting.withTemplate(template))));
               }, (e) {
-                Toast.showSnackBar(context, e.devMessage);
+                // Toast.showSnackBar(context, e.devMessage);
+                showCommonRequestErrorDialog(ref, context, e);
               });
             });
           },
@@ -413,7 +415,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
                     context, newFavorited ? globalLocalizations.post_detail_favorite_success : globalLocalizations.post_detail_cancel_favorite_success);
               }, (e) {
                 if (kDebugMode) {
-                  Toast.showSnackBar(context, e.devMessage);
+                  // Toast.showSnackBar(context, e.devMessage);
+                  showCommonRequestErrorDialog(ref, context, e);
                 } else {
                   Toast.showSnackBar(context, globalLocalizations.post_detail_favorite_failed);
                 }
@@ -433,7 +436,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
                 Toast.showSnackBar(context, globalLocalizations.post_detail_join_waiting_list_success);
               }, (e) {
                 if (kDebugMode) {
-                  Toast.showSnackBar(context, e.devMessage);
+                  // Toast.showSnackBar(context, e.devMessage);
+                  showCommonRequestErrorDialog(ref, context, e);
                 } else {
                   Toast.showSnackBar(context, globalLocalizations.post_detail_join_waiting_list_failed);
                 }
@@ -460,7 +464,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
                 Navigator.of(context, rootNavigator: true).pop();
               }, (e) {
                 if (kDebugMode) {
-                  Toast.showSnackBar(context, e.devMessage);
+                  // Toast.showSnackBar(context, e.devMessage);
+                  showCommonRequestErrorDialog(ref, context, e);
                 } else {
                   Toast.showSnackBar(context, globalLocalizations.post_detail_delete_post_failed);
                 }
@@ -482,7 +487,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
                 model.setPostVisible(newVisibility);
               }, (e) {
                 if (kDebugMode) {
-                  Toast.showSnackBar(context, e.devMessage);
+                  // Toast.showSnackBar(context, e.devMessage);
+                  showCommonRequestErrorDialog(ref, context, e);
                 } else {
                   Toast.showSnackBar(context, globalLocalizations.post_detail_set_visible_failed);
                 }
@@ -615,8 +621,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
             return;
           }
           PostDetailScreenViewModel model = ref.read(widget.provider.notifier);
-          model.onFollowPress(!author.followed!, (msg) {
-            Toast.showSnackBar(context, msg);
+          model.onFollowPress(!author.followed!, (error) {
+            // Toast.showSnackBar(context, msg);
+            showCommonRequestErrorDialog(ref, context, error);
           });
         });
   }

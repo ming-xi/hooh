@@ -257,11 +257,17 @@ class _FollowedUserPostsPageState extends ConsumerState<FollowedUserPostsPage> {
     return PostView(
       post: modelState.posts[index],
       onShare: (post, error) {
+        if (error != null) {
+          showCommonRequestErrorDialog(ref, context, error);
+          // Toast.showSnackBar(context, error.message);
+          return;
+        }
         Toast.showSnackBar(context, "share...");
       },
       onLike: (post, error) {
         if (error != null) {
-          Toast.showSnackBar(context, error.message);
+          showCommonRequestErrorDialog(ref, context, error);
+          // Toast.showSnackBar(context, error.message);
           return;
         }
         if (post.liked) {
@@ -274,7 +280,8 @@ class _FollowedUserPostsPageState extends ConsumerState<FollowedUserPostsPage> {
       },
       onFollow: (post, error) {
         if (error != null) {
-          Toast.showSnackBar(context, error.message);
+          // Toast.showSnackBar(context, error.message);
+          showCommonRequestErrorDialog(ref, context, error);
           return;
         }
         post.author.followed = true;
