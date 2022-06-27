@@ -764,9 +764,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
       const Spacer(),
       IconButton(
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => BadgesScreen(userId: user.id))).then((value) {
-              refreshPage(ref.read(widget.provider.notifier));
-            });
+            goToBadgeScreen(user);
           },
           icon: Icon(
             Icons.more_horiz_rounded,
@@ -790,14 +788,26 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
             bottomLeft: const Radius.circular(24),
           ),
         ),
-        child: Material(
-          type: MaterialType.transparency,
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            children: list,
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () {
+            goToBadgeScreen(user);
+          },
+          child: Material(
+            type: MaterialType.transparency,
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              children: list,
+            ),
           ),
         ),
       ),
     );
+  }
+
+  void goToBadgeScreen(User user) {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => BadgesScreen(userId: user.id))).then((value) {
+      refreshPage(ref.read(widget.provider.notifier));
+    });
   }
 }

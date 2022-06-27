@@ -106,10 +106,10 @@ class _AdjustTemplatePositionScreenState extends ConsumerState<AdjustTemplatePos
                             setState(() {
                               x = x + details.focalPointDelta.dx;
                               y = y + details.focalPointDelta.dy;
-                              if (scale * factor < 0.333) {
-                                factor = 0.333 / scale;
-                              } else if (scale * factor > 1) {
-                                factor = 1 / scale;
+                              if (scale * factor < 0.3) {
+                                factor = 0.3 / scale;
+                              } else if (scale * factor > 2) {
+                                factor = 2 / scale;
                               }
                               tempScale = factor;
                             });
