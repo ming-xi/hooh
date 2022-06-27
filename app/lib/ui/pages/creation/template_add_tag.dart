@@ -202,6 +202,7 @@ class _TemplateAddTagScreenState extends ConsumerState<TemplateAddTagScreen> wit
           fontSize: 14,
           color: designColors.dark_01.auto(ref),
         ),
+        overflow: TextOverflow.ellipsis,
       ),
       deleteIcon: Icon(
         Icons.cancel,
