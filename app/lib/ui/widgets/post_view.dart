@@ -1,5 +1,6 @@
 import 'package:app/global.dart';
 import 'package:app/ui/pages/feeds/post_detail.dart';
+import 'package:app/ui/pages/feeds/tagged_list.dart';
 import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/utils/design_colors.dart';
@@ -42,6 +43,9 @@ class _PostViewState extends ConsumerState<PostView> {
   Widget build(BuildContext context) {
     Post post = widget.post;
     User author = post.author;
+    double tagsPaddingTop = 12;
+    double tagsPaddingBottom = 20;
+    double tagsRunSpacing = 4;
     return Container(
       decoration: BoxDecoration(boxShadow: [BoxShadow(color: Color(0x0C000000), offset: Offset(0, 8), blurRadius: 24)]),
       child: ClipRRect(
@@ -57,13 +61,49 @@ class _PostViewState extends ConsumerState<PostView> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => PostDetailScreen(
-                                  postId: post.id,
-                                  post: post,
+                              postId: post.id,
+                                  post: widget.displayAsVotingPost ? null : post,
                                 )));
                   },
                   child: AspectRatio(
                     aspectRatio: 1,
                     child: HoohImage(imageUrl: post.images[0].imageUrl),
+                  ),
+                ),
+              ),
+            ),
+            Visibility(
+              visible: (post.tags ?? []).isNotEmpty,
+              child: Material(
+                color: designColors.light_01.auto(ref),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 16, right: 16, top: 32, bottom: 0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 4,
+                          children: (post.tags ?? [])
+                              // .expand((e) => [e,e,e])
+                              .map((e) => TextButton(
+                                    onPressed: () {
+                                      Navigator.push(context, MaterialPageRoute(builder: (context) => TaggedListScreen(tagName: e)));
+                                    },
+                                    style: TextButton.styleFrom(
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                        minimumSize: Size(48, 16),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                                    child: Text(
+                                      "# $e",
+                                      style: TextStyle(fontSize: 14, color: designColors.blue_dark.auto(ref), fontWeight: FontWeight.normal),
+                                    ),
+                                  ))
+                              .toList(),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

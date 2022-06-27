@@ -38,6 +38,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       body: CustomScrollView(
         slivers: [
           SliverFillRemaining(
+            hasScrollBody: false,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -64,7 +65,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   child: Text(
                     globalLocalizations.edit_profile_edit_avatar,
                     style:
-                        TextStyle(fontSize: 14, color: designColors.blue_dark.auto(ref), fontWeight: FontWeight.normal, decoration: TextDecoration.underline),
+                    TextStyle(fontSize: 14, color: designColors.blue_dark.auto(ref), fontWeight: FontWeight.normal, decoration: TextDecoration.underline),
                   ),
                 ),
                 SizedBox(
@@ -194,7 +195,8 @@ class _EditNameScreenState extends ConsumerState<EditNameScreen> {
               onPressed: modelState.error
                   ? null
                   : () {
-                changeName(context, model);
+                      hideKeyboard();
+                      changeName(context, model);
                     },
               icon: Icon(Icons.done_rounded)),
         ],
@@ -218,7 +220,7 @@ class _EditNameScreenState extends ConsumerState<EditNameScreen> {
                 helperText: modelState.error ? null : globalLocalizations.edit_profile_edit_name_helper,
               ),
               onChanged: (text) {
-                model.setErrorState(text.length > 20);
+                model.setErrorState(text.runes.length > 20);
               },
             ),
           ],
@@ -340,6 +342,7 @@ class _EditSignatureScreenState extends ConsumerState<EditSignatureScreen> {
               onPressed: modelState.error
                   ? null
                   : () {
+                hideKeyboard();
                       showDialog(
                           context: context,
                           barrierDismissible: false,
@@ -351,12 +354,12 @@ class _EditSignatureScreenState extends ConsumerState<EditSignatureScreen> {
                         if (user != null) {
                           ref.read(globalUserInfoProvider.state).state = user;
                           Toast.showSnackBar(context, globalLocalizations.edit_profile_edit_success);
-                          Navigator.of(context, rootNavigator: true).pop();
-                        } else {
-                          // Toast.showSnackBar(context, msg!);
-                          showCommonRequestErrorDialog(ref, context, error!);
-                        }
-                      });
+                    Navigator.of(context, rootNavigator: true).pop();
+                  } else {
+                    // Toast.showSnackBar(context, msg!);
+                    showCommonRequestErrorDialog(ref, context, error!);
+                  }
+                });
                     },
               icon: Icon(Icons.done_rounded)),
         ],
@@ -381,7 +384,7 @@ class _EditSignatureScreenState extends ConsumerState<EditSignatureScreen> {
                 helperText: modelState.error ? null : globalLocalizations.edit_profile_edit_bio_helper,
               ),
               onChanged: (text) {
-                model.setErrorState(text.length > 200);
+                model.setErrorState(text.runes.length > 200);
               },
             ),
           ],
@@ -429,6 +432,7 @@ class _EditWebsiteScreenState extends ConsumerState<EditWebsiteScreen> {
               onPressed: modelState.error
                   ? null
                   : () {
+                hideKeyboard();
                       showDialog(
                           context: context,
                           barrierDismissible: false,
@@ -440,12 +444,12 @@ class _EditWebsiteScreenState extends ConsumerState<EditWebsiteScreen> {
                         if (user != null) {
                           ref.read(globalUserInfoProvider.state).state = user;
                           Toast.showSnackBar(context, globalLocalizations.edit_profile_edit_success);
-                          Navigator.of(context, rootNavigator: true).pop();
-                        } else {
-                          // Toast.showSnackBar(context, msg!);
-                          showCommonRequestErrorDialog(ref, context, error!);
-                        }
-                      });
+                    Navigator.of(context, rootNavigator: true).pop();
+                  } else {
+                    // Toast.showSnackBar(context, msg!);
+                    showCommonRequestErrorDialog(ref, context, error!);
+                  }
+                });
                     },
               icon: Icon(Icons.done_rounded)),
         ],

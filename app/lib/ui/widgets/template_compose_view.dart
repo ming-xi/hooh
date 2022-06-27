@@ -1,20 +1,13 @@
 import 'dart:ui' as ui;
 
 import 'package:app/global.dart';
-import 'package:app/ui/pages/creation/edit_post.dart';
 import 'package:app/ui/pages/creation/edit_post_view_model.dart';
-import 'package:app/ui/pages/user/register/start.dart';
-import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/utils/app_link.dart';
 import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:blur/blur.dart';
-import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/template.dart';
-import 'package:common/models/user.dart';
-import 'package:common/utils/date_util.dart';
-import 'package:common/utils/network.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -226,6 +219,7 @@ class _TemplateViewState extends ConsumerState<TemplateView> {
             frameH: widget.setting.frameH,
             fontSize: widget.setting.fontSize,
             fontFamily: widget.setting.fontFamily,
+            alignment: widget.setting.alignment,
             bold: widget.setting.bold,
             drawShadow: widget.setting.shadow,
             drawStroke: widget.setting.stroke,
@@ -322,12 +316,16 @@ class PostTextPainter extends CustomPainter {
   double lineHeight;
   final double fontSize;
   final String fontFamily;
+  final TextAlignment alignment;
   final double frameX; //0~100
   final double frameY; //0~100
   final double frameW; //0~100
   final double frameH; //0~100
   late final double strokeWidth = 2;
   final Paint p = Paint();
+  final TextPainter tp = TextPainter(
+    textDirection: TextDirection.ltr,
+  );
 
   PostTextPainter(
     this.text,
@@ -338,6 +336,7 @@ class PostTextPainter extends CustomPainter {
     required this.frameH,
     required this.fontSize,
     required this.fontFamily,
+    this.alignment = TextAlignment.left,
     this.drawShadow = false,
     this.drawStroke = false,
     this.bold = false,
@@ -430,16 +429,20 @@ class PostTextPainter extends CustomPainter {
       text: text,
       style: textStyle,
     );
-    final textPainter = TextPainter(
-      text: textSpan,
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout(
-      minWidth: 0,
+    Map<TextAlignment, ui.TextAlign> alignMap = {
+      TextAlignment.left: TextAlign.left,
+      TextAlignment.center: TextAlign.center,
+      TextAlignment.right: TextAlign.right,
+    };
+    tp.text = textSpan;
+    tp.textAlign = alignMap[alignment]!;
+    tp.layout(
+      // minWidth:0,
+      minWidth: translate(frameW, size.width) - textPadding * 2,
       maxWidth: translate(frameW, size.width) - textPadding * 2,
     );
     final offset = Offset(translate(frameX, size.width) + textPadding, translate(frameY, size.height) + textPadding);
-    textPainter.paint(canvas, offset);
+    tp.paint(canvas, offset);
   }
 
   double translate(double value, double size) {

@@ -5,6 +5,7 @@ import 'package:app/ui/pages/me/badges.dart';
 import 'package:app/ui/pages/me/followers.dart';
 import 'package:app/ui/pages/user/posts.dart';
 import 'package:app/ui/pages/user/posts_view_model.dart';
+import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/pages/user/templates.dart';
 import 'package:app/ui/pages/user/user_profile_view_model.dart';
@@ -111,7 +112,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         },
         controller: _refreshController,
         child: CustomScrollView(
-          slivers: [buildUserInfo(avatarSize, badgeOffset, user, context, titleTextStyle), ...UserActivityPage.buildGridView(context, ref, trendsModelState)],
+          slivers: [
+            buildUserInfo(avatarSize, badgeOffset, user, context, titleTextStyle),
+            ...UserActivityPage.buildGridView(context, ref, trendsModelState, trendsModel)
+          ],
         ),
       ),
     );
@@ -264,8 +268,11 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                           title: globalLocalizations.user_profile_posts,
                           amount: user.publicPostCount,
                           onClick: () {
-                            Navigator.push(context,
-                                MaterialPageRoute(builder: (context) => UserPostsScreen(userId: user.id, type: UserPostsScreenModelState.TYPE_CREATED)));
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => UserPostsScreen(
+                                        title: globalLocalizations.user_profile_posts, userId: user.id, type: UserPostsScreenModelState.TYPE_CREATED)));
                           })),
                   const SizedBox(
                     width: 8,
@@ -307,6 +314,11 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     Color color = followed ? designColors.dark_03.auto(ref) : designColors.feiyu_blue.auto(ref);
     return TextButton(
       onPressed: () {
+        User? user = ref.read(globalUserInfoProvider);
+        if (user == null) {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+          return;
+        }
         UserProfileScreenViewModel model = ref.read(widget.provider.notifier);
         model.setFollowState(!followed, callback: (error) {
           // Toast.showSnackBar(context, msg);

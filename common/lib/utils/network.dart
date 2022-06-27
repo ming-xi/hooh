@@ -305,6 +305,13 @@ class Network {
         deserializer: UserActivityResponse.fromJson);
   }
 
+  Future<void> deleteUserActivity(String userId, String id) {
+    return _getResponseObject<void>(
+      HttpMethod.delete,
+      _buildHoohUri("users/$userId/activities/$id"),
+    );
+  }
+
   Future<List<SystemNotification>> getSystemNotifications({DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
     Map<String, dynamic> params = {
       "size": size,
@@ -391,6 +398,13 @@ class Network {
     );
   }
 
+  Future<void> deleteTemplate(String templateId) {
+    return _getResponseObject<void>(
+      HttpMethod.delete,
+      _buildHoohUri("templates/$templateId"),
+    );
+  }
+
   Future<List<Template>> getRecommendedTemplates(List<String> contents) {
     return _getResponseList(HttpMethod.post, _buildHoohUri("templates/recommend-for-creation"),
         body: GetRecommendedTemplatesForCreationRequest(contents).toJson(), deserializer: Template.fromJson);
@@ -457,6 +471,21 @@ class Network {
       params["timestamp"] = DateUtil.getUtcDateString(date);
     }
     return _getResponseList<Post>(HttpMethod.get, _buildHoohUri("posts/main-list/${trending ? "trending" : "recent"}", params: params),
+        deserializer: Post.fromJson);
+  }
+
+  Future<TagDetailResponse> getTagDetail(String tagName) {
+    return _getResponseObject<TagDetailResponse>(HttpMethod.get, _buildHoohUri("post-tags/$tagName"), deserializer: TagDetailResponse.fromJson);
+  }
+
+  Future<List<Post>> getTaggedPosts(String tagName, {required bool trending, DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
+    Map<String, dynamic> params = {
+      "size": size,
+    };
+    if (date != null) {
+      params["timestamp"] = DateUtil.getUtcDateString(date);
+    }
+    return _getResponseList<Post>(HttpMethod.get, _buildHoohUri("post-tags/$tagName/posts/${trending ? "trending" : "recent"}", params: params),
         deserializer: Post.fromJson);
   }
 

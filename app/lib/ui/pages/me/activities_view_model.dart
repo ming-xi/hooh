@@ -3,10 +3,8 @@ import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/network/responses.dart';
 import 'package:common/models/page_state.dart';
 import 'package:common/models/user.dart';
-import 'package:common/utils/date_util.dart';
 import 'package:common/utils/network.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 part 'activities_view_model.g.dart';
@@ -40,6 +38,11 @@ class ActivitiesScreenViewModel extends StateNotifier<ActivitiesScreenModelState
   ActivitiesScreenViewModel(ActivitiesScreenModelState state) : super(state) {
     // 如果需要加载时自动拉取数据，在这里调用
     getActivities(null);
+  }
+
+  void onDeleteActivity(UserActivity activity) {
+    state.activities.remove(activity);
+    updateState(state.copyWith(activities: [...state.activities]));
   }
 
   void getActivities(Function(PageState)? callback, {bool isRefresh = true}) {

@@ -4,12 +4,14 @@ import 'dart:ui' as ui;
 import 'package:app/global.dart';
 import 'package:app/ui/pages/creation/edit_post_view_model.dart';
 import 'package:app/ui/pages/creation/publish_post.dart';
+import 'package:app/ui/pages/home/input_view_model.dart';
 import 'package:app/ui/pages/user/register/draw_badge_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/template_compose_view.dart';
 import 'package:app/ui/widgets/template_text_setting_view.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
+import 'package:common/utils/date_util.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -76,9 +78,10 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
   TextEditingController textController = TextEditingController();
   FocusNode node = FocusNode();
 
-  bool willChange = false;
+  bool userChangedContent = false;
   bool panning = false;
   bool scaling = false;
+  int touchStartTime = 0;
   late Offset panStartLocation;
   late Offset originalFrameLocation;
   late Offset originalFrameSize;
@@ -97,6 +100,11 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
       }
       EditPostScreenViewModel model = ref.read(widget.provider.notifier);
       model.changeTab(tabController.index);
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (textController.text.isNotEmpty) {
+        tabController.index = 1;
+      }
     });
   }
 
@@ -130,64 +138,94 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
     // Size screenSize = Size(size2.width,size2.height+size2.width);
     Size screenSize = size2;
     // screenSize.height+=screenSize.width;
-    return Scaffold(
-      appBar: appBar,
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: ListView(
-              physics: modelState.touchingFrame ? NeverScrollableScrollPhysics() : ScrollPhysics(),
-              children: [
-                AspectRatio(aspectRatio: 1, child: buildMainView()),
-                SizedBox(
-                  height: tabbarHeight,
-                  child: TabBar(
-                    controller: tabController,
-                    tabs: [
-                      Tab(
-                        icon: HoohIcon(
-                          "assets/images/icon_edit_post_edit_selected.svg",
-                          width: 36,
-                          height: 36,
-                          color: modelState.selectedTab == 0 ? designColors.dark_01.auto(ref) : designColors.dark_03.auto(ref),
+
+    return WillPopScope(
+      onWillPop: () async {
+        if (userChangedContent) {
+          bool? result = await showDialog<bool>(
+              context: context,
+              barrierDismissible: false,
+              builder: (popContext) {
+                return AlertDialog(
+                  content: Text(globalLocalizations.edit_post_discard_change_dialog_title),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(popContext).pop(true);
+                        },
+                        child: Text(globalLocalizations.common_discard)),
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(popContext).pop(false);
+                        },
+                        child: Text(globalLocalizations.common_cancel))
+                  ],
+                );
+              });
+          return Future.value(result ?? false);
+        } else {
+          return Future.value(true);
+        }
+      },
+      child: Scaffold(
+        appBar: appBar,
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: ListView(
+                physics: modelState.touchingFrame ? NeverScrollableScrollPhysics() : ScrollPhysics(),
+                children: [
+                  AspectRatio(aspectRatio: 1, child: buildMainView()),
+                  SizedBox(
+                    height: tabbarHeight,
+                    child: TabBar(
+                      controller: tabController,
+                      tabs: [
+                        Tab(
+                          icon: HoohIcon(
+                            "assets/images/icon_edit_post_edit_selected.svg",
+                            width: 36,
+                            height: 36,
+                            color: modelState.selectedTab == 0 ? designColors.dark_01.auto(ref) : designColors.dark_03.auto(ref),
+                          ),
                         ),
-                      ),
-                      Tab(
-                        icon: HoohIcon(
-                          "assets/images/icon_edit_post_style_selected.svg.svg",
-                          width: 36,
-                          height: 36,
-                          color: modelState.selectedTab == 1 ? designColors.dark_01.auto(ref) : designColors.dark_03.auto(ref),
+                        Tab(
+                          icon: HoohIcon(
+                            "assets/images/icon_edit_post_style_selected.svg.svg",
+                            width: 36,
+                            height: 36,
+                            color: modelState.selectedTab == 1 ? designColors.dark_01.auto(ref) : designColors.dark_03.auto(ref),
+                          ),
                         ),
-                      ),
-                    ],
-                    // indicatorColor: designColors.dark_01.auto(ref),
-                    // indicatorSize: TabBarIndicatorSize.label,
+                      ],
+                      // indicatorColor: designColors.dark_01.auto(ref),
+                      // indicatorSize: TabBarIndicatorSize.label,
+                    ),
                   ),
-                ),
-                SizedBox(
-                  // height: screenSize.height - appBar.preferredSize.height - screenSize.width - tabbarHeight-statusbarHeight,
-                  height: 204,
-                  child: TabBarView(controller: tabController, children: [
-                    buildInputTab(),
-                    buildStyleTab(modelState, model),
-                  ]),
-                ),
-              ],
+                  SizedBox(
+                    // height: screenSize.height - appBar.preferredSize.height - screenSize.width - tabbarHeight-statusbarHeight,
+                    height: 204,
+                    child: TabBarView(controller: tabController, children: [
+                      buildInputTab(),
+                      buildStyleTab(modelState, model),
+                    ]),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Positioned(
-            bottom: 0,
-            right: 0,
-            left: 0,
-            child: Visibility(
-                visible: modelState.selectedTab == 0,
-                child: SizedBox(
-                  height: min(screenSize.height - appBar.preferredSize.height - screenSize.width - tabbarHeight - statusbarHeight, 130),
-                  child: buildFloatingInputPanel(),
-                )),
-          )
-        ],
+            Positioned(
+              bottom: 0,
+              right: 0,
+              left: 0,
+              child: Visibility(
+                  visible: modelState.selectedTab == 0,
+                  child: SizedBox(
+                    height: min(screenSize.height - appBar.preferredSize.height - screenSize.width - tabbarHeight - statusbarHeight, 130),
+                    child: buildFloatingInputPanel(),
+                  )),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -223,6 +261,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
             } else if (frameRect.contains(details.localPosition)) {
               model.setTouchingFrame(true);
             } else {}
+            touchStartTime = DateUtil.getCurrentUtcDate().millisecondsSinceEpoch;
             panStartLocation = details.localPosition;
             originalFrameLocation = Offset(translate(modelState.setting.frameX, width), translate(modelState.setting.frameY, height));
             originalFrameSize = Offset(translate(modelState.setting.frameW, width), translate(modelState.setting.frameH, height));
@@ -236,6 +275,17 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
             } else {}
           },
           onPointerUp: (details) {
+            if (modelState.touchingFrame) {
+              if (DateUtil.getCurrentUtcDate().millisecondsSinceEpoch - touchStartTime < 500) {
+                ui.Offset endLocation = details.localPosition;
+                var dx = (panStartLocation.dx - endLocation.dx);
+                var dy = (panStartLocation.dy - endLocation.dy);
+                if (sqrt(dx * dx + dy * dy) < 16) {
+                  //click
+                  tabController.index = 0;
+                }
+              }
+            }
             model.setTouchingFrame(false);
           },
           onPointerCancel: (details) {
@@ -247,6 +297,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
             }
             var loc = details.localPosition;
             if (scaling) {
+              userChangedContent = true;
               var newWidth = (originalFrameSize.dx + loc.dx - panStartLocation.dx) / width * 100;
               var newHeight = (originalFrameSize.dy + loc.dy - panStartLocation.dy) / height * 100;
               if (newWidth < TemplateTextSettingView.MIN_SIZE_PERCENT) {
@@ -266,6 +317,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
                 newHeight,
               );
             } else if (panning) {
+              userChangedContent = true;
               var newX = (originalFrameLocation.dx + loc.dx - panStartLocation.dx) / width * 100;
               var newY = (originalFrameLocation.dy + loc.dy - panStartLocation.dy) / height * 100;
               if (newX < TemplateTextSettingView.MIN_MARGIN_PERCENT) {
@@ -381,17 +433,24 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
       child: Row(
         children: [
           Expanded(
-            child: TextField(
-              style: TextStyle(color: designColors.light_01.auto(ref)),
-              decoration: InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.all(8)),
-              controller: textController,
-              focusNode: node,
-              expands: true,
-              maxLines: null,
-              onChanged: (text) {
-                EditPostScreenViewModel model = ref.read(widget.provider.notifier);
-                model.setText(text);
-              },
+            child: SafeArea(
+              child: TextField(
+                style: TextStyle(color: designColors.light_01.auto(ref)),
+                decoration: InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.all(8)),
+                controller: textController,
+                focusNode: node,
+                maxLength: InputPageModelState.MAX_CONTENT_LENGTH,
+                buildCounter: (context, {required currentLength, required isFocused, maxLength}) {
+                  return null;
+                },
+                expands: true,
+                maxLines: null,
+                onChanged: (text) {
+                  userChangedContent = true;
+                  EditPostScreenViewModel model = ref.read(widget.provider.notifier);
+                  model.setText(text);
+                },
+              ),
             ),
           ),
           TextButton(
@@ -447,63 +506,102 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
     double itemSize = 36;
     double spacing = 6;
     double spacingLarge = 10;
+    Map<TextAlignment, String> alignmentMap = {
+      TextAlignment.left: "assets/images/icon_font_style_align_left.svg",
+      TextAlignment.center: "assets/images/icon_font_style_align_center.svg",
+      TextAlignment.right: "assets/images/icon_font_style_align_right.svg",
+    };
     return SizedBox(
       height: itemSize,
       child: ListView(scrollDirection: Axis.horizontal, padding: EdgeInsets.symmetric(horizontal: 16), children: [
-        MainStyles.outlinedIconButton(ref, "assets/images/icon_font_style_align_center.svg", itemSize, false, () {}),
+        Material(
+          type: MaterialType.transparency,
+          child: Ink(
+            width: itemSize,
+            height: itemSize,
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              border: Border.all(
+                color: false ? designColors.feiyu_blue.auto(ref) : designColors.dark_03.auto(ref),
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: InkWell(
+              borderRadius: const BorderRadius.all(const Radius.circular(12)),
+              onTap: () {
+                model.cycleAlignment();
+              },
+              child: HoohIcon(
+                alignmentMap[modelState.setting.alignment]!,
+                width: itemSize,
+                height: itemSize,
+                color: designColors.dark_01.auto(ref),
+              ),
+            ),
+          ),
+        ),
         SizedBox(
           width: spacingLarge,
         ),
         MainStyles.outlinedIconButton(ref, "assets/images/icon_font_style_shadow.svg", itemSize, modelState.setting.shadow, () {
           model.toggleDrawShadow();
+          userChangedContent = true;
         }),
         SizedBox(
           width: spacing,
         ),
         MainStyles.outlinedIconButton(ref, "assets/images/icon_font_style_stroke.svg", itemSize, modelState.setting.stroke, () {
           model.toggleDrawStroke();
+          userChangedContent = true;
         }),
         SizedBox(
           width: spacing,
         ),
         MainStyles.outlinedIconButton(ref, "assets/images/icon_font_style_mask.svg", itemSize, modelState.setting.mask, () {
           model.toggleDrawMask();
+          userChangedContent = true;
         }),
         SizedBox(
           width: spacing,
         ),
         MainStyles.outlinedIconButton(ref, "assets/images/icon_font_style_bold.svg", itemSize, modelState.setting.bold, () {
           model.toggleBold();
+          userChangedContent = true;
         }),
         SizedBox(
           width: spacing,
         ),
         MainStyles.outlinedIconButton(ref, "assets/images/icon_font_style_blur.svg", itemSize, modelState.setting.blur, () {
           model.toggleBlur();
+          userChangedContent = true;
         }),
         SizedBox(
           width: spacingLarge,
         ),
         MainStyles.outlinedIconButton(ref, "assets/images/icon_font_style_size_plus.svg", itemSize, false, () {
           model.increaseFontSize();
+          userChangedContent = true;
         }),
         SizedBox(
           width: spacing,
         ),
         MainStyles.outlinedIconButton(ref, "assets/images/icon_font_style_size_minus.svg", itemSize, false, () {
           model.decreaseFontSize();
+          userChangedContent = true;
         }),
         SizedBox(
           width: spacingLarge,
         ),
         MainStyles.outlinedIconButton(ref, "assets/images/icon_font_style_spacing_plus.svg", itemSize, false, () {
           model.increaseLineHeight();
+          userChangedContent = true;
         }),
         SizedBox(
           width: spacing,
         ),
         MainStyles.outlinedIconButton(ref, "assets/images/icon_font_style_spacing_minus.svg", itemSize, false, () {
           model.decreaseLineHeight();
+          userChangedContent = true;
         }),
       ]),
     );
@@ -534,6 +632,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
               ),
               child: InkWell(
                 onTap: () {
+                  userChangedContent = true;
                   model.setSelectedFont(index);
                 },
                 borderRadius: BorderRadius.circular(borderRadius),
@@ -579,7 +678,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
                     ),
                     child: InkWell(
                       onTap: () {
-                        // Color setSelectedColor = model.setSelectedColor(index);
+                        userChangedContent = true;
                         model.setSelectedColor(index);
                       },
                       borderRadius: BorderRadius.circular(borderRadius),
@@ -597,7 +696,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
                     ),
                     child: InkWell(
                       onTap: () {
-                        // Color setSelectedColor = model.setSelectedColor(index);
+                        userChangedContent = true;
                         model.setSelectedColor(index);
                       },
                       borderRadius: BorderRadius.circular(borderRadius),

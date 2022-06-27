@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:app/global.dart';
@@ -28,6 +29,9 @@ class AdjustTemplatePositionScreen extends ConsumerStatefulWidget {
 class _AdjustTemplatePositionScreenState extends ConsumerState<AdjustTemplatePositionScreen> {
   double x = 0;
   double y = 0;
+  double scale = 1;
+  double tempScale = 1;
+  bool? whiteBackground;
   final GlobalKey genKey = GlobalKey();
   late ui.Image? image = null;
 
@@ -35,6 +39,9 @@ class _AdjustTemplatePositionScreenState extends ConsumerState<AdjustTemplatePos
   void initState() {
     super.initState();
     widget.file.readAsBytes().then((bytes) {
+      setState(() {
+        whiteBackground = isImageDarkColor(bytes);
+      });
       ui.decodeImageFromList(bytes, (decoded) {
         setState(() {
           image = decoded;
@@ -65,34 +72,61 @@ class _AdjustTemplatePositionScreenState extends ConsumerState<AdjustTemplatePos
             ),
             flex: 1,
           ),
-          ClipRect(
-            child: Container(
-              color: Colors.white,
-              child: Builder(
-                builder: (context) {
-                  double screenWidth = MediaQuery.of(context).size.width;
-                  return SizedBox(
-                      width: screenWidth,
-                      height: screenWidth,
-                      child: Stack(children: [
-                        Positioned(
-                          child: GestureDetector(
-                            onPanUpdate: (details) {
+          RepaintBoundary(
+            key: genKey,
+            child: ClipRect(
+              child: Container(
+                color: whiteBackground ?? true ? Colors.white : Colors.black,
+                child: Builder(
+                  builder: (context) {
+                    double screenWidth = MediaQuery.of(context).size.width;
+                    return SizedBox(
+                        width: screenWidth,
+                        height: screenWidth,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onDoubleTap: () {
+                            if (whiteBackground == null) {
+                              return;
+                            } else {
                               setState(() {
-                                x = x + details.delta.dx;
-                                y = y + details.delta.dy;
+                                whiteBackground = !whiteBackground!;
                               });
-                            },
-                            child: RepaintBoundary(
-                              key: genKey,
-                              child: buildImage(),
-                            ),
-                          ),
-                          left: x,
-                          top: y,
-                        )
-                      ]));
-                },
+                            }
+                          },
+                          onScaleStart: (details) {},
+                          onScaleEnd: (details) {
+                            setState(() {
+                              scale *= tempScale;
+                              tempScale = 1;
+                            });
+                          },
+                          onScaleUpdate: (details) {
+                            var factor = (details.horizontalScale + details.verticalScale) / 2;
+                            setState(() {
+                              x = x + details.focalPointDelta.dx;
+                              y = y + details.focalPointDelta.dy;
+                              if (scale * factor < 0.333) {
+                                factor = 0.333 / scale;
+                              } else if (scale * factor > 1) {
+                                factor = 1 / scale;
+                              }
+                              tempScale = factor;
+                            });
+                          },
+                          child: Stack(children: [
+                            Positioned(
+                              left: x,
+                              top: y,
+                              child: Transform.scale(
+                                scale: scale * tempScale,
+                                child: buildImage(),
+                              ),
+                            )
+                          ]),
+                        ));
+                  },
+                ),
               ),
             ),
           ),
@@ -150,13 +184,15 @@ class _AdjustTemplatePositionScreenState extends ConsumerState<AdjustTemplatePos
     ui.Image image = await boundary.toImage(pixelRatio: devicePixelRatio);
     img.Image src = img.Image.fromBytes(image.width, image.height, (await image.toByteData())!.buffer.asUint8List());
     // debugPrint("screenWidth=$screenWidth screenHeight=$screenHeight src.width=${src.width} src.height=${src.height}");
-    double offsetX = x * devicePixelRatio;
-    double offsetY = y * devicePixelRatio;
+    // double offsetX = x * devicePixelRatio;
+    // double offsetY = y * devicePixelRatio;
     // debugPrint("offsetX=$offsetX offsetY=$offsetY ");
     img.Image result = img.Image.rgb(imageSize, imageSize);
     img.fill(result, Colors.white.value);
-    double dstX = offsetX * imageSize / screenWidth;
-    double dstY = offsetY * imageSize / screenWidth;
+    // double dstX = offsetX * imageSize / screenWidth;
+    // double dstY = offsetY * imageSize / screenWidth;
+    double dstX = 0;
+    double dstY = 0;
     double dstW = src.width * imageSize / screenWidth;
     double dstH = src.height * imageSize / screenWidth;
     result = img.drawImage(
@@ -187,5 +223,31 @@ class _AdjustTemplatePositionScreenState extends ConsumerState<AdjustTemplatePos
     File imgFile = File('$directory/$filename.jpg');
     imgFile.writeAsBytesSync(bytes, flush: true);
     return imgFile;
+  }
+
+  bool isImageDarkColor(Uint8List fileBytes) {
+    img.Image? image = img.decodePng(fileBytes);
+    Uint32List pixels = image!.data;
+    // check 1000 pixels
+    int count = 1000;
+    int gap = pixels.length ~/ count;
+    int lightCount = 0;
+    int darkCount = 0;
+    for (int i = 0; i < pixels.length; i += gap) {
+      int pixel = pixels[i];
+      Color color = Color(pixel);
+      int a = color.alpha;
+      int b = color.red;
+      int g = color.green;
+      int r = color.blue;
+      color = Color.fromARGB(a, r, g, b);
+      if ((r * 0.299 + g * 0.587 + b * 0.114) > 186) {
+        lightCount++;
+      } else {
+        darkCount++;
+      }
+    }
+    debugPrint("darkCount=$darkCount lightCount=$lightCount");
+    return darkCount >= lightCount;
   }
 }

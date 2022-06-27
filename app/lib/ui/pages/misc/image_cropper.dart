@@ -2,7 +2,9 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:app/global.dart';
+import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/file_utils.dart';
+import 'package:app/utils/ui_utils.dart';
 import 'package:crop_your_image/crop_your_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -40,6 +42,12 @@ class _ImageCropperScreenState extends ConsumerState<ImageCropperScreen> {
           actions: <Widget>[
             IconButton(
               onPressed: () {
+                showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (context) {
+                      return LoadingDialog(LoadingDialogController());
+                    });
                 _controller.crop();
               },
               icon: const Icon(Icons.done_rounded),
@@ -51,6 +59,7 @@ class _ImageCropperScreenState extends ConsumerState<ImageCropperScreen> {
           controller: _controller,
           onCropped: (image) async {
             // do something with image data
+            Navigator.of(context).pop();
             File file = await FileUtil.saveTempFile(image, "jpg");
             Navigator.of(context).pop(file);
             // showDialog(
@@ -63,9 +72,10 @@ class _ImageCropperScreenState extends ConsumerState<ImageCropperScreen> {
             //       );
             //     });
           },
-          aspectRatio: widget.ratio,
-          initialSize: null,
-          // initialArea: Rect.fromLTWH(0, 0, 0, 0),
+          // aspectRatio: widget.ratio,
+          initialSize: 0.8,
+          baseColor: designColors.light_01.auto(ref),
+          // initialArea: Rect.fromLTRB(24, 24, 24, 24),
           // initialAreaBuilder: (rect) => Rect.fromLTRB(
           //     rect.left + 24, rect.top + 32, rect.right - 24, rect.bottom - 32
           // ),
@@ -82,7 +92,7 @@ class _ImageCropperScreenState extends ConsumerState<ImageCropperScreen> {
 
           // cornerDotBuilder: (size, edgeAlignment) => const DotControl(color: Colors.blue),
           interactive: true,
-          fixArea: true,
+          // fixArea: true,
         ));
   }
 }

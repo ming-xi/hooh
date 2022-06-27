@@ -1,20 +1,25 @@
 import 'package:app/global.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
+import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/app_link.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/user.dart';
+import 'package:common/utils/network.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sprintf/sprintf.dart';
 
 class UserActivityView extends ConsumerWidget {
   static const ITEM_RATIO = 165 / 211;
   final User user;
   final UserActivity activity;
+  final Function(UserActivity activity) onDelete;
 
   const UserActivityView({
     required this.user,
     required this.activity,
+    required this.onDelete,
     Key? key,
   }) : super(key: key);
 
@@ -57,7 +62,7 @@ class UserActivityView extends ConsumerWidget {
         }
       case UserActivity.TYPE_COMMENT_POST:
         {
-          title = globalLocalizations.user_activity_posted;
+          title = globalLocalizations.user_activity_commented;
           child = Column(
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,7 +202,7 @@ class UserActivityView extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.max,
       children: [
-        buildUserRow(title, ref),
+        buildUserRow(title, ref, context, activity),
         // buildDate(ref, context),
         SizedBox(
           height: 10,
@@ -320,7 +325,17 @@ class UserActivityView extends ConsumerWidget {
     );
   }
 
-  Widget buildUserRow(String title, WidgetRef ref) {
+  Widget buildUserRow(String title, WidgetRef ref, BuildContext context, UserActivity activity) {
+    User? currentUser = ref.read(globalUserInfoProvider);
+    var iconButton = IconButton(
+        padding: EdgeInsets.zero,
+        constraints: BoxConstraints(minHeight: 24, minWidth: 24),
+        onPressed: () {},
+        splashRadius: 16,
+        icon: Icon(
+          Icons.more_horiz_rounded,
+          color: designColors.light_06.auto(ref),
+        ));
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.max,
@@ -339,18 +354,72 @@ class UserActivityView extends ConsumerWidget {
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref)),
           ),
         ),
-        SizedBox(
-          width: 4,
-        ),
-        IconButton(
+        // SizedBox(
+        //   width: 4,
+        // ),
+        Visibility(
+          visible: currentUser != null && currentUser.id == user.id,
+          child: PopupMenuButton(
             padding: EdgeInsets.zero,
-            constraints: BoxConstraints(minHeight: 24, minWidth: 24),
-            onPressed: () {},
+
             splashRadius: 16,
+            constraints: BoxConstraints(minHeight: 24, minWidth: 24),
             icon: Icon(
               Icons.more_horiz_rounded,
               color: designColors.light_06.auto(ref),
-            ))
+            ),
+            onSelected: (value) {},
+            // offset: Offset(0.0, appBarHeight),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+            ),
+            itemBuilder: (ctx) {
+              TextStyle style = TextStyle(fontSize: 16, color: designColors.dark_01.auto(ref), fontWeight: FontWeight.bold);
+              PopupMenuItem itemDelete = PopupMenuItem(
+                onTap: () {
+                  Future.delayed(Duration(milliseconds: 250), () {
+                    network.getFeeInfo().then((response) {
+                      int deleteActivityFee = response.deleteActivity;
+                      showDialog(
+                          context: ctx,
+                          barrierDismissible: false,
+                          builder: (popContext) {
+                            return AlertDialog(
+                              content: Text(sprintf(globalLocalizations.user_activity_delete_dialog_title, [formatCurrency(deleteActivityFee)])),
+                              actions: [
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.of(popContext).pop();
+                                      network.requestAsync<void>(network.deleteUserActivity(user.id, activity.id), (_) {
+                                        Toast.showSnackBar(context, globalLocalizations.user_activity_delete_success);
+                                        onDelete(activity);
+                                      }, (e) {
+                                        showCommonRequestErrorDialog(ref, context, e);
+                                      });
+                                    },
+                                    child: Text(globalLocalizations.common_delete)),
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.of(popContext).pop();
+                                    },
+                                    child: Text(globalLocalizations.common_cancel))
+                              ],
+                            );
+                          });
+                    });
+                  });
+                },
+                child: Text(
+                  globalLocalizations.user_activity_delete_menu_text,
+                  style: style,
+                ),
+              );
+
+              List<PopupMenuItem> items = [itemDelete];
+              return items;
+            },
+          ),
+        )
       ],
     );
   }

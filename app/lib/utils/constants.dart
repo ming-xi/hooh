@@ -9,10 +9,12 @@ class Constants {
   static const PASSWORD_REGEX = r"^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&,.])[A-Za-z\d@$!%*#?&,.]{8,16}$";
   static const URL_REGEX = r"((https?|http):\/\/)?(www.)?[a-z0-9]+\.[a-z]+(\/[a-zA-Z0-9#]+\/?)*";
 
+  static const RESOURCE_NOT_FOUND = 10003;
   static const INVALID_USERNAME_AND_PASSWORD = 20001;
   static const USERNAME_ALREADY_REGISTERED = 20008;
   static const EMAIL_ALREADY_VALIDATED = 20009;
   static const EDIT_NAME_TOO_OFTEN = 20016;
+  static const INSUFFICIENT_FUNDS = 40000;
 }
 
 //region global variants

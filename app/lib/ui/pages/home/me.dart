@@ -213,95 +213,97 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
           slivers: [
             SliverFillRemaining(
               hasScrollBody: false,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Center(
-                          child: SizedBox(
-                            width: avatarSize + badgeOffset * 2,
-                            height: avatarSize,
-                            child: Stack(
-                              children: [
-                                Center(
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfileScreen()));
-                                    },
-                                    child: HoohImage(
-                                      imageUrl: user.avatarUrl ?? "",
-                                      cornerRadius: 100,
-                                      width: avatarSize,
-                                      height: avatarSize,
+              child: SafeArea(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(
+                      height: 16,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Center(
+                            child: SizedBox(
+                              width: avatarSize + badgeOffset * 2,
+                              height: avatarSize,
+                              child: Stack(
+                                children: [
+                                  Center(
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfileScreen()));
+                                      },
+                                      child: HoohImage(
+                                        imageUrl: user.avatarUrl ?? "",
+                                        cornerRadius: 100,
+                                        width: avatarSize,
+                                        height: avatarSize,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                Positioned(
-                                    left: 0,
-                                    bottom: 0,
-                                    child: HoohImage(
-                                      isBadge: true,
-                                      imageUrl: user.badgeImageUrl ?? "",
-                                      width: 32,
-                                      height: 36,
-                                    ))
-                              ],
+                                  Positioned(
+                                      left: 0,
+                                      bottom: 0,
+                                      child: HoohImage(
+                                        isBadge: true,
+                                        imageUrl: user.badgeImageUrl ?? "",
+                                        width: 32,
+                                        height: 36,
+                                      ))
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: SizedBox(
-                      height: 80,
-                      child: Row(
-                        children: [
-                          Expanded(child: buildFollowerCard(AppLocalizations.of(context)!.me_following, user.followingCount, false)),
-                          const SizedBox(
-                            width: 8,
-                          ),
-                          Expanded(child: buildFollowerCard(AppLocalizations.of(context)!.me_follower, user.followerCount, true)),
-                        ],
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: SizedBox(
+                        height: 80,
+                        child: Row(
+                          children: [
+                            Expanded(child: buildFollowerCard(AppLocalizations.of(context)!.me_following, user.followingCount, false)),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            Expanded(child: buildFollowerCard(AppLocalizations.of(context)!.me_follower, user.followerCount, true)),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(
-                    height: 32,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Text(
-                      AppLocalizations.of(context)!.me_personal_social_icon,
-                      style: titleTextStyle,
+                    const SizedBox(
+                      height: 32,
                     ),
-                  ),
-                  const SizedBox(
-                    height: 8,
-                  ),
-                  buildBadgeBar(user),
-                  const SizedBox(
-                    height: 32,
-                  ),
-                  buildProfileCard(user, titleTextStyle),
-                  const SizedBox(
-                    height: 32,
-                  ),
-                  buildWalletCard(user, modelState.wallet, titleTextStyle),
-                  const SizedBox(
-                    height: 32,
-                  ),
-                  buildTileButtons(user),
-                  const SizedBox(
-                    height: 96,
-                  ),
-                ],
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Text(
+                        AppLocalizations.of(context)!.me_personal_social_icon,
+                        style: titleTextStyle,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 8,
+                    ),
+                    buildBadgeBar(user),
+                    const SizedBox(
+                      height: 32,
+                    ),
+                    buildProfileCard(user, titleTextStyle),
+                    const SizedBox(
+                      height: 32,
+                    ),
+                    buildWalletCard(user, modelState.wallet, titleTextStyle),
+                    const SizedBox(
+                      height: 32,
+                    ),
+                    buildTileButtons(user),
+                    const SizedBox(
+                      height: 24,
+                    ),
+                  ],
+                ),
               ),
             )
           ],
@@ -363,7 +365,11 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
   Widget buildTileButtons(User user) {
     List<Tuple4<String, String, bool, void Function()?>> configs = [
       Tuple4(globalLocalizations.me_tile_posts, "assets/images/icon_user_center_post.svg", true, () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => UserPostsScreen(userId: user.id, type: UserPostsScreenModelState.TYPE_CREATED)));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    UserPostsScreen(title: globalLocalizations.me_tile_posts, userId: user.id, type: UserPostsScreenModelState.TYPE_CREATED)));
       }),
       Tuple4(globalLocalizations.me_tile_templates, "assets/images/icon_user_center_contents.svg", true, () {
         Navigator.push(
@@ -375,10 +381,17 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
       }),
       Tuple4(globalLocalizations.me_tile_nfts, "assets/images/icon_user_center_nft.svg", false, null),
       Tuple4(globalLocalizations.me_tile_bookmarks, "assets/images/icon_user_center_fav.svg", true, () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => UserPostsScreen(userId: user.id, type: UserPostsScreenModelState.TYPE_FAVORITED)));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    UserPostsScreen(title: globalLocalizations.me_tile_bookmarks, userId: user.id, type: UserPostsScreenModelState.TYPE_FAVORITED)));
       }),
       Tuple4(globalLocalizations.me_tile_liked, "assets/images/icon_user_center_liked.svg", true, () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => UserPostsScreen(userId: user.id, type: UserPostsScreenModelState.TYPE_LIKED)));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => UserPostsScreen(title: globalLocalizations.me_tile_liked, userId: user.id, type: UserPostsScreenModelState.TYPE_LIKED)));
       }),
       Tuple4(globalLocalizations.me_tile_trends, "assets/images/icon_user_center_trends.svg", true, () {
         Navigator.push(context, MaterialPageRoute(builder: (context) => UserActivityScreen(userId: user.id))).then((value) {

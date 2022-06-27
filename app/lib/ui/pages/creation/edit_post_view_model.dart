@@ -136,6 +136,28 @@ class EditPostScreenViewModel extends StateNotifier<EditPostScreenModelState> {
       frameH: height,
     )));
   }
+
+  void cycleAlignment() {
+    TextAlignment alignment = state.setting.alignment;
+    switch (alignment) {
+      case TextAlignment.left:
+        {
+          alignment = TextAlignment.center;
+          break;
+        }
+      case TextAlignment.center:
+        {
+          alignment = TextAlignment.right;
+          break;
+        }
+      case TextAlignment.right:
+        {
+          alignment = TextAlignment.left;
+          break;
+        }
+    }
+    updateState(state.copyWith(setting: state.setting.copyWith(alignment: alignment)));
+  }
 }
 
 @CopyWith()

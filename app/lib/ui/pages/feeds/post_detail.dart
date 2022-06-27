@@ -5,11 +5,14 @@ import 'package:app/ui/pages/creation/edit_post_view_model.dart';
 import 'package:app/ui/pages/feeds/comment_page.dart';
 import 'package:app/ui/pages/feeds/likes_page.dart';
 import 'package:app/ui/pages/feeds/post_detail_view_model.dart';
+import 'package:app/ui/pages/feeds/tagged_list.dart';
 import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/comment_compose_view.dart';
 import 'package:app/ui/widgets/comment_compose_view_model.dart';
+import 'package:app/ui/widgets/empty_views.dart';
 import 'package:app/ui/widgets/toast.dart';
+import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/file_utils.dart';
 import 'package:app/utils/ui_utils.dart';
@@ -30,7 +33,7 @@ import 'package:sprintf/sprintf.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
   late final StateNotifierProvider<PostDetailScreenViewModel, PostDetailScreenModelState> provider;
-  late StateNotifierProvider<CommentComposeWidgetViewModel, CommentComposeWidgetModelState> composerProvider;
+  late final StateNotifierProvider<CommentComposeWidgetViewModel, CommentComposeWidgetModelState> composerProvider;
   final FocusNode textFieldNode = FocusNode();
 
   PostDetailScreen({
@@ -39,7 +42,7 @@ class PostDetailScreen extends ConsumerStatefulWidget {
     Key? key,
   }) : super(key: key) {
     provider = StateNotifierProvider((ref) {
-      return PostDetailScreenViewModel(PostDetailScreenModelState.init(postId, post: post));
+      return PostDetailScreenViewModel(PostDetailScreenModelState.init(postId, ref.watch(globalUserInfoProvider), post: post));
     });
 
     composerProvider = StateNotifierProvider((ref) {
@@ -87,6 +90,16 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
 
   @override
   Widget build(BuildContext context) {
+    PostDetailScreenModelState modelState = ref.watch(widget.provider);
+    PostDetailScreenViewModel model = ref.read(widget.provider.notifier);
+    if (modelState.error != null && modelState.error!.errorCode == Constants.RESOURCE_NOT_FOUND) {
+      return Scaffold(
+        appBar: AppBar(title: Text("")),
+        body: ErrorView(
+          text: globalLocalizations.error_view_post_not_found,
+        ),
+      );
+    }
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     double userBarHeight = 40;
@@ -97,10 +110,6 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
     double statusbarHeight = MediaQuery.of(context).viewPadding.top;
 
     bool keyboardVisible = ref.watch(globalKeyboardInfoProvider);
-    debugPrint("keyboardVisible=$keyboardVisible");
-    PostDetailScreenModelState modelState = ref.watch(widget.provider);
-    PostDetailScreenViewModel model = ref.read(widget.provider.notifier);
-
     List<Widget> widgets = [
       AspectRatio(
         aspectRatio: 1,
@@ -120,21 +129,21 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
                   spacing: 8,
                   runSpacing: 4,
                   children: (modelState.post?.tags ?? [])
-                      // .expand((e) => [e,e,e])
+                  // .expand((e) => [e,e,e])
                       .map((e) => TextButton(
-                            onPressed: () {
-                              Toast.showSnackBar(context, "to topic: $e");
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => TaggedListScreen(tagName: e)));
                             },
-                            style: TextButton.styleFrom(
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                                minimumSize: Size(48, 16),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                            child: Text(
-                              "# $e",
-                              style: TextStyle(fontSize: 14, color: designColors.blue_dark.auto(ref)),
+                    style: TextButton.styleFrom(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        minimumSize: Size(48, 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                    child: Text(
+                      "# $e",
+                              style: TextStyle(fontSize: 14, color: designColors.blue_dark.auto(ref), fontWeight: FontWeight.normal),
                             ),
-                          ))
+                  ))
                       .toList(),
                 ),
               ),
@@ -213,6 +222,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
           scrollable: scrollable,
           comments: modelState.comments,
           onLikeClick: (comment, newState) {
+            User? user = ref.read(globalUserInfoProvider);
+            if (user == null) {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+              return;
+            }
             model.onCommentLikePress(comment, newState, (error) {
               // Toast.showSnackBar(context, msg);
               showCommonRequestErrorDialog(ref, context, error);
@@ -238,116 +252,136 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
       pinned: true,
     );
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          Positioned.fill(
-              child: refresh.RefreshIndicator(
-            notificationPredicate: (notification) {
-              return notification.depth == 2;
-            },
-            onRefresh: () async {
-              model.onRefresh((state) {
-                // debugPrint("refresh state=$state");
-                _refreshController.refreshCompleted();
-              });
-            },
-            child: NestedScrollView(
-              headerSliverBuilder: (a, b) => [
-                sliverAppBar,
-                SliverToBoxAdapter(
-                  child: column,
-                ),
-                SliverPersistentHeader(
-                  delegate: _SliverTabBarDelegate(
-                      tabBar,
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          HoohIcon(
-                            "assets/images/common_ore.svg",
-                            width: 20,
-                            height: 20,
-                          ),
-                          SizedBox(
-                            width: 4,
-                          ),
-                          Text(
-                            sprintf(globalLocalizations.me_wallet_ore_amount, [formatCurrency(modelState.post?.profitInt)]),
-                            style: TextStyle(fontSize: 12, color: designColors.light_06.auto(ref)),
-                          ),
-                          SizedBox(
-                            width: 48,
-                          )
-                        ],
-                      ),
-                      ref),
-                  pinned: true,
-                ),
-              ],
-              body: tabBarView,
+    return modelState.post == null
+        ? Scaffold(
+            appBar: AppBar(title: Text("")),
+            body: Center(
+              child: SizedBox(child: CircularProgressIndicator()),
             ),
           )
-
-              // CustomScrollView(
-              //   controller: scrollController,
-              //   slivers: [
-              //     // SliverPersistentHeader(
-              //     //   delegate: SectionHeaderDelegate("Section B"),
-              //     //   pinned: true,
-              //     // ),
-              //     sliverAppBar,
-              //
-              //     SliverToBoxAdapter(
-              //       child: column,
-              //     ),
-              //     SliverPersistentHeader(
-              //       delegate: _SliverTabBarDelegate(tabBar, ref),
-              //       pinned: true,
-              //     ),
-              //     // SliverFillRemaining(
-              //     //   child: tabBarView,
-              //     // ),
-              //     SliverPersistentHeader(
-              //       delegate: _SliverTabViewDelegate(tabBarView, screenHeight - statusbarHeight - sliverAppBar.toolbarHeight - tabbarHeight),
-              //       // pinned: true,
-              //     ),
-              //   ],
-              // ),
-              ),
-          modelState.post == null
-              ? SizedBox(
-                  height: 1,
-                  width: 1,
-                )
-              : Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: CommentComposeView(
-                    provider: widget.composerProvider,
-                    textFieldNode: widget.textFieldNode,
-                    onLikePress: model.onPostLikePress,
-                    onFavoritePress: model.onPostFavoritePress,
-                    onSharePress: model.onPostSharePress,
-                    onSendPress: (comment, text, onComplete, onError) {
-                      model.createComment(comment, text, onComplete, onError);
-                      hideKeyboard();
+        : GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              hideKeyboard();
+            },
+            child: Scaffold(
+              body: Stack(
+                children: [
+                  Positioned.fill(
+                      child: refresh.RefreshIndicator(
+                    notificationPredicate: (notification) {
+                      return notification.depth == 2;
                     },
-                  ))
-        ],
-      ),
+                    onRefresh: () async {
+                      model.onRefresh((state) {
+                        // debugPrint("refresh state=$state");
+                        _refreshController.refreshCompleted();
+                      });
+                    },
+                    child: NestedScrollView(
+                      headerSliverBuilder: (a, b) => [
+                        sliverAppBar,
+                        SliverToBoxAdapter(
+                          child: column,
+                        ),
+                        SliverPersistentHeader(
+                          delegate: _SliverTabBarDelegate(
+                              tabBar,
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  HoohIcon(
+                                    "assets/images/common_ore.svg",
+                                    width: 20,
+                                    height: 20,
+                                  ),
+                                  SizedBox(
+                                    width: 4,
+                                  ),
+                                  Text(
+                                    sprintf(globalLocalizations.me_wallet_ore_amount, [formatCurrency(modelState.post?.profitInt)]),
+                                    style: TextStyle(fontSize: 12, color: designColors.light_06.auto(ref)),
+                                  ),
+                                  SizedBox(
+                                    width: 48,
+                                  )
+                                ],
+                              ),
+                              ref),
+                          pinned: true,
+                        ),
+                      ],
+                      body: tabBarView,
+                    ),
+                  )
 
-      // body: TabBarView(controller: tabController, children: [
-      //   Container(
-      //     color: Colors.red,
-      //   ),
-      //   Container(
-      //     color: Colors.blue,
-      //   ),
-      // ]),
-    );
+                      // CustomScrollView(
+                      //   controller: scrollController,
+                      //   slivers: [
+                      //     // SliverPersistentHeader(
+                      //     //   delegate: SectionHeaderDelegate("Section B"),
+                      //     //   pinned: true,
+                      //     // ),
+                      //     sliverAppBar,
+                      //
+                      //     SliverToBoxAdapter(
+                      //       child: column,
+                      //     ),
+                      //     SliverPersistentHeader(
+                      //       delegate: _SliverTabBarDelegate(tabBar, ref),
+                      //       pinned: true,
+                      //     ),
+                      //     // SliverFillRemaining(
+                      //     //   child: tabBarView,
+                      //     // ),
+                      //     SliverPersistentHeader(
+                      //       delegate: _SliverTabViewDelegate(tabBarView, screenHeight - statusbarHeight - sliverAppBar.toolbarHeight - tabbarHeight),
+                      //       // pinned: true,
+                      //     ),
+                      //   ],
+                      // ),
+                      ),
+                  modelState.post == null
+                      ? SizedBox(
+                          height: 1,
+                          width: 1,
+                        )
+                      : Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: CommentComposeView(
+                            provider: widget.composerProvider,
+                            textFieldNode: widget.textFieldNode,
+                            onLikePress: (newState, error) {
+                              User? user = ref.read(globalUserInfoProvider);
+                              if (user == null) {
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+                                return;
+                              }
+                              model.onPostLikePress(newState, error);
+                            },
+                            onFavoritePress: model.onPostFavoritePress,
+                            onSharePress: model.onPostSharePress,
+                            onSendPress: (comment, text, onComplete, onError) {
+                              model.createComment(comment, text, onComplete, onError);
+                              hideKeyboard();
+                            },
+                          ))
+                ],
+              ),
+
+              // body: TabBarView(controller: tabController, children: [
+              //   Container(
+              //     color: Colors.red,
+              //   ),
+              //   Container(
+              //     color: Colors.blue,
+              //   ),
+              // ]),
+            ),
+          );
   }
 
   Widget buildMenuButton(PostDetailScreenViewModel model, PostDetailScreenModelState modelState) {
@@ -388,9 +422,16 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
               }
               network.requestAsync<Template>(network.getTemplateInfo(templateId!), (template) {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => EditPostScreen(setting: PostImageSetting.withTemplate(template))));
-              }, (e) {
-                // Toast.showSnackBar(context, e.devMessage);
-                showCommonRequestErrorDialog(ref, context, e);
+              }, (error) {
+                if (error.errorCode == Constants.RESOURCE_NOT_FOUND) {
+                  showDialog(
+                      context: context,
+                      builder: (popContext) => AlertDialog(
+                            title: Text(globalLocalizations.error_view_template_not_found),
+                          ));
+                } else {
+                  showCommonRequestErrorDialog(ref, context, error);
+                }
               });
             });
           },
@@ -459,17 +500,37 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
         PopupMenuItem itemDelete = PopupMenuItem(
           onTap: () {
             Future.delayed(Duration(milliseconds: 250), () {
-              network.requestAsync<void>(network.deletePost(modelState.postId), (_) {
-                Toast.showSnackBar(context, globalLocalizations.post_detail_delete_post_success);
-                Navigator.of(context, rootNavigator: true).pop();
-              }, (e) {
-                if (kDebugMode) {
-                  // Toast.showSnackBar(context, e.devMessage);
-                  showCommonRequestErrorDialog(ref, context, e);
-                } else {
-                  Toast.showSnackBar(context, globalLocalizations.post_detail_delete_post_failed);
-                }
-              });
+              showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (popContext) {
+                    return AlertDialog(
+                      content: Text(globalLocalizations.post_detail_menu_delete_dialog_title),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(popContext).pop();
+                              network.requestAsync<void>(network.deletePost(modelState.postId), (_) {
+                                Toast.showSnackBar(context, globalLocalizations.post_detail_delete_post_success);
+                                Navigator.of(context, rootNavigator: true).pop();
+                              }, (e) {
+                                if (kDebugMode) {
+                                  // Toast.showSnackBar(context, e.devMessage);
+                                  showCommonRequestErrorDialog(ref, context, e);
+                                } else {
+                                  Toast.showSnackBar(context, globalLocalizations.post_detail_delete_post_failed);
+                                }
+                              });
+                            },
+                            child: Text(globalLocalizations.common_delete)),
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(popContext).pop();
+                            },
+                            child: Text(globalLocalizations.common_cancel))
+                      ],
+                    );
+                  });
             });
           },
           child: Text(

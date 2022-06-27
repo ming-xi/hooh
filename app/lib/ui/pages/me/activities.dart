@@ -1,6 +1,7 @@
 import 'package:app/global.dart';
 import 'package:app/ui/pages/me/activities_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
+import 'package:app/ui/widgets/empty_views.dart';
 import 'package:app/ui/widgets/user_activity_view.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:common/models/page_state.dart';
@@ -53,7 +54,7 @@ class UserActivityPage extends ConsumerStatefulWidget {
   @override
   ConsumerState createState() => _UserActivityPageState();
 
-  static List<Widget> buildGridView(BuildContext context, WidgetRef ref, ActivitiesScreenModelState modelState) {
+  static List<Widget> buildGridView(BuildContext context, WidgetRef ref, ActivitiesScreenModelState modelState, ActivitiesScreenViewModel model) {
     List<Widget> list = _prepareGroupedItems(context, modelState.activities).map((e) {
       if (e is String) {
         return SliverToBoxAdapter(child: _buildDateHeader(ref, e));
@@ -65,6 +66,9 @@ class UserActivityPage extends ConsumerStatefulWidget {
               (context, index) => UserActivityView(
                 user: modelState.user!,
                 activity: e[index],
+                onDelete: (activity) {
+                  model.onDeleteActivity(activity);
+                },
               ),
               childCount: e.length,
             ),
@@ -200,9 +204,11 @@ class _UserActivityPageState extends ConsumerState<UserActivityPage> {
         }, isRefresh: false);
       },
       controller: _refreshController,
-      child: CustomScrollView(
-        slivers: UserActivityPage.buildGridView(context, ref, modelState),
-      ),
+      child: modelState.activities.isEmpty
+          ? EmptyView(text: globalLocalizations.empty_view_no_activities)
+          : CustomScrollView(
+              slivers: UserActivityPage.buildGridView(context, ref, modelState, model),
+            ),
     );
   }
 }

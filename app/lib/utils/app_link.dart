@@ -4,9 +4,11 @@ import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/home/templates.dart';
 import 'package:app/ui/pages/home/templates_view_model.dart';
 import 'package:app/ui/pages/me/badges.dart';
-import 'package:app/ui/pages/user/templates.dart';
 import 'package:app/ui/pages/user/user_profile.dart';
 import 'package:app/ui/widgets/template_detail_view.dart';
+import 'package:app/utils/constants.dart';
+import 'package:app/utils/ui_utils.dart';
+import 'package:common/models/template.dart';
 import 'package:common/utils/network.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -78,9 +80,18 @@ void openAppLink(BuildContext context, String? link, {WidgetRef? ref}) {
         }
         if (!hit) {
           String uuid = _getSingleUuid(link);
-          debugPrint("uuid=$uuid");
-          network.getTemplateInfo(uuid).then((value) {
-            TemplateDetailView.showTemplateDialog(context, ref, value);
+          network.requestAsync<Template>(network.getTemplateInfo(uuid), (data) {
+            TemplateDetailView.showTemplateDialog(context, ref, data);
+          }, (error) {
+            if (error.errorCode == Constants.RESOURCE_NOT_FOUND) {
+              showDialog(
+                  context: context,
+                  builder: (popContext) => AlertDialog(
+                        title: Text(globalLocalizations.error_view_template_not_found),
+                      ));
+            } else {
+              showCommonRequestErrorDialog(ref, context, error);
+            }
           });
         }
         // Navigator.push(context, MaterialPageRoute(builder: (context) => PostDetailScreen(postId: uuid)));

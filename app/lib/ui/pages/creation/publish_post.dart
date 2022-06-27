@@ -5,11 +5,16 @@ import 'package:app/ui/pages/creation/select_topic.dart';
 import 'package:app/ui/pages/home/feeds.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/home/home_view_model.dart';
+import 'package:app/ui/pages/home/input.dart';
+import 'package:app/ui/pages/home/input_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/template_compose_view.dart';
 import 'package:app/ui/widgets/toast.dart';
+import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
+import 'package:common/models/hooh_api_error_response.dart';
+import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sprintf/sprintf.dart';
@@ -144,8 +149,8 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
                               context: context,
                               builder: (context) {
                                 return AlertDialog(
-                                  title: Text("title"),
-                                  content: Text("description"),
+                                  title: Text(globalLocalizations.publish_post_spends_ore_dialog_title),
+                                  content: Text(globalLocalizations.publish_post_spends_ore_dialog_content),
                                 );
                               });
                         },
@@ -182,6 +187,7 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
         publishToWaitingList: publishToWaitingList,
         onSuccess: (post) {
           // Navigator.popUntil(context, ModalRoute.withName("/home"));
+          clearDraft();
           Future.delayed(Duration(seconds: 3), () {
             Navigator.of(context).pop();
             Toast.showSnackBar(context, globalLocalizations.publish_post_success);
@@ -197,9 +203,19 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
         },
         onError: (error) {
           Navigator.of(context).pop();
-          Toast.showSnackBar(context, sprintf(globalLocalizations.publish_post_failed, [globalLocalizations.error_network_error]));
+          // if (error is HoohApiErrorResponse && error.errorCode == Constants.INSUFFICIENT_FUNDS) {
+          //
+          // } else {
+          // }
+          //   Toast.showSnackBar(context, sprintf(globalLocalizations.publish_post_failed, [globalLocalizations.error_network_error]));
           showCommonRequestErrorDialog(ref, context, error);
         });
+  }
+
+  void clearDraft() {
+    InputPageViewModel model = ref.read(globalInputPageProvider.notifier);
+    model.updateInputText("", needRefresh: true);
+    preferences.remove(Preferences.KEY_USER_DRAFT);
   }
 
   Widget buildTags(List<String> tags) {

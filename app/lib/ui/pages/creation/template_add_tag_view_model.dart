@@ -27,9 +27,13 @@ class TemplateAddTagPageViewModel extends StateNotifier<TemplateAddTagPageModelS
     // search(isRefresh: true);
   }
 
-  void addTag(String text) {
+  void addTag(String text, {required Function(String tag) onDuplicateTagAdded}) {
     text = text.trim();
-    if (text.isEmpty || state.tags.contains(text)) {
+    if (text.isEmpty) {
+      return;
+    }
+    if (state.tags.contains(text)) {
+      onDuplicateTagAdded(text);
       return;
     }
     updateState(state.copyWith(tags: [...state.tags, text]));

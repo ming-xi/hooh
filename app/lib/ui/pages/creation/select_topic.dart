@@ -1,7 +1,11 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:app/global.dart';
 import 'package:app/ui/pages/creation/select_topic_view_model.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
+import 'package:app/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -33,105 +37,124 @@ class _SelectTopicScreenState extends ConsumerState<SelectTopicScreen> {
     SelectTopicScreenModelState modelState = ref.watch(widget.provider);
     SelectTopicScreenViewModel model = ref.read(widget.provider.notifier);
     List<String> unselectedRecommendedTags = [...modelState.recommendedTags]..removeWhere((element) => modelState.userTags.contains(element));
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(globalLocalizations.select_topic_title),
-        actions: [
-          IconButton(
-              onPressed: () {
-                Navigator.pop(context, modelState.userTags);
-              },
-              icon: Icon(Icons.done_rounded))
-        ],
-        leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: Icon(Icons.clear_rounded)),
-      ),
-      body: Column(
-        children: [
-          Container(
-            color: designColors.light_02.auto(ref),
-            child: RawKeyboardListener(
-              focusNode: listenerNode,
-              onKey: (event) {
-                if (event.logicalKey == LogicalKeyboardKey.enter) {
-                  model.addTag(controller.text);
-                  controller.text = "";
-                  inputNode.requestFocus();
-                }
-              },
-              child: TextField(
-                controller: controller,
-                focusNode: inputNode,
-                maxLines: 3,
-                minLines: 1,
-                maxLengthEnforcement: MaxLengthEnforcement.enforced,
-                textInputAction: TextInputAction.done,
-                // onSubmitted: (text) {
-                //   addTag(text);
-                //   controller.text = "";
-                // },
-                onEditingComplete: () {
-                  addTag(controller.text);
-                  controller.text = "";
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () {
+        hideKeyboard();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(globalLocalizations.select_topic_title),
+          actions: [
+            IconButton(
+                onPressed: () {
+                  Navigator.pop(context, modelState.userTags);
                 },
-                inputFormatters: [LengthLimitingTextInputFormatter(24), FilteringTextInputFormatter.deny(RegExp("\n"))],
-                style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
-                decoration: InputDecoration(
-                  prefixIcon: Padding(
-                    padding: const EdgeInsets.only(left: 20.0, right: 8, top: 4),
-                    child: Text(
-                      "#",
-                      style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
-                    ),
-                  ),
-                  prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
-                  contentPadding: EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 6),
-                  hintStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(border: Border(bottom: BorderSide(color: designColors.light_02.auto(ref), width: 1))),
-                  child: Wrap(
-                    spacing: 0,
-                    runSpacing: 0,
-                    children: modelState.userTags.map((e) => buildTagClip(e, model)).toList(),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemBuilder: (context, index) {
-                String tag = unselectedRecommendedTags[index];
-                return ListTile(
-                  visualDensity: VisualDensity(vertical: VisualDensity.minimumDensity),
-                  title: Padding(
-                    padding: const EdgeInsets.only(left: 4.0),
-                    child: Text(
-                      "# $tag",
-                      style: TextStyle(color: designColors.light_06.auto(ref), fontSize: 14),
-                    ),
-                  ),
-                  onTap: () {
-                    addTag(tag);
-                  },
-                );
+                icon: Icon(Icons.done_rounded))
+          ],
+          leading: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
               },
-              itemCount: unselectedRecommendedTags.length,
+              icon: Icon(Icons.clear_rounded)),
+        ),
+        body: Column(
+          children: [
+            Container(
+              color: designColors.light_02.auto(ref),
+              child: RawKeyboardListener(
+                focusNode: listenerNode,
+                onKey: (event) {
+                  if (event.logicalKey == LogicalKeyboardKey.enter) {
+                    addTag(controller.text);
+                    controller.text = "";
+                    inputNode.requestFocus();
+                  }
+                },
+                child: TextField(
+                  controller: controller,
+                  focusNode: inputNode,
+                  maxLines: 1,
+                  minLines: 1,
+
+                  maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                  textInputAction: TextInputAction.done,
+                  // onSubmitted: (text) {
+                  //   addTag(text);
+                  //   controller.text = "";
+                  // },
+                  onEditingComplete: () {
+                    addTag(controller.text);
+                    controller.text = "";
+                  },
+                  // buildCounter: (
+                  //     context, {required currentLength,required isFocused, maxLength }) {
+                  //   int utf8Length = utf8.encode(controller.text).length;
+                  //   return Container(
+                  //     child: Text(
+                  //       '$utf8Length/$maxLength',
+                  //       style: Theme.of(context).textTheme.caption,
+                  //     ),
+                  //   );
+                  // },
+
+                  inputFormatters: [LengthLimitingTextInputFormatter(24), FilteringTextInputFormatter.deny(RegExp("\n"))],
+                  // inputFormatters: [_Utf8LengthLimitingTextInputFormatter(4), FilteringTextInputFormatter.deny(RegExp("\n"))],
+                  style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
+                  decoration: InputDecoration(
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.only(left: 20.0, right: 8, top: 4),
+                      child: Text(
+                        "#",
+                        style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
+                      ),
+                    ),
+                    prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
+                    contentPadding: EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 6),
+                    hintStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
             ),
-          )
-        ],
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(border: Border(bottom: BorderSide(color: designColors.light_02.auto(ref), width: 1))),
+                    child: Wrap(
+                      spacing: 0,
+                      runSpacing: 0,
+                      children: modelState.userTags.map((e) => buildTagClip(e, model)).toList(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemBuilder: (context, index) {
+                  String tag = unselectedRecommendedTags[index];
+                  return ListTile(
+                    visualDensity: VisualDensity(vertical: VisualDensity.minimumDensity),
+                    title: Padding(
+                      padding: const EdgeInsets.only(left: 4.0),
+                      child: Text(
+                        "# $tag",
+                        style: TextStyle(color: designColors.light_06.auto(ref), fontSize: 14),
+                      ),
+                    ),
+                    onTap: () {
+                      addTag(tag);
+                    },
+                  );
+                },
+                itemCount: unselectedRecommendedTags.length,
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -143,7 +166,12 @@ class _SelectTopicScreenState extends ConsumerState<SelectTopicScreen> {
       return;
     }
     SelectTopicScreenViewModel model = ref.read(widget.provider.notifier);
-    model.addTag(tag);
+    model.addTag(
+      tag,
+      onDuplicateTagAdded: (tag) {
+        Toast.showSnackBar(context, globalLocalizations.select_topic_duplicated_tag);
+      },
+    );
   }
 
   Widget buildTagClip(String tag, SelectTopicScreenViewModel model) {
@@ -168,5 +196,55 @@ class _SelectTopicScreenState extends ConsumerState<SelectTopicScreen> {
         model.deleteTag(tag);
       },
     );
+  }
+}
+
+class _Utf8LengthLimitingTextInputFormatter extends TextInputFormatter {
+  _Utf8LengthLimitingTextInputFormatter(this.maxLength) : assert(maxLength == null || maxLength == -1 || maxLength > 0);
+
+  final int maxLength;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (maxLength != null && maxLength > 0 && bytesLength(newValue.text) > maxLength) {
+      // If already at the maximum and tried to enter even more, keep the old value.
+      if (bytesLength(oldValue.text) == maxLength) {
+        return oldValue;
+      }
+      return truncate(newValue, maxLength);
+    }
+    return newValue;
+  }
+
+  static TextEditingValue truncate(TextEditingValue value, int maxLength) {
+    var newValue = '';
+    if (bytesLength(value.text) > maxLength) {
+      var length = 0;
+
+      value.text.characters.takeWhile((char) {
+        var nbBytes = bytesLength(char);
+        if (length + nbBytes <= maxLength) {
+          newValue += char;
+          length += nbBytes;
+          return true;
+        }
+        return false;
+      });
+    }
+    return TextEditingValue(
+      text: newValue,
+      selection: value.selection.copyWith(
+        baseOffset: min(value.selection.start, newValue.length),
+        extentOffset: min(value.selection.end, newValue.length),
+      ),
+      composing: TextRange.empty,
+    );
+  }
+
+  static int bytesLength(String value) {
+    return utf8.encode(value).length;
   }
 }

@@ -23,12 +23,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:sprintf/sprintf.dart';
 
-Future<void> showSelectLocalImageActionSheet(
-    {required BuildContext context,
-    required WidgetRef ref,
-    double? cropRatio,
-    bool adjustTemplateImage = false,
-    required Function(File? file) onSelected}) async {
+void showSelectLocalImageActionSheet(
+    {required BuildContext context, required WidgetRef ref, double? cropRatio, bool adjustTemplateImage = false, required Function(File? file) onSelected}) {
+  debugPrint("sheet context=$context");
   if (Platform.isIOS || Platform.isMacOS) {
     /// To display an actionSheet
     showCupertinoModalPopup(
@@ -101,90 +98,41 @@ void _openImagePicker(
     required bool useCamera,
     double? cropRatio,
     bool adjustTemplateImage = true,
-    required Function(File? file) onSelected}) async {
-  final XFile? pickedFile;
+    required Function(File? file) onSelected}) {
+  ImageSource source;
   if (useCamera) {
-    pickedFile = await ImagePicker().pickImage(source: ImageSource.camera);
-    // files = await ImagesPicker.openCamera(
-    //   pickType: PickType.image,
-    //   cropOpt: cropOption,
-    // );
+    source = ImageSource.camera;
   } else {
-    pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-    // files = await ImagesPicker.pick(
-    //   pickType: PickType.image,
-    //   count: 1,
-    //   cropOpt: cropOption,
-    // );
+    source = ImageSource.gallery;
   }
-  if (pickedFile != null) {
-    File file = File(pickedFile.path);
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => ImageCropperScreen(
-                  imageFile: file,
-                  ratio: cropRatio,
-                ))).then((file) {
-      if (file == null) {
-        onSelected(null);
-      } else {
-        if (adjustTemplateImage) {
-          Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return AdjustTemplatePositionScreen(
-              file,
-              onFileAdjusted: onSelected,
-            );
-          }));
+  debugPrint("context=$context");
+  ImagePicker().pickImage(source: source).then((pickedFile) {
+    if (pickedFile != null) {
+      File file = File(pickedFile.path);
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => ImageCropperScreen(
+                    imageFile: file,
+                    ratio: cropRatio,
+                  ))).then((file) {
+        if (file == null) {
+          onSelected(null);
         } else {
-          onSelected(file);
+          if (adjustTemplateImage) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) {
+              return AdjustTemplatePositionScreen(
+                file,
+                onFileAdjusted: onSelected,
+              );
+            }));
+          } else {
+            onSelected(file);
+          }
         }
-      }
-    });
-  }
-  // if (files != null && files.isNotEmpty) {
-  //   File selectedFile = File(files[0].path);
-  //   if (adjustTemplateImage) {
-  //     Navigator.push(context, MaterialPageRoute(builder: (context) {
-  //       return AdjustTemplatePositionScreen(
-  //         selectedFile,
-  //         onFileAdjusted: onSelected,
-  //       );
-  //     }));
-  //   } else {
-  //     onSelected(selectedFile);
-  //   }
-  // }
-  // // showLoader();
-  // final XFile? pickedFile = await ImagePicker().pickImage(source: source, maxWidth: 1920, maxHeight: 1920);
-  // CroppedFile? croppedFile = await ImageCropper().cropImage(
-  //   sourcePath: pickedFile!.path,
-  //   aspectRatioPresets: [
-  //     CropAspectRatioPreset.square,
-  //     CropAspectRatioPreset.ratio3x2,
-  //     CropAspectRatioPreset.original,
-  //     CropAspectRatioPreset.ratio4x3,
-  //     CropAspectRatioPreset.ratio16x9
-  //   ],
-  //   uiSettings: [
-  //     AndroidUiSettings(
-  //         toolbarTitle: 'Cropper',
-  //         toolbarColor: designColors.feiyu_blue.auto(ref),
-  //         toolbarWidgetColor: Colors.white,
-  //         initAspectRatio: CropAspectRatioPreset.original,
-  //         lockAspectRatio: false),
-  //     IOSUiSettings()
-  //   ],
-  // );
-  // if (croppedFile != null) {
-  //   Navigator.push(
-  //       context,
-  //       MaterialPageRoute(
-  //           builder: (context) => AdjustTemplatePositionScreen(
-  //                 File(croppedFile.path),
-  //                 onFileAdjusted: onSelected,
-  //               )));
-  // }
+      });
+    }
+  });
 }
 
 void showKeyboard(WidgetRef ref, FocusNode node) {

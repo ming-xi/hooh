@@ -14,12 +14,14 @@ import 'package:blur/blur.dart';
 import 'package:common/models/page_state.dart';
 import 'package:common/models/template.dart';
 import 'package:common/models/user.dart';
+import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:sprintf/sprintf.dart';
 
 import 'templates_view_model.dart';
 
@@ -48,22 +50,27 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
   @override
   Widget build(BuildContext context) {
     // debugPrint("build page");
-    final ScrollController _controller = ScrollController();
     int imageWidth = MediaQuery.of(context).size.width ~/ 3;
-
+    debugPrint("page context=$context");
     TemplatesPageModelState modelState = ref.watch(homeTemplatesProvider);
     TemplatesPageViewModel model = ref.read(homeTemplatesProvider.notifier);
 
     double safePadding = MediaQuery.of(context).padding.top;
-    // debugPrint("safePadding=$safePadding");
-    double padding = 16.0;
+    // double padding = 16.0;
+    double padding = 8;
     double iconSize = 24.0;
     double listHeight = 40.0;
     double totalHeight = padding * 4 + iconSize + listHeight;
     totalHeight += padding;
     var searchBar = buildSearchBar(context, iconSize, padding);
-    var categoryBar = buildTags(padding, listHeight, _controller, model, modelState);
+    var categoryBar = buildTags(padding, listHeight, ScrollController(), model, modelState);
     Widget listWidget = modelState.selectedTag == null ? Container() : buildListWidget(model, modelState, imageWidth, totalHeight + safePadding);
+
+    double buttonMarginBottom = 100;
+    double labelMarginBottom = buttonMarginBottom + 48;
+    double labelMarginRight = 22;
+    double arrowMarginRight = labelMarginRight + 12;
+    double arrowMarginBottom = labelMarginBottom - 8;
     return Scaffold(
       // floatingActionButton: SafeArea(
       //   minimum: EdgeInsets.only(bottom: 100),
@@ -98,116 +105,118 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
         preferredSize: Size.fromHeight(totalHeight),
         child: Builder(builder: (context) {
           return AppBar(
-                  toolbarHeight: padding * 5 + iconSize,
-                  elevation: 0,
-                  title: searchBar,
-                  titleSpacing: 0,
+                  title: Text(globalLocalizations.user_profile_templates),
                   bottom: PreferredSize(preferredSize: Size.fromHeight(listHeight), child: categoryBar),
                   backgroundColor: Colors.transparent,
+                  elevation: 0,
                   systemOverlayStyle: SystemUiOverlayStyle.dark)
               .frosted(
             blur: 10,
             frostColor: designColors.light_01.auto(ref),
             frostOpacity: 0.9,
           );
+          // return AppBar(
+          //         toolbarHeight: padding * 5 + iconSize,
+          //         elevation: 0,
+          //         title: searchBar,
+          //         titleSpacing: 0,
+          //         bottom: PreferredSize(preferredSize: Size.fromHeight(listHeight), child: categoryBar),
+          //         backgroundColor: Colors.transparent,
+          //         systemOverlayStyle: SystemUiOverlayStyle.dark)
+          //     .frosted(
+          //   blur: 10,
+          //   frostColor: designColors.light_01.auto(ref),
+          //   frostOpacity: 0.9,
+          // );
         }),
       ),
       body: SafeArea(
         top: false,
         bottom: false,
-        child: Builder(builder: (context) {
-          double buttonMarginBottom = 100;
-          double labelMarginBottom = buttonMarginBottom + 48;
-          double labelMarginRight = 22;
-          double arrowMarginRight = labelMarginRight + 12;
-          double arrowMarginBottom = labelMarginBottom - 8;
-
-          return Stack(
-            children: [
-              Positioned.fill(child: listWidget),
-              Positioned(
-                  right: 0,
-                  bottom: buttonMarginBottom,
-                  child: Material(
-                    type: MaterialType.transparency,
-                    child: Ink(
-                      width: 128,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        gradient: MainStyles.buttonGradient(ref, enabled: true),
-                        borderRadius: BorderRadius.only(topLeft: Radius.circular(22), bottomLeft: Radius.circular(22)),
-                      ),
-                      child: InkWell(
-                        borderRadius: BorderRadius.only(topLeft: Radius.circular(22), bottomLeft: Radius.circular(22)),
-                        onTap: () {
-                          User? user = ref.read(globalUserInfoProvider);
-                          if (user == null) {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
-                            return;
-                          }
-                          if (!(preferences.getBool(Preferences.KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED) ?? false)) {
-                            showUploadDialog();
-                            return;
-                          } else {
-                            showSelectLocalImageActionSheet(
-                                context: context,
-                                adjustTemplateImage: true,
-                                ref: ref,
-                                onSelected: (file) {
-                                  if (file == null) {
-                                    return;
-                                  }
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => TemplateTextSettingScreen(
-                                                imageFile: file,
-                                              )));
-                                });
-                          }
-                        },
-                        child: Center(
-                            child: Text(
-                          globalLocalizations.templates_title,
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-                        )),
+        child: Stack(
+          children: [
+            Positioned.fill(child: listWidget),
+            Positioned(
+                right: 0,
+                bottom: buttonMarginBottom,
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: Ink(
+                    width: 128,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      gradient: MainStyles.buttonGradient(ref, enabled: true),
+                      borderRadius: BorderRadius.only(topLeft: Radius.circular(22), bottomLeft: Radius.circular(22)),
+                    ),
+                    child: InkWell(
+                      borderRadius: BorderRadius.only(topLeft: Radius.circular(22), bottomLeft: Radius.circular(22)),
+                      onTap: () {
+                        User? user = ref.read(globalUserInfoProvider);
+                        if (user == null) {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+                          return;
+                        }
+                        if (!(preferences.getBool(Preferences.KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED) ?? false)) {
+                          showUploadDialog();
+                          return;
+                        } else {
+                          showSelectLocalImageActionSheet(
+                              context: context,
+                              adjustTemplateImage: true,
+                              ref: ref,
+                              onSelected: (file) {
+                                if (file == null) {
+                                  return;
+                                }
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => TemplateTextSettingScreen(
+                                              imageFile: file,
+                                            )));
+                              });
+                        }
+                      },
+                      child: Center(
+                          child: Text(
+                        globalLocalizations.templates_title,
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                      )),
+                    ),
+                  ),
+                )),
+            Positioned(
+                right: labelMarginRight,
+                bottom: labelMarginBottom,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(color: designColors.light_01.auto(ref), borderRadius: BorderRadius.circular(10.5)),
+                      child: Text(
+                        globalLocalizations.templates_reward,
+                        style: TextStyle(fontSize: 16, color: designColors.orange.auto(ref), fontWeight: FontWeight.bold),
                       ),
                     ),
-                  )),
-              Positioned(
-                  right: labelMarginRight,
-                  bottom: labelMarginBottom,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(color: designColors.light_01.auto(ref), borderRadius: BorderRadius.circular(10.5)),
-                        child: Text(
-                          globalLocalizations.templates_reward,
-                          style: TextStyle(fontSize: 16, color: designColors.orange.auto(ref), fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ],
-                  )),
-              Positioned(
-                  bottom: arrowMarginBottom,
-                  right: arrowMarginRight,
-                  child: HoohIcon(
-                    'assets/images/figure_template_reward_arrow.svg',
-                    color: designColors.light_01.auto(ref),
-                  ))
-            ],
-          );
-        }),
+                  ],
+                )),
+            Positioned(
+                bottom: arrowMarginBottom,
+                right: arrowMarginRight,
+                child: HoohIcon(
+                  'assets/images/figure_template_reward_arrow.svg',
+                  color: designColors.light_01.auto(ref),
+                ))
+          ],
+        ),
       ),
     );
   }
 
   Widget buildListWidget(TemplatesPageViewModel model, TemplatesPageModelState modelState, int width, double totalHeight) {
     Widget listWidget;
-
     listWidget = SmartRefresher(
       enablePullDown: true,
       enablePullUp: true,
@@ -395,129 +404,128 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
   }
 
   void showUploadDialog() {
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) {
-          return Consumer(
-            builder: (context, ref, child) {
+    TemplatesPageModelState modelState = ref.watch(homeTemplatesProvider);
+    TemplatesPageViewModel model = ref.read(homeTemplatesProvider.notifier);
+    network.getFeeInfo().then((response) {
+      int createTemplateReward = response.createTemplateReward;
+      showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (popContext) {
+            double screenHeight = MediaQuery.of(context).size.height;
+            double screenWidth = MediaQuery.of(context).size.width;
+            return Consumer(builder: (consumerContext, ref, child) {
               TemplatesPageModelState modelState = ref.watch(homeTemplatesProvider);
               TemplatesPageViewModel model = ref.read(homeTemplatesProvider.notifier);
+
               return AlertDialog(
                 insetPadding: EdgeInsets.all(20),
                 title: Text(
-                  "Upload material description",
+                  globalLocalizations.templates_upload_guide_title,
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
                 ),
                 titlePadding: EdgeInsets.only(top: 24, left: 24, right: 24),
                 contentPadding: EdgeInsets.all(16),
-                content: Builder(builder: (context) {
-                  double screenHeight = MediaQuery.of(context).size.height;
-                  double screenWidth = MediaQuery.of(context).size.width;
-
-                  return SizedBox(
-                    width: screenWidth,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: SizedBox(
-                            height: screenHeight / 4,
-                            child: CustomScrollView(
-                              slivers: [
-                                SliverFillRemaining(
-                                  hasScrollBody: false,
-                                  child: Text(
-                                    """1. During the image uploading process, the image needs to be preprocessed
-2. Fail to upload a material to get x ore
-3. After the material is approved, it will appear in the gallery.
-4. Additional rewards for being successfully cited""",
-                                    style: TextStyle(fontSize: 16, color: designColors.light_06.auto(ref)),
-                                  ),
-                                )
-                              ],
-                            ),
+                content: SizedBox(
+                  width: screenWidth,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: SizedBox(
+                          height: screenHeight / 4,
+                          child: CustomScrollView(
+                            slivers: [
+                              SliverFillRemaining(
+                                hasScrollBody: false,
+                                child: Text(
+                                  sprintf(globalLocalizations.templates_upload_guide_content, [formatCurrency(createTemplateReward)]),
+                                  style: TextStyle(fontSize: 16, color: designColors.light_06.auto(ref)),
+                                ),
+                              )
+                            ],
                           ),
                         ),
-                        SizedBox(
-                          height: 24,
-                        ),
-                        Row(
-                          children: [
-                            SizedBox(
-                              width: 4,
+                      ),
+                      SizedBox(
+                        height: 24,
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 4,
+                          ),
+                          SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: Checkbox(
+                              value: modelState.agreementChecked,
+                              onChanged: (value) {
+                                debugPrint("onChanged value=$value");
+                                model.setAgreementChecked(value!);
+                              },
                             ),
-                            SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: Checkbox(
-                                value: modelState.agreementChecked,
-                                onChanged: (value) {
-                                  model.setAgreementChecked(value!);
-                                },
-                              ),
-                            ),
-                            SizedBox(
-                              width: 8,
-                            ),
-                            Text(
-                              globalLocalizations.templates_don_t_prompt_next_time,
-                              style: TextStyle(color: designColors.dark_01.auto(ref), fontSize: 16),
-                            ),
-                          ],
-                        ),
-                        SizedBox(
-                          height: 24,
-                        ),
-                        Row(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Expanded(
-                              child: MainStyles.outlinedTextButton(ref, globalLocalizations.common_cancel, () {
-                                Navigator.pop(context);
-                              }),
-                            ),
-                            SizedBox(
-                              width: 12,
-                            ),
-                            Expanded(
-                              child: MainStyles.gradientButton(ref, globalLocalizations.common_confirm, () {
-                                preferences.putBool(Preferences.KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED, modelState.agreementChecked);
-                                Navigator.pop(context);
-                                User? user = ref.read(globalUserInfoProvider);
-                                if (user == null) {
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
-                                  return;
-                                }
-                                showSelectLocalImageActionSheet(
-                                    context: context,
-                                    adjustTemplateImage: true,
-                                    ref: ref,
-                                    onSelected: (file) {
-                                      if (file == null) {
-                                        return;
-                                      }
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => TemplateTextSettingScreen(
-                                                    imageFile: file,
-                                                  )));
-                                    });
-                              }),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                }),
+                          ),
+                          SizedBox(
+                            width: 8,
+                          ),
+                          Text(
+                            globalLocalizations.templates_don_t_prompt_next_time,
+                            style: TextStyle(color: designColors.dark_01.auto(ref), fontSize: 16),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 24,
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Expanded(
+                            child: MainStyles.outlinedTextButton(ref, globalLocalizations.common_cancel, () {
+                              Navigator.pop(context);
+                            }),
+                          ),
+                          SizedBox(
+                            width: 12,
+                          ),
+                          Expanded(
+                            child: MainStyles.gradientButton(ref, globalLocalizations.common_confirm, () {
+                              preferences.putBool(Preferences.KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED, modelState.agreementChecked);
+                              Navigator.pop(context);
+                              User? user = ref.read(globalUserInfoProvider);
+                              if (user == null) {
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+                                return;
+                              }
+                              showSelectLocalImageActionSheet(
+                                  context: context,
+                                  adjustTemplateImage: true,
+                                  ref: ref,
+                                  onSelected: (file) {
+                                    if (file == null) {
+                                      return;
+                                    }
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => TemplateTextSettingScreen(
+                                                  imageFile: file,
+                                                )));
+                                  });
+                            }),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               );
-            },
-          );
-        });
+            });
+          });
+    });
   }
 }
 

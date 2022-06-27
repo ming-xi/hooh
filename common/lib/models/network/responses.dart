@@ -163,8 +163,9 @@ class FeeInfoResponse {
   int createBadge;
   int deleteActivity;
   int votePost;
+  int createTemplateReward;
 
-  FeeInfoResponse(this.joinWaitingList, this.createBadge, this.deleteActivity, this.votePost);
+  FeeInfoResponse(this.joinWaitingList, this.createBadge, this.deleteActivity, this.votePost, this.createTemplateReward);
 
   factory FeeInfoResponse.fromJson(Map<String, dynamic> json) => _$FeeInfoResponseFromJson(json);
 
@@ -191,4 +192,16 @@ class UnreadNotificationCountResponse {
   factory UnreadNotificationCountResponse.fromJson(Map<String, dynamic> json) => _$UnreadNotificationCountResponseFromJson(json);
 
   Map<String, dynamic> toJson() => _$UnreadNotificationCountResponseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
+class TagDetailResponse {
+  int postCount;
+  String name;
+
+  TagDetailResponse(this.postCount, this.name);
+
+  factory TagDetailResponse.fromJson(Map<String, dynamic> json) => _$TagDetailResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$TagDetailResponseToJson(this);
 }

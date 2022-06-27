@@ -87,14 +87,21 @@ class _FeedsPageState extends ConsumerState<FeedsPage> with TickerProviderStateM
                   ]),
                 ),
                 IconButton(
-                  icon: HoohIcon(
-                    "assets/images/icon_search.svg",
-                    color: designColors.dark_01.auto(ref),
-                    width: 20,
-                    height: 20,
+                  icon: Icon(
+                    Icons.search_rounded,
+                    color: Colors.transparent,
                   ),
-                  onPressed: () {},
-                )
+                  onPressed: null,
+                ),
+                // IconButton(
+                //   icon: HoohIcon(
+                //     "assets/images/icon_search.svg",
+                //     color: designColors.dark_01.auto(ref),
+                //     width: 20,
+                //     height: 20,
+                //   ),
+                //   onPressed: () {},
+                // )
               ],
             ),
           ),

@@ -217,14 +217,19 @@ class _FollowedUserPostsPageState extends ConsumerState<FollowedUserPostsPage> {
   }
 
   Widget buildHeaderView(BuildContext context, FollowedUserPostsPageViewModel model, FollowedUserPostsPageModelState modelState) {
-    return Row(
-      children: [
-        Spacer(),
-        buildHeaderButtonView(model, false, !modelState.isTrending),
-        buildHeaderButtonView(model, true, modelState.isTrending),
-        Spacer(),
-      ],
+    return SizedBox(
+      width: 1,
+      height: 1,
     );
+    // 隐去最新最热切换按钮
+    // return Row(
+    //   children: [
+    //     Spacer(),
+    //     buildHeaderButtonView(model, false, !modelState.isTrending),
+    //     buildHeaderButtonView(model, true, modelState.isTrending),
+    //     Spacer(),
+    //   ],
+    // );
   }
 
   Widget buildHeaderButtonView(FollowedUserPostsPageViewModel model, bool trending, bool selected) {

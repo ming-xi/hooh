@@ -144,7 +144,7 @@ final globalDarkTheme = ThemeData(
     }),
     dialogTheme: DialogTheme(
       backgroundColor: designColors.light_01.dark,
-      shape: const RoundedRectangleBorder(borderRadius: const BorderRadius.all(Radius.circular(24))),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(24))),
     ),
     checkboxTheme: CheckboxThemeData(
         checkColor: MaterialStateProperty.all(designColors.light_01.dark),

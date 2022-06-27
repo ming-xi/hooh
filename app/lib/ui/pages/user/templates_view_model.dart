@@ -96,4 +96,9 @@ class UserTemplateScreenViewModel extends StateNotifier<UserTemplateScreenModelS
     list[index] = template;
     updateState(state.copyWith(templates: list));
   }
+
+  void onDeleteTemplate(Template template) {
+    state.templates.remove(template);
+    updateState(state.copyWith(templates: [...state.templates]));
+  }
 }

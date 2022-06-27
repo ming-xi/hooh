@@ -1,6 +1,7 @@
 import 'package:app/global.dart';
 import 'package:app/ui/pages/me/badges_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
+import 'package:app/ui/pages/user/user_profile.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/network/responses.dart';
@@ -147,6 +148,9 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: GestureDetector(
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => UserProfileScreen(userId: badge.designer.id)));
+          },
           child: Row(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,

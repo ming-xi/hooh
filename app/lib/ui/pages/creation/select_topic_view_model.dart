@@ -44,9 +44,13 @@ class SelectTopicScreenViewModel extends StateNotifier<SelectTopicScreenModelSta
     });
   }
 
-  void addTag(String text) {
+  void addTag(String text, {required Function(String tag) onDuplicateTagAdded}) {
     text = text.trim();
-    if (text.isEmpty || state.userTags.contains(text)) {
+    if (text.isEmpty) {
+      return;
+    }
+    if (state.userTags.contains(text)) {
+      onDuplicateTagAdded(text);
       return;
     }
     updateState(state.copyWith(userTags: [...state.userTags, text]));

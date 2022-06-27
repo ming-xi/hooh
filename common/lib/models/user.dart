@@ -91,12 +91,13 @@ class UserActivity {
   static const int TYPE_CREATE_BADGE = 10;
   static const int TYPE_RECEIVE_BADGE = 11;
 
+  String id;
   int type;
   String universalLink;
   Map<String, dynamic> data;
   DateTime createdAt;
 
-  UserActivity(this.type, this.universalLink, this.data, this.createdAt);
+  UserActivity(this.id, this.type, this.universalLink, this.data, this.createdAt);
 
   factory UserActivity.fromJson(Map<String, dynamic> json) => _$UserActivityFromJson(json);
 

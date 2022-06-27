@@ -49,8 +49,8 @@ class SetBadgeViewModel extends StateNotifier<SetBadgeModelState> {
     state = state.copyWith(originalColor: !state.originalColor);
   }
 
-  void getRandomBadge(String userId) {
-    network.getRandomBadgeTemplate(userId).then((list) async {
+  void getRandomBadge(String userId, {Function()? callback}) {
+    network.requestAsync<List<SocialBadgeTemplateLayer>>(network.getRandomBadgeTemplate(userId), (list) async {
       list.sort(
         (a, b) => a.layerIndex.compareTo(b.layerIndex),
       );
@@ -59,7 +59,10 @@ class SetBadgeViewModel extends StateNotifier<SetBadgeModelState> {
         return LayerData(e, byteData.buffer.asUint8List());
       }).toList());
       state = state.copyWith(layers: completedFuture);
-    });
+      if (callback != null) {
+        callback();
+      }
+    }, (error) {});
   }
 
   Future<dynamic> changeUserBadge({double? hue}) async {

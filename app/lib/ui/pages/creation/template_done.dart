@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:app/global.dart';
 import 'package:app/ui/pages/creation/template_add_tag_view_model.dart';
-import 'package:app/ui/pages/home/feeds.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/home/home_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
+import 'package:app/ui/pages/user/templates.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
@@ -45,49 +45,61 @@ class _TemplateDoneScreenState extends ConsumerState<TemplateDoneScreen> with Si
   @override
   Widget build(BuildContext context) {
     // var center = buildEarningToast();
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(globalLocalizations.common_done),
-      ),
-      body: CustomScrollView(
-        slivers: [
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                AspectRatio(
-                  child: widget.imageFile == null ? Placeholder() : Image.file(widget.imageFile!),
-                  aspectRatio: 1,
-                ),
-                Padding(
-                  padding: EdgeInsets.only(left: 20, right: 20, top: 12, bottom: 0),
-                  child: Text(
-                    globalLocalizations.template_done_description,
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref)),
+    return WillPopScope(
+      onWillPop: () => Future.value(false),
+      child: Scaffold(
+        appBar: AppBar(
+          leading: null,
+          automaticallyImplyLeading: false,
+          title: Text(globalLocalizations.common_done),
+        ),
+        body: CustomScrollView(
+          slivers: [
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  AspectRatio(
+                    child: widget.imageFile == null ? Placeholder() : Image.file(widget.imageFile!),
+                    aspectRatio: 1,
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(50.0),
-                  child: Column(
-                    children: [
-                      MainStyles.blueButton(ref, globalLocalizations.template_done_to_my_templates, () {}, cornerRadius: 22),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      MainStyles.gradientButton(ref, globalLocalizations.template_done_to_feeds, () {
-                        HomePageViewModel model = ref.read(homePageProvider.notifier);
-                        model.updateTabIndex(HomeScreen.PAGE_INDEX_FEEDS);
-                        // model.updateFeedsTabIndex(FeedsPage.PAGE_INDEX_WAITING, notifyController: true);
-                        popToHomeScreen(context);
-                      })
-                    ],
+                  Padding(
+                    padding: EdgeInsets.only(left: 20, right: 20, top: 12, bottom: 0),
+                    child: Text(
+                      globalLocalizations.template_done_description,
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref)),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          )
-        ],
+                  Padding(
+                    padding: const EdgeInsets.all(50.0),
+                    child: Column(
+                      children: [
+                        MainStyles.blueButton(ref, globalLocalizations.template_done_to_my_templates, () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => UserTemplateScreen(
+                                        userId: ref.read(globalUserInfoProvider)!.id,
+                                      )));
+                        }, cornerRadius: 22),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        MainStyles.gradientButton(ref, globalLocalizations.template_done_to_feeds, () {
+                          HomePageViewModel model = ref.read(homePageProvider.notifier);
+                          model.updateTabIndex(HomeScreen.PAGE_INDEX_FEEDS);
+                          // model.updateFeedsTabIndex(FeedsPage.PAGE_INDEX_WAITING, notifyController: true);
+                          popToHomeScreen(context);
+                        })
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

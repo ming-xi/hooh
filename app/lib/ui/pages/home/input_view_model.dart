@@ -30,6 +30,8 @@ class InputPageModelState {
 }
 
 class InputPageViewModel extends StateNotifier<InputPageModelState> {
+  late TextEditingController controller;
+
   InputPageViewModel(InputPageModelState state) : super(state) {
     // 如果需要加载时自动拉取数据，在这里调用
     getBackgroundImage();
@@ -55,9 +57,12 @@ class InputPageViewModel extends StateNotifier<InputPageModelState> {
     updateState(state.copyWith(isStartButtonEnabled: enabled));
   }
 
-  List<String> updateInputText(String text) {
+  List<String> updateInputText(String text, {bool needRefresh = false}) {
     saveDraft(text);
     updateState(state.copyWith(inputStrings: [text]));
+    if (needRefresh) {
+      controller.text = text;
+    }
     return [text];
   }
 

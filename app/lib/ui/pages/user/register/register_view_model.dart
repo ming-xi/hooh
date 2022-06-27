@@ -1,10 +1,8 @@
 import 'package:app/extensions/extensions.dart';
 import 'package:app/global.dart';
 import 'package:app/utils/constants.dart';
-import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/network/responses.dart';
-import 'package:common/models/user.dart';
 import 'package:common/utils/network.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/material.dart';
@@ -97,6 +95,10 @@ class RegisterViewModel extends StateNotifier<RegisterModelState> {
 
   bool _checkUsername(String username) {
     username = username.trim();
+    if (username.isEmpty) {
+      //不修改错误提示
+      return false;
+    }
     if (RegExp(Constants.USERNAME_REGEX).stringMatch(username) == username) {
       updateState(state.copyWith(usernameErrorText: null));
       return true;
@@ -107,6 +109,10 @@ class RegisterViewModel extends StateNotifier<RegisterModelState> {
 
   bool _checkEmail(String email) {
     email = email.trim();
+    if (email.isEmpty) {
+      //不修改错误提示
+      return false;
+    }
     if (RegExp(Constants.EMAIL_REGEX).stringMatch(email) == email) {
       updateState(state.copyWith(emailErrorText: null));
       return true;
@@ -118,48 +124,24 @@ class RegisterViewModel extends StateNotifier<RegisterModelState> {
   bool _checkPassword(String password, String confirmPassword) {
     password = password.trim();
     confirmPassword = confirmPassword.trim();
-    // if (password.length < 8) {
-    //   debugPrint("len");
-    //   updateState(state.copyWith(passwordErrorText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters"));
-    //   return false;
-    // }
-    // if (password.length > 16) {
-    //   debugPrint("len");
-    //   updateState(state.copyWith(passwordErrorText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters"));
-    //   return false;
-    // }
-    // if (!password.contains(RegExp("[A-Za-z]"))) {
-    //   debugPrint("[A-Za-z]");
-    //   updateState(state.copyWith(passwordErrorText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters"));
-    //   return false;
-    // }
-    // // if (!password.contains(RegExp("[a-z]"))) {
-    // //   debugPrint("[a-z]");
-    // //   updateState(state.copyWith(passwordErrorText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters"));
-    // //   return;
-    // // }
-    // if (!password.contains(RegExp("[0-9]"))) {
-    //   debugPrint("[0-9]");
-    //   updateState(state.copyWith(passwordErrorText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters"));
-    //   return false;
-    // }
-    // if (!password.contains(RegExp("[!@#\$&*~,.]"))) {
-    //   debugPrint("special char");
-    //   updateState(state.copyWith(passwordErrorText: "Must contain numbers,letters.symbol\nMust contain 8-16 characters"));
-    //   return false;
-    // }
-    var stringMatch = RegExp(Constants.PASSWORD_REGEX).stringMatch(password);
-    // debugPrint("stringMatch=$stringMatch");
-    if (stringMatch != password) {
-      updateState(state.copyWith(passwordErrorText: globalLocalizations.register_password_hint));
-      return true;
-    }
-    updateState(state.copyWith(passwordErrorText: null));
-    if (password != confirmPassword) {
-      updateState(state.copyWith(confirmPasswordErrorText: globalLocalizations.register_password_different));
+    if (password.isEmpty && confirmPassword.isEmpty) {
+      //不修改错误提示
       return false;
     }
-    updateState(state.copyWith(confirmPasswordErrorText: null));
-    return true;
+    bool result = true;
+    var stringMatch = RegExp(Constants.PASSWORD_REGEX).stringMatch(password);
+    if (stringMatch != password) {
+      updateState(state.copyWith(passwordErrorText: globalLocalizations.register_password_hint));
+      result = result && false;
+    } else {
+      updateState(state.copyWith(passwordErrorText: null));
+    }
+    if (password != confirmPassword) {
+      updateState(state.copyWith(confirmPasswordErrorText: globalLocalizations.register_password_different));
+      result = result && false;
+    } else {
+      updateState(state.copyWith(confirmPasswordErrorText: null));
+    }
+    return result;
   }
 }

@@ -28,9 +28,11 @@ class PostDetailScreenModelState {
   final PageState likeState;
   final HoohApiErrorResponse? error;
   final DateTime? lastTimestamp;
+  final User? currentUser;
 
   PostDetailScreenModelState({
     required this.postId,
+    required this.currentUser,
     this.post,
     required this.selectedTab,
     required this.comments,
@@ -42,8 +44,9 @@ class PostDetailScreenModelState {
     required this.lastTimestamp,
   });
 
-  factory PostDetailScreenModelState.init(String id, {Post? post, int initTab = 0}) => PostDetailScreenModelState(
+  factory PostDetailScreenModelState.init(String id, User? currentUser, {Post? post, int initTab = 0}) => PostDetailScreenModelState(
       postId: id,
+      currentUser: currentUser,
       post: post,
       selectedTab: initTab,
       comments: [],
@@ -215,8 +218,19 @@ class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState
     }
     Future<void> request = state.post!.liked ? network.cancelLikePost(state.post!.id) : network.likePost(state.post!.id);
     network.requestAsync<void>(request, (data) {
+      //add or remove user in liked user list
+      if (newState) {
+        if (!state.likedUsers.map((e) => e.id).contains(state.currentUser!.id)) {
+          state.likedUsers.insert(0, state.currentUser!);
+        }
+      } else {
+        if (state.likedUsers.map((e) => e.id).contains(state.currentUser!.id)) {
+          state.likedUsers.removeWhere((element) => element.id == state.currentUser!.id);
+        }
+      }
       // to create a new object
-      updateState(state.copyWith(post: Post.fromJson((state.post!..liked = newState).toJson())));
+      Post newPost = Post.fromJson((state.post!..liked = newState).toJson());
+      updateState(state.copyWith(post: newPost, likedUsers: [...state.likedUsers]));
     }, (error) {
       if (onError != null) {
         onError(error);

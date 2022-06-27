@@ -1,9 +1,8 @@
 import 'package:app/global.dart';
-import 'package:app/ui/pages/me/notifications_view_model.dart';
 import 'package:app/ui/pages/user/posts_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
+import 'package:app/ui/widgets/empty_views.dart';
 import 'package:app/ui/widgets/post_view.dart';
-import 'package:app/ui/widgets/system_notification_view.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/page_state.dart';
@@ -13,10 +12,13 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class UserPostsScreen extends ConsumerStatefulWidget {
   late final StateNotifierProvider<UserPostsScreenViewModel, UserPostsScreenModelState> provider;
+  final String title;
+  final int type;
 
   UserPostsScreen({
+    required this.title,
+    required this.type,
     required String userId,
-    required int type,
     Key? key,
   }) : super(key: key) {
     provider = StateNotifierProvider((ref) {
@@ -35,9 +37,30 @@ class _UserPostsScreenState extends ConsumerState<UserPostsScreen> {
   Widget build(BuildContext context) {
     UserPostsScreenModelState modelState = ref.watch(widget.provider);
     UserPostsScreenViewModel model = ref.read(widget.provider.notifier);
-
+    String emptyViewText;
+    switch (widget.type) {
+      case UserPostsScreenModelState.TYPE_CREATED:
+        {
+          emptyViewText = globalLocalizations.empty_view_no_created_posts;
+          break;
+        }
+      case UserPostsScreenModelState.TYPE_LIKED:
+        {
+          emptyViewText = globalLocalizations.empty_view_no_liked_posts;
+          break;
+        }
+      case UserPostsScreenModelState.TYPE_FAVORITED:
+        {
+          emptyViewText = globalLocalizations.empty_view_no_favorites;
+          break;
+        }
+      default:
+        {
+          emptyViewText = "";
+        }
+    }
     return Scaffold(
-      appBar: AppBar(title: Text(globalLocalizations.user_profile_posts)),
+      appBar: AppBar(title: Text(widget.title)),
       body: SmartRefresher(
         enablePullDown: true,
         enablePullUp: true,
@@ -61,44 +84,46 @@ class _UserPostsScreenState extends ConsumerState<UserPostsScreen> {
           }, isRefresh: false);
         },
         controller: _refreshController,
-        child: ListView.separated(
-          separatorBuilder: (context, index) => SizedBox(
-            height: 32,
-          ),
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          itemBuilder: (context, index) {
-            return PostView(
-              post: modelState.posts[index],
-              onShare: (post, error) {
-                Toast.showSnackBar(context, "share...");
-              },
-              onLike: (post, error) {
-                if (error != null) {
-                  // Toast.showSnackBar(context, error.message);
-                  showCommonRequestErrorDialog(ref, context, error);
-                  return;
-                }
-                if (post.liked) {
-                  post.likeCount -= 1;
-                } else {
-                  post.likeCount += 1;
-                }
-                post.liked = !post.liked;
-                model.updatePostData(post, index);
-              },
-              onFollow: (post, error) {
-                if (error != null) {
-                  // Toast.showSnackBar(context, error.message);
-                  showCommonRequestErrorDialog(ref, context, error);
-                  return;
-                }
-                post.author.followed = true;
-                model.updatePostData(post, index);
-              },
-            );
-          },
-          itemCount: modelState.posts.length,
-        ),
+        child: modelState.posts.isEmpty
+            ? EmptyView(text: emptyViewText)
+            : ListView.separated(
+                separatorBuilder: (context, index) => SizedBox(
+                  height: 32,
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                itemBuilder: (context, index) {
+                  return PostView(
+                    post: modelState.posts[index],
+                    onShare: (post, error) {
+                      Toast.showSnackBar(context, "share...");
+                    },
+                    onLike: (post, error) {
+                      if (error != null) {
+                        // Toast.showSnackBar(context, error.message);
+                        showCommonRequestErrorDialog(ref, context, error);
+                        return;
+                      }
+                      if (post.liked) {
+                        post.likeCount -= 1;
+                      } else {
+                        post.likeCount += 1;
+                      }
+                      post.liked = !post.liked;
+                      model.updatePostData(post, index);
+                    },
+                    onFollow: (post, error) {
+                      if (error != null) {
+                        // Toast.showSnackBar(context, error.message);
+                        showCommonRequestErrorDialog(ref, context, error);
+                        return;
+                      }
+                      post.author.followed = true;
+                      model.updatePostData(post, index);
+                    },
+                  );
+                },
+                itemCount: modelState.posts.length,
+              ),
       ),
     );
   }

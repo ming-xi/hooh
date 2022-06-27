@@ -76,6 +76,10 @@ class _CommentComposeViewState extends ConsumerState<CommentComposeView> {
                       controller: controller,
                       maxLines: 5,
                       minLines: 1,
+                      maxLength: 1000,
+                      buildCounter: (context, {required currentLength, required isFocused, maxLength}) {
+                        return null;
+                      },
                       textInputAction: TextInputAction.send,
                       onEditingComplete: () {
                         widget.onSendPress(modelState.replyingComment, controller.text.trim(), () {

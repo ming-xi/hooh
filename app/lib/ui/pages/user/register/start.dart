@@ -85,8 +85,10 @@ class _StartScreenState extends ConsumerState<StartScreen> {
                 TextButton(
                     onPressed: () {
                       // Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen())).then((value) {
-                        onUserLogin(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen())).then((result) {
+                        if (result != null && result is bool && result) {
+                          onUserLogin(context);
+                        }
                       });
                     },
                     style: RegisterStyles.blackButtonStyle(ref),
@@ -96,8 +98,10 @@ class _StartScreenState extends ConsumerState<StartScreen> {
                 ),
                 TextButton(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen())).then((value) {
-                      onUserLogin(context);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen())).then((result) {
+                      if (result != null && result is bool && result) {
+                        onUserLogin(context);
+                      }
                     });
                   },
                   child: Text(globalLocalizations.start_login),

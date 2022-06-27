@@ -5,6 +5,7 @@ import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/template_detail_view_model.dart';
 import 'package:app/ui/widgets/toast.dart';
+import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:blur/blur.dart';
@@ -43,12 +44,12 @@ class _TemplateDetailBottomSheetState extends ConsumerState<TemplateDetailBottom
         child: TemplateDetailView(
           template: modelState.template,
           type: TemplateDetailView.TYPE_DIALOG,
-          onFavorite: _callback,
-          onFollow: _callback,
+          onFavorite: _onItemUpdate,
+          onFollow: _onItemUpdate,
         ));
   }
 
-  void _callback(Template template, HoohApiErrorResponse? e) {
+  void _onItemUpdate(Template template, HoohApiErrorResponse? e) {
     TemplateDetailViewModel model = ref.read(widget.provider.notifier);
     if (e == null) {
       model.updateTemplateData(template);
@@ -81,10 +82,12 @@ class TemplateDetailView extends ConsumerStatefulWidget {
 
   final Function(Template template, HoohApiErrorResponse? error)? onFollow;
   final Function(Template template, HoohApiErrorResponse? error)? onFavorite;
+  final Function(Template template)? onDelete;
 
   const TemplateDetailView({
     required this.template,
     required this.type,
+    this.onDelete,
     this.onFollow,
     this.onFavorite,
     Key? key,
@@ -121,7 +124,19 @@ class _TemplateDetailViewState extends ConsumerState<TemplateDetailView> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
               return;
             }
-            Navigator.push(context, MaterialPageRoute(builder: (context) => EditPostScreen(setting: PostImageSetting.withTemplate(template, text: ""))));
+            network.requestAsync<Template>(network.getTemplateInfo(template.id), (data) {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => EditPostScreen(setting: PostImageSetting.withTemplate(data, text: ""))));
+            }, (error) {
+              if (error.errorCode == Constants.RESOURCE_NOT_FOUND) {
+                showDialog(
+                    context: context,
+                    builder: (popContext) => AlertDialog(
+                          title: Text(globalLocalizations.error_view_template_not_found),
+                        ));
+              } else {
+                showCommonRequestErrorDialog(ref, context, error);
+              }
+            });
           })),
     ];
     User? user = ref.read(globalUserInfoProvider);
@@ -144,6 +159,7 @@ class _TemplateDetailViewState extends ConsumerState<TemplateDetailView> {
               ),
             ),
             Material(
+              color: designColors.light_01.auto(ref),
               // padding: const EdgeInsets.only( top: 16, bottom: 20),
 
               child: Builder(builder: (context) {
@@ -193,16 +209,73 @@ class _TemplateDetailViewState extends ConsumerState<TemplateDetailView> {
         ));
   }
 
-  Widget buildMenuButton(Template template, {Function(Template template)? onClick}) {
-    return buildButtonBackground(
-        width: 36,
-        onClick: onClick,
-        Center(
-          child: Icon(
-            Icons.more_horiz_rounded,
-            color: designColors.dark_01.auto(ref),
+  Widget buildMenuButton(Template template) {
+    User? currentUser = ref.read(globalUserInfoProvider);
+    var popupMenuButton = PopupMenuButton(
+      padding: EdgeInsets.zero,
+
+      // splashRadius: 16,
+      // constraints: BoxConstraints(minHeight: 24, minWidth: 24),
+      icon: Icon(
+        Icons.more_horiz_rounded,
+        color: designColors.dark_01.auto(ref),
+      ),
+      onSelected: (value) {},
+      // offset: Offset(0.0, appBarHeight),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(8)),
+      ),
+      itemBuilder: (ctx) {
+        TextStyle style = TextStyle(fontSize: 16, color: designColors.dark_01.auto(ref), fontWeight: FontWeight.bold);
+        PopupMenuItem itemDelete = PopupMenuItem(
+          onTap: () {
+            Future.delayed(Duration(milliseconds: 250), () {
+              showDialog(
+                  context: ctx,
+                  barrierDismissible: false,
+                  builder: (popContext) {
+                    return AlertDialog(
+                      content: Text(globalLocalizations.template_detail_menu_delete_dialog_title),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(popContext).pop();
+                              network.requestAsync<void>(network.deleteTemplate(template.id), (_) {
+                                Toast.showSnackBar(context, globalLocalizations.template_detail_menu_delete_success);
+                                widget.onDelete!(template);
+                              }, (e) {
+                                showCommonRequestErrorDialog(ref, context, e);
+                              });
+                            },
+                            child: Text(globalLocalizations.common_delete)),
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(popContext).pop();
+                            },
+                            child: Text(globalLocalizations.common_cancel))
+                      ],
+                    );
+                  });
+            });
+          },
+          child: Text(
+            globalLocalizations.template_detail_menu_delete_text,
+            style: style,
           ),
-        ));
+        );
+
+        List<PopupMenuItem> items = [itemDelete];
+        return items;
+      },
+    );
+    return Visibility(
+      visible: currentUser != null && currentUser.id == template.author!.id && widget.onDelete != null,
+      child: buildButtonBackground(
+          width: 36,
+          Center(
+            child: popupMenuButton,
+          )),
+    );
   }
 
   Widget buildCreateButton(Template template, {Function(Template template)? onClick}) {
