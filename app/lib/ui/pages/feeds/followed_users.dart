@@ -6,7 +6,7 @@ import 'package:app/ui/pages/home/home_view_model.dart';
 import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/post_view.dart';
-import 'package:app/ui/widgets/toast.dart';
+import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/page_state.dart';
@@ -122,98 +122,143 @@ class _FollowedUserPostsPageState extends ConsumerState<FollowedUserPostsPage> {
           refreshChild = Container();
         }
     }
-    return SmartRefresher(
-      enablePullDown: true,
-      enablePullUp: true,
-      header: MainStyles.getRefresherHeader(ref, offset: FeedsPage.LIST_TOP_PADDING / 2),
-      onRefresh: () async {
-        model.getPosts((state) {
-          // debugPrint("refresh state=$state");
-          _refreshController.refreshCompleted();
-          _refreshController.resetNoData();
-        });
-      },
-      onLoading: () async {
-        model.getPosts((state) {
-          if (state == PageState.noMore) {
-            _refreshController.loadNoData();
-            // debugPrint("load no more state=$state");
-          } else {
-            _refreshController.loadComplete();
-            // debugPrint("load complete state=$state");
-          }
-        }, isRefresh: false);
-      },
-      controller: _refreshController,
-      child: refreshChild,
+    return SafeArea(
+      bottom: false,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: SmartRefresher(
+              enablePullDown: true,
+              enablePullUp: true,
+              header: MainStyles.getRefresherHeader(
+                ref,
+              ),
+              onRefresh: () async {
+                model.getPosts((state) {
+                  // debugPrint("refresh state=$state");
+                  _refreshController.refreshCompleted();
+                  _refreshController.resetNoData();
+                });
+              },
+              onLoading: () async {
+                model.getPosts((state) {
+                  if (state == PageState.noMore) {
+                    _refreshController.loadNoData();
+                    // debugPrint("load no more state=$state");
+                  } else {
+                    _refreshController.loadComplete();
+                    // debugPrint("load complete state=$state");
+                  }
+                }, isRefresh: false);
+              },
+              controller: _refreshController,
+              child: refreshChild,
+            ),
+          ),
+          Positioned(
+              bottom: 16,
+              right: 20,
+              child: SafeArea(
+                  child: SizedBox(
+                width: 40,
+                height: 40,
+                child: FloatingActionButton(
+                    backgroundColor: designColors.feiyu_blue.auto(ref),
+                    onPressed: () {
+                      scrollController.animateTo(0, duration: Duration(milliseconds: 250), curve: Curves.easeOutCubic);
+                    },
+                    child: HoohIcon(
+                      "assets/images/icon_back_to_top.svg",
+                      width: 16,
+                      color: designColors.light_01.light,
+                    )),
+              ))),
+        ],
+      ),
     );
   }
 
   Widget buildNoFollowingView() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(48.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            HoohIcon(
-              "assets/images/figure_not_login_face.svg",
-              width: 64,
-              color: designColors.dark_03.auto(ref),
-            ),
-            SizedBox(
-              height: 12,
-            ),
-            Text(
-              globalLocalizations.user_posts_no_following_title,
-              style: TextStyle(
-                fontSize: 20,
-                color: designColors.dark_03.auto(ref),
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(
-              height: 32,
-            ),
-            MainStyles.gradientButton(ref, globalLocalizations.user_posts_no_following_button, () {
-              HomePageViewModel model = ref.read(homePageProvider.notifier);
-              model.updateTabIndex(HomeScreen.PAGE_INDEX_FEEDS);
-              model.updateFeedsTabIndex(FeedsPage.PAGE_INDEX_MAIN, notifyController: true);
-            })
-          ],
-        ),
-      ),
-    );
+    return MainStyles.buildEmptyView(
+        ref: ref,
+        text: globalLocalizations.user_posts_no_following_title,
+        buttonText: globalLocalizations.user_posts_no_following_button,
+        buttonOnClick: () {
+          HomePageViewModel model = ref.read(homePageProvider.notifier);
+          model.updateTabIndex(HomeScreen.PAGE_INDEX_FEEDS);
+          model.updateFeedsTabIndex(FeedsPage.PAGE_INDEX_MAIN, notifyController: true);
+        });
+    // return Center(
+    //   child: Padding(
+    //     padding: const EdgeInsets.all(48.0),
+    //     child: Column(
+    //       mainAxisSize: MainAxisSize.min,
+    //       children: [
+    //         HoohIcon(
+    //           "assets/images/figure_not_login_face.svg",
+    //           width: 64,
+    //           color: designColors.dark_03.auto(ref),
+    //         ),
+    //         SizedBox(
+    //           height: 12,
+    //         ),
+    //         Text(
+    //           globalLocalizations.user_posts_no_following_title,
+    //           style: TextStyle(
+    //             fontSize: 20,
+    //             color: designColors.dark_03.auto(ref),
+    //             fontWeight: FontWeight.bold,
+    //           ),
+    //           textAlign: TextAlign.center,
+    //         ),
+    //         SizedBox(
+    //           height: 32,
+    //         ),
+    //         MainStyles.gradientButton(ref, globalLocalizations.user_posts_no_following_button, () {
+    //           HomePageViewModel model = ref.read(homePageProvider.notifier);
+    //           model.updateTabIndex(HomeScreen.PAGE_INDEX_FEEDS);
+    //           model.updateFeedsTabIndex(FeedsPage.PAGE_INDEX_MAIN, notifyController: true);
+    //         })
+    //       ],
+    //     ),
+    //   ),
+    // );
   }
 
   Widget buildNotLoginView() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(48.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            HoohIcon(
-              "assets/images/figure_not_login_face.svg",
-              width: 64,
-              color: designColors.dark_03.auto(ref),
-            ),
-            SizedBox(
-              height: 12,
-            ),
-            Text(globalLocalizations.user_posts_not_login_title,
-                textAlign: TextAlign.center, style: TextStyle(fontSize: 20, color: designColors.dark_03.auto(ref), fontWeight: FontWeight.bold)),
-            SizedBox(
-              height: 80,
-            ),
-            MainStyles.gradientButton(ref, globalLocalizations.user_posts_not_login_button, () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
-            })
-          ],
-        ),
-      ),
-    );
+    return MainStyles.buildEmptyView(
+        ref: ref,
+        text: globalLocalizations.user_posts_not_login_title,
+        buttonText: globalLocalizations.user_posts_not_login_button,
+        buttonOnClick: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+        });
+    // return Center(
+    //   child: Padding(
+    //     padding: const EdgeInsets.all(48.0),
+    //     child: Column(
+    //       mainAxisSize: MainAxisSize.min,
+    //       children: [
+    //         HoohIcon(
+    //           "assets/images/figure_not_login_face.svg",
+    //           width: 64,
+    //           color: designColors.dark_03.auto(ref),
+    //         ),
+    //         SizedBox(
+    //           height: 12,
+    //         ),
+    //         Text(globalLocalizations.user_posts_not_login_title,
+    //             textAlign: TextAlign.center, style: TextStyle(fontSize: 20, color: designColors.dark_03.auto(ref), fontWeight: FontWeight.bold)),
+    //         SizedBox(
+    //           height: 80,
+    //         ),
+    //         MainStyles.gradientButton(ref, globalLocalizations.user_posts_not_login_button, () {
+    //           Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+    //         })
+    //       ],
+    //     ),
+    //   ),
+    // );
   }
 
   Widget buildHeaderView(BuildContext context, FollowedUserPostsPageViewModel model, FollowedUserPostsPageModelState modelState) {
@@ -234,8 +279,8 @@ class _FollowedUserPostsPageState extends ConsumerState<FollowedUserPostsPage> {
 
   Widget buildHeaderButtonView(FollowedUserPostsPageViewModel model, bool trending, bool selected) {
     return SizedBox(
-      height: 40,
-      width: 100,
+      width: Constants.SECTION_BUTTON_WIDTH,
+      height: Constants.SECTION_BUTTON_HEIGHT,
       child: Material(
         type: MaterialType.transparency,
         child: Ink(
@@ -249,7 +294,7 @@ class _FollowedUserPostsPageState extends ConsumerState<FollowedUserPostsPage> {
             child: Center(
               child: Text(
                 trending ? globalLocalizations.common_trending : globalLocalizations.common_recent,
-                style: TextStyle(color: selected ? designColors.light_01.auto(ref) : designColors.light_06.auto(ref)),
+                style: TextStyle(color: selected ? Colors.white : designColors.light_06.auto(ref)),
               ),
             ),
           ),
@@ -261,14 +306,14 @@ class _FollowedUserPostsPageState extends ConsumerState<FollowedUserPostsPage> {
   Widget buildPostView(BuildContext context, int index, FollowedUserPostsPageViewModel model, FollowedUserPostsPageModelState modelState) {
     return PostView(
       post: modelState.posts[index],
-      onShare: (post, error) {
-        if (error != null) {
-          showCommonRequestErrorDialog(ref, context, error);
-          // Toast.showSnackBar(context, error.message);
-          return;
-        }
-        Toast.showSnackBar(context, "share...");
-      },
+      // onShare: (post, error) {
+      //   if (error != null) {
+      //     showCommonRequestErrorDialog(ref, context, error);
+      //     // Toast.showSnackBar(context, error.message);
+      //     return;
+      //   }
+      //   Toast.showSnackBar(context, "share...");
+      // },
       onLike: (post, error) {
         if (error != null) {
           showCommonRequestErrorDialog(ref, context, error);

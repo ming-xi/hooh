@@ -135,6 +135,8 @@ PODS:
   - images_picker (0.0.1):
     - Flutter
     - ZLPhotoBrowser (= 4.2.5)
+  - in_app_review (0.2.0):
+    - Flutter
   - localized_rich_text (0.0.1):
     - Flutter
   - nanopb (2.30908.0):
@@ -149,11 +151,15 @@ PODS:
   - permission_handler_apple (9.0.4):
     - Flutter
   - PromisesObjC (2.1.0)
+  - share_plus (0.0.1):
+    - Flutter
   - shared_preferences_ios (0.0.1):
     - Flutter
   - sqflite (0.0.2):
     - Flutter
     - FMDB (>= 2.7.5)
+  - uni_links (0.0.1):
+    - Flutter
   - url_launcher_ios (0.0.1):
     - Flutter
   - webview_flutter_wkwebview (0.0.1):
@@ -174,12 +180,15 @@ DEPENDENCIES:
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - images_picker (from `.symlinks/plugins/images_picker/ios`)
+  - in_app_review (from `.symlinks/plugins/in_app_review/ios`)
   - localized_rich_text (from `.symlinks/plugins/localized_rich_text/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - share_plus (from `.symlinks/plugins/share_plus/ios`)
   - shared_preferences_ios (from `.symlinks/plugins/shared_preferences_ios/ios`)
   - sqflite (from `.symlinks/plugins/sqflite/ios`)
+  - uni_links (from `.symlinks/plugins/uni_links/ios`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/ios`)
 
@@ -223,6 +232,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/image_picker_ios/ios"
   images_picker:
     :path: ".symlinks/plugins/images_picker/ios"
+  in_app_review:
+    :path: ".symlinks/plugins/in_app_review/ios"
   localized_rich_text:
     :path: ".symlinks/plugins/localized_rich_text/ios"
   package_info_plus:
@@ -231,10 +242,14 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider_ios/ios"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
+  share_plus:
+    :path: ".symlinks/plugins/share_plus/ios"
   shared_preferences_ios:
     :path: ".symlinks/plugins/shared_preferences_ios/ios"
   sqflite:
     :path: ".symlinks/plugins/sqflite/ios"
+  uni_links:
+    :path: ".symlinks/plugins/uni_links/ios"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
   webview_flutter_wkwebview:
@@ -263,18 +278,21 @@ SPEC CHECKSUMS:
   GoogleUtilities: e0913149f6b0625b553d70dae12b49fc62914fd1
   image_picker_ios: b786a5dcf033a8336a657191401bfdf12017dabb
   images_picker: fa9364e3a7d3083c49f865fcfb2b9e7cdc574d3a
+  in_app_review: 4a97249f7a2f539a0f294c2d9196b7fe35e49541
   localized_rich_text: 22b8a505e60bb507095d44bf18e617de93d9063d
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
   package_info_plus: 6c92f08e1f853dc01228d6f553146438dafcd14e
   path_provider_ios: 14f3d2fd28c4fdb42f44e0f751d12861c43cee02
   permission_handler_apple: 44366e37eaf29454a1e7b1b7d736c2cceaeb17ce
   PromisesObjC: 99b6f43f9e1044bd87a95a60beff28c2c44ddb72
+  share_plus: 056a1e8ac890df3e33cb503afffaf1e9b4fbae68
   shared_preferences_ios: 548a61f8053b9b8a49ac19c1ffbc8b92c50d68ad
   sqflite: 6d358c025f5b867b29ed92fc697fd34924e11904
+  uni_links: d97da20c7701486ba192624d99bffaaffcfc298a
   url_launcher_ios: 839c58cdb4279282219f5e248c3321761ff3c4de
   webview_flutter_wkwebview: b7e70ef1ddded7e69c796c7390ee74180182971f
   ZLPhotoBrowser: 4bfab86b851042e18d7f413284472aa68759626a
 
-PODFILE CHECKSUM: fe0e1ee7f3d1f7d00b11b474b62dd62134535aea
+PODFILE CHECKSUM: 0703d226794d0d916e081cca5b8faae76ea2da70
 
 COCOAPODS: 1.11.3

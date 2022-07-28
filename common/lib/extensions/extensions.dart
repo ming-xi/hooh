@@ -3,6 +3,17 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+extension DateTimeExtension on DateTime {
+  static DateTime parseUtc(String formattedDate) => DateTime.parse('${formattedDate}z');
+
+  static DateTime? tryParseUtc(String? formattedDate) {
+    if (formattedDate != null) {
+      return DateTime.tryParse('${formattedDate}z');
+    }
+    return null;
+  }
+}
+
 extension UpdateStateExtension<T> on StateNotifier<T> {
   void updateState(T s) {
     state = s;
@@ -48,10 +59,11 @@ extension HexColor on Color {
   }
 
   /// Prefixes a hash sign if [leadingHashSign] is set to `true` (default is `true`).
-  String toHex({bool leadingHashSign = true}) => '${leadingHashSign ? '#' : ''}'
-      '${alpha.toRadixString(16).padLeft(2, '0')}'
-      '${red.toRadixString(16).padLeft(2, '0')}'
-      '${green.toRadixString(16).padLeft(2, '0')}'
-      '${blue.toRadixString(16).padLeft(2, '0')}'
+  String toHex({bool leadingHashSign = true}) =>
+      '${leadingHashSign ? '#' : ''}'
+          '${alpha.toRadixString(16).padLeft(2, '0')}'
+          '${red.toRadixString(16).padLeft(2, '0')}'
+          '${green.toRadixString(16).padLeft(2, '0')}'
+          '${blue.toRadixString(16).padLeft(2, '0')}'
       .toUpperCase();
 }

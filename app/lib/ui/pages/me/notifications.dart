@@ -1,4 +1,5 @@
 import 'package:app/global.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/pages/me/notifications_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/system_notification_view.dart';
@@ -29,7 +30,7 @@ class _SystemNotificationScreenState extends ConsumerState<SystemNotificationScr
     SystemNotificationScreenViewModel model = ref.read(widget.provider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: Text(globalLocalizations.system_notification_title)),
+      appBar: HoohAppBar(title: Text(globalLocalizations.system_notification_title)),
       body: SmartRefresher(
         enablePullDown: true,
         enablePullUp: true,

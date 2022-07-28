@@ -8,9 +8,7 @@ import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:blur/blur.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:common/models/user.dart';
-import 'package:common/utils/network.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -51,6 +49,8 @@ class _InputPageState extends ConsumerState<InputPage> with WidgetsBindingObserv
 
   @override
   Widget build(BuildContext context) {
+    // important! make it change text when locale changes
+    ref.watch(globalLocaleProvider);
     InputPageModelState modelState = ref.watch(globalInputPageProvider);
     InputPageViewModel model = ref.read(globalInputPageProvider.notifier);
     return GestureDetector(
@@ -72,7 +72,7 @@ class _InputPageState extends ConsumerState<InputPage> with WidgetsBindingObserv
                       children: [
                         Positioned.fill(
                           child: Padding(
-                            padding: EdgeInsets.only(left: 30, right: 30, bottom: 32),
+                            padding: EdgeInsets.only(left: 30, right: 30, bottom: 24),
                             child: Container(
                               decoration: BoxDecoration(color: designColors.light_01.auto(ref), borderRadius: BorderRadius.circular(24)),
                               padding: EdgeInsets.only(bottom: 8),
@@ -99,6 +99,9 @@ class _InputPageState extends ConsumerState<InputPage> with WidgetsBindingObserv
                           ),
                         ),
                         Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
                           child: Center(
                               child: SizedBox(
                                   width: 180,
@@ -110,17 +113,14 @@ class _InputPageState extends ConsumerState<InputPage> with WidgetsBindingObserv
                                           : () {
                                               User? user = ref.read(globalUserInfoProvider);
                                               if (user == null) {
-                                                Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
-                                                return;
-                                              }
-                                              FocusManager.instance.primaryFocus?.unfocus();
-                                              List<String> texts = updateModelText();
-                                              Navigator.push(context, MaterialPageRoute(builder: (context) => RecommendedTemplatesScreen(contents: texts)));
-                                            },
+                                          Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+                                          return;
+                                        }
+                                        FocusManager.instance.primaryFocus?.unfocus();
+                                        List<String> texts = updateModelText();
+                                        Navigator.push(context, MaterialPageRoute(builder: (context) => RecommendedTemplatesScreen(contents: texts)));
+                                      },
                                       cornerRadius: 22))),
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
                         ),
                       ],
                     ),
@@ -184,15 +184,20 @@ class _InputPageState extends ConsumerState<InputPage> with WidgetsBindingObserv
     if (url == null) {
       return placeholder;
     } else {
-      return CachedNetworkImage(
+      return HoohImage(
+        imageUrl: url,
         width: size.width,
         height: size.height,
-        fit: BoxFit.cover,
-        cacheKey: network.getS3ImageKey(url),
-        imageUrl: url,
-        errorWidget: (context, url, error) => placeholder,
-        placeholder: (context, url) => placeholder,
       ).blurred(blur: 10, colorOpacity: 0.2, blurColor: Colors.white);
+      // return CachedNetworkImage(
+      //   width: size.width,
+      //   height: size.height,
+      //   fit: BoxFit.cover,
+      //   cacheKey: network.getS3ImageKey(url),
+      //   imageUrl: url,
+      //   errorWidget: (context, url, error) => placeholder,
+      //   placeholder: (context, url) => placeholder,
+      // ).blurred(blur: 10, colorOpacity: 0.2, blurColor: Colors.white);
     }
   }
 

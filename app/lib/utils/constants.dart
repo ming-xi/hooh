@@ -11,10 +11,13 @@ class Constants {
 
   static const RESOURCE_NOT_FOUND = 10003;
   static const INVALID_USERNAME_AND_PASSWORD = 20001;
+  static const INVALID_VALIDATION_CODE = 20003;
   static const USERNAME_ALREADY_REGISTERED = 20008;
   static const EMAIL_ALREADY_VALIDATED = 20009;
   static const EDIT_NAME_TOO_OFTEN = 20016;
   static const INSUFFICIENT_FUNDS = 40000;
+  static const double SECTION_BUTTON_WIDTH = 80;
+  static const double SECTION_BUTTON_HEIGHT = 32;
 }
 
 //region global variants

@@ -1,4 +1,4 @@
-import 'package:app/extensions/extensions.dart';
+import 'package:common/extensions/extensions.dart';
 import 'package:common/models/post.dart';
 import 'package:common/models/post_comment.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
@@ -11,11 +11,13 @@ part 'comment_compose_view_model.g.dart';
 class CommentComposeWidgetModelState {
   final bool liked;
   final bool favorited;
+  final bool canSend;
   final PostComment? replyingComment;
 
   CommentComposeWidgetModelState({
     required this.liked,
     required this.favorited,
+    this.canSend = false,
     this.replyingComment,
   });
 
@@ -29,5 +31,10 @@ class CommentComposeWidgetViewModel extends StateNotifier<CommentComposeWidgetMo
   void setRepliedComment(PostComment? comment) {
     debugPrint("setRepliedComment comment=$comment");
     updateState(state.copyWith(replyingComment: comment));
+  }
+
+  void setCanSendComment(bool value) {
+    debugPrint("setCanSendComment value=$value");
+    updateState(state.copyWith(canSend: value));
   }
 }

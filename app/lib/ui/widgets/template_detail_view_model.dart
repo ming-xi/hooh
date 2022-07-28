@@ -1,4 +1,4 @@
-import 'package:app/extensions/extensions.dart';
+import 'package:common/extensions/extensions.dart';
 import 'package:common/models/template.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/material.dart';

@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:app/extensions/extensions.dart';
+import 'package:common/extensions/extensions.dart';
 import 'package:app/ui/widgets/template_text_setting_view.dart';
 import 'package:app/utils/constants.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';

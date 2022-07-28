@@ -1,8 +1,10 @@
 import 'package:app/global.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/pages/me/followers_view_model.dart';
 import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/toast.dart';
+import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/page_state.dart';
@@ -55,7 +57,7 @@ class _FollowerScreenState extends ConsumerState<FollowerScreen> with TickerProv
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: HoohAppBar(
         title: Text(globalLocalizations.common_follow),
       ),
       body: Column(
@@ -63,26 +65,29 @@ class _FollowerScreenState extends ConsumerState<FollowerScreen> with TickerProv
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Theme(
-              child: TabBar(
-                controller: tabController,
-                indicator: RectangularIndicator(
-                  bottomLeftRadius: 100,
-                  bottomRightRadius: 100,
-                  topLeftRadius: 100,
-                  topRightRadius: 100,
-                  color: designColors.feiyu_yellow.auto(ref),
+              child: SizedBox(
+                height: Constants.SECTION_BUTTON_HEIGHT,
+                child: TabBar(
+                  controller: tabController,
+                  indicator: RectangularIndicator(
+                    bottomLeftRadius: 100,
+                    bottomRightRadius: 100,
+                    topLeftRadius: 100,
+                    topRightRadius: 100,
+                    color: designColors.feiyu_yellow.auto(ref),
+                  ),
+                  isScrollable: true,
+                  labelColor: Colors.white,
+                  unselectedLabelColor: designColors.light_06.auto(ref),
+                  tabs: [
+                    Tab(
+                      text: globalLocalizations.me_following,
+                    ),
+                    Tab(
+                      text: globalLocalizations.me_follower,
+                    ),
+                  ],
                 ),
-                isScrollable: true,
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.black,
-                tabs: [
-                  Tab(
-                    text: globalLocalizations.me_following,
-                  ),
-                  Tab(
-                    text: globalLocalizations.me_follower,
-                  ),
-                ],
               ),
               data: ThemeData(
                   highlightColor: Colors.transparent,
@@ -204,14 +209,14 @@ class _FollowerPageState extends ConsumerState<FollowerPage> {
                             return;
                           }
                           FollowerScreenViewModel model = ref.read(widget.provider.notifier);
-                          model.setFollowState(user.id, !(user.followed ?? false), callback: (error) {
+                          model.setFollowState(context, user.id, !(user.followed ?? false), callback: (error) {
                             // Toast.showSnackBar(context, msg);
                             showCommonRequestErrorDialog(ref, context, error);
                           });
                         },
                         child: Text(
                           user.followed ?? false ? globalLocalizations.common_unfollow : globalLocalizations.common_follow,
-                          style: const TextStyle(fontFamily: 'Linotte'),
+                          style: const TextStyle(fontFamily: 'Baloo'),
                         ),
                         style: TextButton.styleFrom(
                             shape: RoundedRectangleBorder(

@@ -1,6 +1,6 @@
 # Uncomment this line to define a global platform for your project
 platform :ios, '10.0'
-
+# pod 'JShare'    //JCore自动集成最新版本的idfa包
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 

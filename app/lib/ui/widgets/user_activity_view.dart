@@ -11,7 +11,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sprintf/sprintf.dart';
 
 class UserActivityView extends ConsumerWidget {
-  static const ITEM_RATIO = 165 / 211;
+  // static const ITEM_RATIO = 165 / 211;
   final User user;
   final UserActivity activity;
   final Function(UserActivity activity) onDelete;
@@ -126,17 +126,14 @@ class UserActivityView extends ConsumerWidget {
       case UserActivity.TYPE_CREATE_BADGE:
         {
           title = globalLocalizations.user_activity_created;
-          child = AspectRatio(
-            aspectRatio: 1,
-            child: Container(
-              padding: EdgeInsets.all(10),
-              decoration: BoxDecoration(gradient: MainStyles.badgeGradient(ref), borderRadius: BorderRadius.circular(20)),
-              child: Center(
-                child: HoohImage(
-                  imageUrl: data['badge_image_url'],
-                  isBadge: true,
-                  width: 72,
-                ),
+          child = Container(
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(gradient: MainStyles.badgeGradient(ref), borderRadius: BorderRadius.circular(20)),
+            child: Center(
+              child: HoohImage(
+                imageUrl: data['badge_image_url'],
+                isBadge: true,
+                width: 72,
               ),
             ),
           );
@@ -145,49 +142,46 @@ class UserActivityView extends ConsumerWidget {
       case UserActivity.TYPE_RECEIVE_BADGE:
         {
           title = globalLocalizations.user_activity_exchanged;
-          child = AspectRatio(
-            aspectRatio: 1,
-            child: Container(
-              padding: EdgeInsets.all(10),
-              decoration: BoxDecoration(gradient: MainStyles.badgeGradient(ref), borderRadius: BorderRadius.circular(20)),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Spacer(),
-                    HoohImage(
-                      imageUrl: data['badge_image_url'],
-                      isBadge: true,
-                      width: 72,
-                    ),
-                    Spacer(),
-                    Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(100)),
-                          padding: EdgeInsets.all(0.5),
-                          child: HoohImage(
-                            imageUrl: data['user_avatar_url'],
-                            width: 24,
-                            height: 24,
-                            cornerRadius: 100,
-                          ),
+          child = Container(
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(gradient: MainStyles.badgeGradient(ref), borderRadius: BorderRadius.circular(20)),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Spacer(),
+                  HoohImage(
+                    imageUrl: data['badge_image_url'],
+                    isBadge: true,
+                    width: 72,
+                  ),
+                  Spacer(),
+                  Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(100)),
+                        padding: EdgeInsets.all(0.5),
+                        child: HoohImage(
+                          imageUrl: data['user_avatar_url'],
+                          width: 24,
+                          height: 24,
+                          cornerRadius: 100,
                         ),
-                        SizedBox(
-                          width: 4,
-                        ),
-                        Expanded(
-                            child: Text(
-                          data['name'],
-                          style: TextStyle(fontSize: 14, color: designColors.light_01.auto(ref), fontWeight: FontWeight.bold),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ))
-                      ],
-                    )
-                  ],
-                ),
+                      ),
+                      SizedBox(
+                        width: 4,
+                      ),
+                      Expanded(
+                          child: Text(
+                        data['name'],
+                        style: TextStyle(fontSize: 14, color: designColors.light_01.auto(ref), fontWeight: FontWeight.bold),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ))
+                    ],
+                  )
+                ],
               ),
             ),
           );
@@ -198,61 +192,36 @@ class UserActivityView extends ConsumerWidget {
           child = Container();
         }
     }
-    Column column = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        buildUserRow(title, ref, context, activity),
-        // buildDate(ref, context),
-        SizedBox(
-          height: 10,
-        ),
-        Expanded(child: child)
-      ],
-    );
-    // var material = Material(
-    //   type: MaterialType.transparency,
-    //   child: Ink(
-    //     decoration: BoxDecoration(
-    //         color: designColors.light_01.auto(ref),
-    //         borderRadius: BorderRadius.circular(24),
-    //         boxShadow: [BoxShadow(color: Colors.black.withAlpha((255 * 0.2).toInt()), offset: Offset.zero, blurRadius: 10, spreadRadius: -4)]),
-    //     child: InkWell(
-    //       onTap: () {},
-    //       borderRadius: BorderRadius.circular(24),
-    //       child: Padding(
-    //         padding: const EdgeInsets.all(10.0),
-    //         child: column,
-    //       ),
-    //     ),
-    //   ),
-    // );
-    ElevatedButton card = ElevatedButton(
+    return ElevatedButton(
       onPressed: () {
         openAppLink(context, activity.universalLink);
       },
-      child: column,
       style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.all(10),
+          padding: EdgeInsets.zero,
           primary: designColors.light_01.auto(ref),
           onPrimary: designColors.light_02.auto(ref),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           shadowColor: Colors.black.withAlpha((255 * 0.2).toInt()),
           elevation: 4),
-    );
-    return AspectRatio(
-      aspectRatio: UserActivityView.ITEM_RATIO,
-      child: card,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          buildUserRow(title, ref, context, activity),
+          Spacer(),
+          Padding(
+            padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+            child: AspectRatio(aspectRatio: 1, child: child),
+          ),
+        ],
+      ),
     );
   }
 
-  AspectRatio buildLargeImage(Map<String, dynamic> data, String key) {
-    return AspectRatio(
-      aspectRatio: 1,
-      child: HoohImage(
-        imageUrl: data[key],
-        cornerRadius: 20,
-      ),
+  Widget buildLargeImage(Map<String, dynamic> data, String key) {
+    return HoohImage(
+      imageUrl: data[key],
+      cornerRadius: 20,
     );
   }
 
@@ -291,16 +260,13 @@ class UserActivityView extends ConsumerWidget {
     if (data['signature'] != null && data['signature'].toString().isNotEmpty) {
       children.addAll(signatures);
     }
-    Widget child = AspectRatio(
-      aspectRatio: 1,
-      child: Container(
-        padding: EdgeInsets.all(10),
-        decoration: BoxDecoration(gradient: MainStyles.badgeGradient(ref), borderRadius: BorderRadius.circular(20)),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: children,
-          ),
+    Widget child = Container(
+      padding: EdgeInsets.all(10),
+      decoration: BoxDecoration(gradient: MainStyles.badgeGradient(ref), borderRadius: BorderRadius.circular(20)),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: children,
         ),
       ),
     );
@@ -327,19 +293,24 @@ class UserActivityView extends ConsumerWidget {
 
   Widget buildUserRow(String title, WidgetRef ref, BuildContext context, UserActivity activity) {
     User? currentUser = ref.read(globalUserInfoProvider);
-    var iconButton = IconButton(
-        padding: EdgeInsets.zero,
-        constraints: BoxConstraints(minHeight: 24, minWidth: 24),
-        onPressed: () {},
-        splashRadius: 16,
-        icon: Icon(
-          Icons.more_horiz_rounded,
-          color: designColors.light_06.auto(ref),
-        ));
+    // var iconButton = IconButton(
+    //     padding: EdgeInsets.zero,
+    //     constraints: BoxConstraints(minHeight: 24, minWidth: 24),
+    //     onPressed: () {},
+    //     splashRadius: 16,
+    //     icon: HoohIcon(
+    //       "assets/images/icon_more.svg",
+    //       width: 24,
+    //       height: 24,
+    //       color: designColors.light_06.auto(ref),
+    //     ));
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.max,
       children: [
+        SizedBox(
+          width: 10,
+        ),
         AvatarView.fromUser(
           user,
           size: 24,
@@ -359,13 +330,16 @@ class UserActivityView extends ConsumerWidget {
         // ),
         Visibility(
           visible: currentUser != null && currentUser.id == user.id,
+          replacement: SizedBox.square(dimension: 48),
           child: PopupMenuButton(
             padding: EdgeInsets.zero,
-
+            color: designColors.light_00.auto(ref),
             splashRadius: 16,
             constraints: BoxConstraints(minHeight: 24, minWidth: 24),
-            icon: Icon(
-              Icons.more_horiz_rounded,
+            icon: HoohIcon(
+              "assets/images/icon_more.svg",
+              width: 24,
+              height: 24,
               color: designColors.light_06.auto(ref),
             ),
             onSelected: (value) {},

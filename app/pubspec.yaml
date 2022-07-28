@@ -36,7 +36,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.5
   blur: ^3.1.0
-  hooks_riverpod: ^1.0.4
+#  hooks_riverpod: ^1.0.4
   common:
     path: ../common
   webview_flutter_plus: ^0.3.0+2
@@ -76,6 +76,13 @@ dependencies:
   images_picker: ^1.2.11
   crop_your_image: ^0.7.2
   image_picker: ^0.8.5+3
+  page_indicator: ^0.4.1
+  in_app_review: ^2.0.4
+  pin_code_fields: ^7.4.0
+  #  jshare_flutter_plugin: 2.1.2
+  share_plus: ^4.0.10
+  barcode: ^2.2.1
+  uni_links: ^0.5.1
 
 dev_dependencies:
   flutter_test:
@@ -119,12 +126,12 @@ flutter:
         - asset: assets/fonts/linotte_regular.ttf
         - asset: assets/fonts/linotte_semibold.otf
           weight: 700
-    - family: Pacifico
-      fonts:
-        - asset: assets/fonts/pacifico.ttf
-    - family: Ryujinattack
-      fonts:
-        - asset: assets/fonts/ryujinattack.otf
+    #    - family: Pacifico
+    #      fonts:
+    #        - asset: assets/fonts/pacifico.ttf
+    #    - family: Ryujinattack
+    #      fonts:
+    #        - asset: assets/fonts/ryujinattack.otf
     - family: Antonio
       fonts:
         - asset: assets/fonts/antonio_bold.ttf
@@ -136,25 +143,29 @@ flutter:
         - asset: assets/fonts/edo.ttf
     - family: Montserrat
       fonts:
-        - asset: assets/fonts/montserrat_light.otf
-    - family: Montserrat Bold
-      fonts:
+        #        - asset: assets/fonts/montserrat_light.otf
         - asset: assets/fonts/montserrat_semibold.otf
+    #    - family: Montserrat Bold
+    #      fonts:
+    #        - asset: assets/fonts/montserrat_semibold.otf
     - family: Lobster
       fonts:
         - asset: assets/fonts/lobster_1.3.otf
-    - family: Finserifdisplay
-      fonts:
-        - asset: assets/fonts/finserifdisplay_regular.otf
-    - family: Abrilfatface
-      fonts:
-        - asset: assets/fonts/abrilfatface_regular.otf
+    #    - family: Finserifdisplay
+    #      fonts:
+    #        - asset: assets/fonts/finserifdisplay_regular.otf
+    #    - family: Abrilfatface
+    #      fonts:
+    #        - asset: assets/fonts/abrilfatface_regular.otf
     - family: Heiti
       fonts:
         - asset: assets/fonts/heiti.otf
     - family: Zhuokai
       fonts:
         - asset: assets/fonts/zhuokai.ttf
+    - family: Song
+      fonts:
+        - asset: assets/fonts/sourcehanserifcn_semibold_7.otf
 
   uses-material-design: true
 

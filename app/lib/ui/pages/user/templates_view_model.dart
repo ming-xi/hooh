@@ -1,4 +1,4 @@
-import 'package:app/extensions/extensions.dart';
+import 'package:common/extensions/extensions.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/page_state.dart';
 import 'package:common/models/template.dart';
@@ -6,6 +6,7 @@ import 'package:common/utils/date_util.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 part 'templates_view_model.g.dart';

@@ -6,8 +6,10 @@ import 'package:app/ui/pages/feeds/comment_page.dart';
 import 'package:app/ui/pages/feeds/likes_page.dart';
 import 'package:app/ui/pages/feeds/post_detail_view_model.dart';
 import 'package:app/ui/pages/feeds/tagged_list.dart';
+import 'package:app/ui/pages/misc/share.dart';
 import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/widgets/comment_compose_view.dart';
 import 'package:app/ui/widgets/comment_compose_view_model.dart';
 import 'package:app/ui/widgets/empty_views.dart';
@@ -60,6 +62,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
 
   final RefreshController _refreshController = RefreshController(initialRefresh: true);
   ScrollController scrollController = ScrollController();
+  ScrollController scrollController2 = ScrollController();
   GlobalKey columnKey = GlobalKey();
   double headerHeight = 100;
   bool scrollable = false;
@@ -94,7 +97,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
     PostDetailScreenViewModel model = ref.read(widget.provider.notifier);
     if (modelState.error != null && modelState.error!.errorCode == Constants.RESOURCE_NOT_FOUND) {
       return Scaffold(
-        appBar: AppBar(title: Text("")),
+        appBar: HoohAppBar(title: const Text("")),
         body: ErrorView(
           text: globalLocalizations.error_view_post_not_found,
         ),
@@ -109,7 +112,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
     double tagsRunSpacing = 4;
     double statusbarHeight = MediaQuery.of(context).viewPadding.top;
 
-    bool keyboardVisible = ref.watch(globalKeyboardInfoProvider);
+    bool keyboardVisible = ref.watch(globalKeyboardVisibilityProvider);
     List<Widget> widgets = [
       AspectRatio(
         aspectRatio: 1,
@@ -117,7 +120,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
       ),
       Visibility(
         visible: (modelState.post?.tags ?? []).isNotEmpty,
-        replacement: SizedBox(
+        replacement: const SizedBox(
           height: 16,
         ),
         child: Padding(
@@ -131,19 +134,19 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
                   children: (modelState.post?.tags ?? [])
                   // .expand((e) => [e,e,e])
                       .map((e) => TextButton(
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => TaggedListScreen(tagName: e)));
+                            onPressed: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => TaggedListScreen(tagName: e)));
                             },
-                    style: TextButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                        minimumSize: Size(48, 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                    child: Text(
-                      "# $e",
+                            style: TextButton.styleFrom(
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                minimumSize: const Size(48, 16),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                            child: Text(
+                              "# $e",
                               style: TextStyle(fontSize: 14, color: designColors.blue_dark.auto(ref), fontWeight: FontWeight.normal),
                             ),
-                  ))
+                          ))
                       .toList(),
                 ),
               ),
@@ -179,7 +182,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
     //     // indicatorSize: TabBarIndicatorSize.label,
     //   ),
     // );
-
+    widgets.add(const SizedBox(
+      height: 16,
+    ));
     Widget column = Column(
       key: columnKey,
       mainAxisSize: MainAxisSize.min,
@@ -246,17 +251,17 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
           }),
       LikesPage(users: modelState.likedUsers)
     ]);
-    SliverAppBar sliverAppBar = SliverAppBar(
-      title: Text(""),
+    SliverAppBar sliverAppBar = HooHSliverAppBar(
+      title: const Text(""),
       actions: [buildMenuButton(model, modelState)],
       pinned: true,
     );
 
     return modelState.post == null
         ? Scaffold(
-            appBar: AppBar(title: Text("")),
-            body: Center(
-              child: SizedBox(child: CircularProgressIndicator()),
+            appBar: HoohAppBar(title: const Text("")),
+            body: const Center(
+              child: const SizedBox(child: CircularProgressIndicator()),
             ),
           )
         : GestureDetector(
@@ -279,6 +284,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
                       });
                     },
                     child: NestedScrollView(
+                      controller: scrollController2,
                       headerSliverBuilder: (a, b) => [
                         sliverAppBar,
                         SliverToBoxAdapter(
@@ -291,19 +297,19 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  HoohIcon(
+                                  const HoohIcon(
                                     "assets/images/common_ore.svg",
                                     width: 20,
                                     height: 20,
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     width: 4,
                                   ),
                                   Text(
                                     sprintf(globalLocalizations.me_wallet_ore_amount, [formatCurrency(modelState.post?.profitInt)]),
                                     style: TextStyle(fontSize: 12, color: designColors.light_06.auto(ref)),
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     width: 48,
                                   )
                                 ],
@@ -343,7 +349,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
                       // ),
                       ),
                   modelState.post == null
-                      ? SizedBox(
+                      ? const SizedBox(
                           height: 1,
                           width: 1,
                         )
@@ -363,12 +369,42 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
                               model.onPostLikePress(newState, error);
                             },
                             onFavoritePress: model.onPostFavoritePress,
-                            onSharePress: model.onPostSharePress,
+                            onSharePress: () {
+                              Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                      pageBuilder: (context, anim1, anim2) => ShareScreen(
+                                            scene: ShareScreen.SCENE_POST_IMAGE,
+                                            post: modelState.post,
+                                          ),
+                                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                        return child;
+                                      },
+                                      opaque: false));
+                            },
                             onSendPress: (comment, text, onComplete, onError) {
                               model.createComment(comment, text, onComplete, onError);
                               hideKeyboard();
                             },
-                          ))
+                          )),
+                  Positioned(
+                      bottom: 96,
+                      right: 20,
+                      child: SafeArea(
+                          child: SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: FloatingActionButton(
+                            backgroundColor: designColors.feiyu_blue.auto(ref),
+                            onPressed: () {
+                              scrollController2.animateTo(0, duration: Duration(milliseconds: 250), curve: Curves.easeOutCubic);
+                            },
+                            child: HoohIcon(
+                              "assets/images/icon_back_to_top.svg",
+                              width: 16,
+                              color: designColors.light_01.light,
+                            )),
+                      ))),
                 ],
               ),
 
@@ -386,14 +422,17 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
 
   Widget buildMenuButton(PostDetailScreenViewModel model, PostDetailScreenModelState modelState) {
     return PopupMenuButton(
-      icon: Icon(
-        Icons.more_horiz_rounded,
+      color: designColors.light_00.auto(ref),
+      icon: HoohIcon(
+        "assets/images/icon_more.svg",
+        width: 24,
+        height: 24,
         color: designColors.dark_01.auto(ref),
       ),
       onSelected: (value) {},
       // offset: Offset(0.0, appBarHeight),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(8)),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(const Radius.circular(8)),
       ),
       itemBuilder: (ctx) {
         TextStyle style = TextStyle(fontSize: 16, color: designColors.dark_01.auto(ref), fontWeight: FontWeight.bold);
@@ -402,7 +441,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
         bool isAdminMode = FlavorConfig.instance.variables[Launcher.KEY_ADMIN_MODE];
         PopupMenuItem itemDownload = PopupMenuItem(
           onTap: () {
-            Future.delayed(Duration(milliseconds: 250), () {
+            Future.delayed(const Duration(milliseconds: 250), () {
               FileUtil.saveNetworkImageToGallery(context, currentImage.imageUrl);
             });
           },
@@ -414,7 +453,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
         String? templateId = currentImage.templateId;
         PopupMenuItem itemUseTemplate = PopupMenuItem(
           onTap: () {
-            Future.delayed(Duration(milliseconds: 250), () {
+            Future.delayed(const Duration(milliseconds: 250), () {
               User? user = ref.read(globalUserInfoProvider);
               if (user == null) {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
@@ -443,7 +482,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
         bool newFavorited = !currentImage.templateFavorited!;
         PopupMenuItem itemChangeTemplateFavoriteStatus = PopupMenuItem(
           onTap: () {
-            Future.delayed(Duration(milliseconds: 250), () {
+            Future.delayed(const Duration(milliseconds: 250), () {
               Future<void> request;
               if (newFavorited) {
                 request = network.favoriteTemplate(templateId!);
@@ -471,7 +510,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
         );
         PopupMenuItem itemIntoWaitingList = PopupMenuItem(
           onTap: () {
-            Future.delayed(Duration(milliseconds: 250), () {
+            Future.delayed(const Duration(milliseconds: 250), () {
               network.requestAsync<void>(network.editPost(modelState.postId, EditPostRequest(joinWaitingList: true)), (_) {
                 model.setPublishState(Post.PUBLISH_STATE_WAITING_LIST);
                 Toast.showSnackBar(context, globalLocalizations.post_detail_join_waiting_list_success);
@@ -499,7 +538,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
         );
         PopupMenuItem itemDelete = PopupMenuItem(
           onTap: () {
-            Future.delayed(Duration(milliseconds: 250), () {
+            Future.delayed(const Duration(milliseconds: 250), () {
               showDialog(
                   context: context,
                   barrierDismissible: false,
@@ -541,7 +580,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
         bool newVisibility = !modelState.post!.visible;
         PopupMenuItem itemChangeVisibility = PopupMenuItem(
           onTap: () {
-            Future.delayed(Duration(milliseconds: 250), () {
+            Future.delayed(const Duration(milliseconds: 250), () {
               network.requestAsync<void>(network.editPost(modelState.postId, EditPostRequest(visible: newVisibility)), (_) {
                 Toast.showSnackBar(
                     context, newVisibility ? globalLocalizations.post_detail_set_visible_success : globalLocalizations.post_detail_set_invisible_success);
@@ -613,17 +652,17 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
 
   Widget buildUserInfoRow(Post post) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Builder(builder: (context) {
         List<Widget> widgets = buildUserInfo(post);
-        widgets.add(SizedBox(
+        widgets.add(const SizedBox(
           width: 8,
         ));
         Widget? followButton = buildFollowButton(post);
         if (followButton != null) {
           widgets.add(followButton);
         } else {
-          widgets.add(SizedBox(
+          widgets.add(const SizedBox(
             height: 40,
           ));
         }
@@ -639,9 +678,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
     return [
       AvatarView.fromUser(
         author,
-        size: 32,
+        size: 40,
       ),
-      SizedBox(
+      const SizedBox(
         width: 8,
       ),
       Expanded(
@@ -672,7 +711,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
     return _buildButton(
         text: Text(
           globalLocalizations.common_follow,
-          style: TextStyle(fontFamily: 'Linotte'),
+          style: const TextStyle(fontFamily: 'Baloo'),
         ),
         isEnabled: true,
         onPress: () {
@@ -682,7 +721,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
             return;
           }
           PostDetailScreenViewModel model = ref.read(widget.provider.notifier);
-          model.onFollowPress(!author.followed!, (error) {
+          model.onFollowPress(context, !author.followed!, (error) {
             // Toast.showSnackBar(context, msg);
             showCommonRequestErrorDialog(ref, context, error);
           });
@@ -692,7 +731,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
   Widget _buildButton({required Widget text, required bool isEnabled, required Function() onPress}) {
     ButtonStyle style = RegisterStyles.blueButtonStyle(ref, cornerRadius: 14).copyWith(
         textStyle: MaterialStateProperty.all(const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        minimumSize: MaterialStateProperty.all(Size.fromHeight(40)),
+        minimumSize: MaterialStateProperty.all(const Size.fromHeight(40)),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap);
     if (!isEnabled) {
       style = style.copyWith(backgroundColor: MaterialStateProperty.all(designColors.dark_03.auto(ref)));
@@ -718,15 +757,16 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     // debugPrint("build");
-    var stack = Stack(
-      children: [Positioned.fill(child: tabBar), Positioned(child: rightWidget)],
-    );
+    // var stack = Stack(
+    //   children: [Positioned.fill(child: tabBar), Positioned(child: rightWidget)],
+    // );
     return Container(
       decoration: BoxDecoration(color: designColors.bar90_1.auto(ref), border: Border(bottom: BorderSide(color: designColors.light_02.auto(ref), width: 1))),
       child: Material(
+          color: designColors.light_00.auto(ref),
           child: Row(
-        children: [tabBar, Spacer(), rightWidget],
-      )),
+            children: [tabBar, const Spacer(), rightWidget],
+          )),
     );
   }
 

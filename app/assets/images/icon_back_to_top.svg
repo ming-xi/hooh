@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width = "16px"
+     height = "17px"
+     viewBox = "0 0 16 17"
+     version = "1.1"
+     xmlns = "http://www.w3.org/2000/svg"
+     xmlns:xlink = "http://www.w3.org/1999/xlink">
+	<title>形状结合</title>
+	<g id = "控件"
+	   stroke = "none"
+	   stroke-width = "1"
+	   fill = "none"
+	   fill-rule = "evenodd">
+		<g id = "按钮-回到顶部"
+		   transform = "translate(-12.000000, -12.000000)"
+		   fill = "#FFFFFF">
+			<path d = "M20.7,16.3 L24.7,20.3 C25.1,20.7 25.1,21.3 24.7,21.7 C24.3,22.1 23.7,22.1 23.3,21.7 L21,19.4 L21,28 C21,28.6 20.6,29 20,29 C19.4,29 19,28.6 19,28 L19,19.4 L16.7,21.7 C16.3,22.1 15.7,22.1 15.3,21.7 C14.9,21.3 14.9,20.7 15.3,20.3 L19.3,16.3 C19.7,15.9 20.3,15.9 20.7,16.3 Z M27,12 C27.6,12 28,12.4 28,13 C28,13.6 27.6,14 27,14 L13,14 C12.4,14 12,13.5 12,13 C12,12.4 12.4,12 13,12 L27,12 Z"
+			      id = "形状结合"></path>
+		</g>
+	</g>
+</svg>

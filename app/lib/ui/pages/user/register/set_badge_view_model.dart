@@ -2,11 +2,13 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:app/utils/file_utils.dart';
+import 'package:common/extensions/extensions.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/network/responses.dart';
 import 'package:common/models/social_badge.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/network.dart';
+import 'package:common/utils/preferences.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,7 +25,7 @@ class LayerData {
 }
 
 @CopyWith()
-class SetBadgeModelState {
+class SetBadgeScreenModelState {
   final List<LayerData> layers;
 
   final bool originalColor;
@@ -31,18 +33,26 @@ class SetBadgeModelState {
   // user's painting image
   final Uint8List? badgeImageBytes;
 
-  SetBadgeModelState({required this.layers, this.originalColor = false, this.badgeImageBytes});
+  final bool dialogCheckBoxChecked;
 
-  factory SetBadgeModelState.init() => SetBadgeModelState(layers: []);
+  SetBadgeScreenModelState({
+    required this.layers,
+    this.originalColor = false,
+    this.badgeImageBytes,
+    required this.dialogCheckBoxChecked,
+  });
+
+  factory SetBadgeScreenModelState.init() =>
+      SetBadgeScreenModelState(layers: [], dialogCheckBoxChecked: preferences.getBool(Preferences.KEY_CHANGE_BADGE_DIALOG_CHECKED) ?? false);
 }
 
-class SetBadgeViewModel extends StateNotifier<SetBadgeModelState> {
+class SetBadgeScreenViewModel extends StateNotifier<SetBadgeScreenModelState> {
   String? userId;
 
-  SetBadgeViewModel(this.userId, SetBadgeModelState state) : super(state) {
-    if (userId != null) {
-      getRandomBadge(userId!);
-    }
+  SetBadgeScreenViewModel(this.userId, SetBadgeScreenModelState state) : super(state) {
+    // if (userId != null) {
+    //   getRandomBadge(userId!);
+    // }
   }
 
   void toggleOriginalColor() {
@@ -90,11 +100,15 @@ class SetBadgeViewModel extends StateNotifier<SetBadgeModelState> {
     }
   }
 
+  void setDialogCheckBoxChecked(bool checked) {
+    updateState(state.copyWith(dialogCheckBoxChecked: checked));
+  }
+
   Uint8List getImageBytesWithHue(Uint8List fileBytes, double hue, bool originalColor) {
     if (originalColor) {
       return fileBytes;
     }
-    img.Image? image = img.decodePng(fileBytes);
+    img.Image? image = img.decodeImage(fileBytes);
     Uint32List pixels = image!.data;
     for (int i = 0; i < pixels.length; i++) {
       int pixel = pixels[i];

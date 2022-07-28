@@ -2,26 +2,35 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:app/global.dart';
-import 'package:app/ui/pages/user/register/draw_badge.dart';
+import 'package:app/launcher.dart';
+import 'package:app/ui/pages/user/register/bind_email.dart';
 import 'package:app/ui/pages/user/register/set_badge_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
+import 'package:app/ui/widgets/appbar.dart';
+import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class SetBadgeScreen extends ConsumerStatefulWidget {
-  late final StateNotifierProvider<SetBadgeViewModel, SetBadgeModelState> provider;
+  static const SCENE_REGISTER = 0;
+  static const SCENE_CHANGE = 1;
+
+  late final StateNotifierProvider<SetBadgeScreenViewModel, SetBadgeScreenModelState> provider;
+  final int scene;
 
   SetBadgeScreen({
+    required this.scene,
     Key? key,
   }) : super(key: key) {
     provider = StateNotifierProvider((ref) {
       String? userId = ref.watch(globalUserInfoProvider.state).state?.id;
-      return SetBadgeViewModel(userId, SetBadgeModelState.init());
+      return SetBadgeScreenViewModel(userId, SetBadgeScreenModelState.init());
     });
   }
 
@@ -33,12 +42,15 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getRandomBadge();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    SetBadgeModelState modelState = ref.watch(widget.provider);
-    SetBadgeViewModel model = ref.read(widget.provider.notifier);
+    SetBadgeScreenModelState modelState = ref.watch(widget.provider);
+    SetBadgeScreenViewModel model = ref.read(widget.provider.notifier);
 
     List<TextButton> actions = [
       TextButton(
@@ -65,8 +77,16 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
                 ref.read(globalUserInfoProvider.state).state = result;
                 preferences.putString(Preferences.KEY_USER_INFO, json.encode(result.toJson()));
                 // Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeScreen()), (route) => false);
-                Navigator.of(context).pop(true);
                 // popToHomeScreen(context);
+                if (widget.scene == SetBadgeScreen.SCENE_REGISTER) {
+                  if (result.emailValidated ?? false) {
+                    Navigator.of(context).pop(true);
+                  } else {
+                    showVerifyEmailDialog();
+                  }
+                } else {
+                  Navigator.of(context).pop(true);
+                }
               }
             });
           },
@@ -78,7 +98,7 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
       //     Icons.more_vert
       // ),
     ];
-    if (kDebugMode) {
+    if (FlavorConfig.instance.variables[Launcher.KEY_ADMIN_MODE]) {
       actions.insert(
           0,
           TextButton(
@@ -195,7 +215,7 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
     //     ),
     //   ],
     // );
-    var newColumn = Column(
+    Widget newColumn = Column(
       mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -228,6 +248,7 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
         SizedBox(
           height: 16,
         ),
+        Spacer(),
         SizedBox(
           width: 160,
           height: 180,
@@ -244,55 +265,185 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
             );
           }).toList()),
         ),
+        Spacer(),
         SizedBox(
-          height: 64,
+          height: 16,
         ),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Center(
-              child: TextButton.icon(
-                style: RegisterStyles.blueButtonStyle(ref).copyWith(
-                    shape: MaterialStateProperty.all(const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(22)),
-                ))),
-                label: Text(globalLocalizations.set_badge_change),
-                icon: HoohIcon('assets/images/shuffle.svg', height: 36, width: 36),
-                onPressed: () {
-                  showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (context) {
-                        return LoadingDialog(LoadingDialogController());
-                      });
-                  String? userId = ref.read(globalUserInfoProvider.state).state?.id;
-                  model.getRandomBadge(userId!, callback: () {
-                    Navigator.of(context).pop();
-                  });
-                },
-              ),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 20.0,
+          ),
+          child: Center(
+            child: TextButton.icon(
+              style: RegisterStyles.blueButtonStyle(ref).copyWith(
+                  shape: MaterialStateProperty.all(const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(22)),
+              ))),
+              label: Text(globalLocalizations.set_badge_change),
+              icon: HoohIcon('assets/images/shuffle.svg', height: 36, width: 36),
+              onPressed: () {
+                SetBadgeScreenModelState modelState = ref.watch(widget.provider);
+                SetBadgeScreenViewModel model = ref.read(widget.provider.notifier);
+                if (!(preferences.getBool(Preferences.KEY_CHANGE_BADGE_DIALOG_CHECKED) ?? false)) {
+                  showChangeBadgeDialog();
+                } else {
+                  getRandomBadge();
+                }
+              },
             ),
           ),
         ),
+        SizedBox(
+          height: 24,
+        ),
       ],
     );
-    return WillPopScope(
-      onWillPop: () => Future.value(false),
-      child: Scaffold(
-        appBar: AppBar(
-          leading: null,
-          automaticallyImplyLeading: false,
-          actions: actions,
-        ),
-        body: CustomScrollView(
-          slivers: [
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: newColumn,
-            )
-          ],
-        ),
+    Scaffold scaffold = Scaffold(
+      appBar: HoohAppBar(
+        hoohLeading: null,
+        automaticallyImplyLeading: widget.scene != SetBadgeScreen.SCENE_REGISTER,
+        actions: actions,
+      ),
+      body: CustomScrollView(
+        slivers: [
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: SafeArea(child: newColumn),
+          )
+        ],
       ),
     );
+    if (widget.scene == SetBadgeScreen.SCENE_REGISTER) {
+      return WillPopScope(
+        onWillPop: () => Future.value(false),
+        child: scaffold,
+      );
+    } else {
+      return scaffold;
+    }
+  }
+
+  void showVerifyEmailDialog() {
+    RegisterStyles.showRegisterStyleDialog(
+        ref: ref,
+        context: context,
+        barrierDismissible: false,
+        title: globalLocalizations.set_badge_verify_email_dialog_title,
+        content: globalLocalizations.set_badge_verify_email_dialog_content,
+        okText: globalLocalizations.account_verify,
+        cancelText: globalLocalizations.set_badge_verify_email_dialog_later,
+        onOk: () {
+          Navigator.push<bool>(context, MaterialPageRoute(builder: (context) => BindEmailScreen(scene: BindEmailScreen.SCENE_VERIFY))).then((result) {
+            if (result != null && result) {
+              Navigator.of(context, rootNavigator: true).pop();
+            } else {
+              showVerifyEmailDialog();
+            }
+          });
+        },
+        onCancel: () {
+          Navigator.of(context).pop(true);
+        });
+  }
+
+  void showChangeBadgeDialog() {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (popContext) {
+          return Consumer(
+            builder: (consumerContext, ref, child) {
+              SetBadgeScreenModelState modelState = ref.watch(widget.provider);
+              SetBadgeScreenViewModel model = ref.read(widget.provider.notifier);
+              List<TextButton> buttons = [];
+              buttons.add(TextButton(
+                style: RegisterStyles.blackOutlineButtonStyle(ref),
+                onPressed: () {
+                  preferences.putBool(Preferences.KEY_CHANGE_BADGE_DIALOG_CHECKED, modelState.dialogCheckBoxChecked);
+                  Navigator.of(context).pop();
+                  getRandomBadge();
+                },
+                child: Text(globalLocalizations.common_yes),
+              ));
+              buttons.add(TextButton(
+                style: RegisterStyles.blackButtonStyle(ref),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(globalLocalizations.common_no),
+              ));
+              return AlertDialog(
+                insetPadding: EdgeInsets.all(20),
+                title: Text(globalLocalizations.common_confirm),
+                content: SizedBox(
+                  height: 220,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(child: Text(globalLocalizations.set_badge_change_dialog_content)),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 4,
+                          ),
+                          SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: Checkbox(
+                              value: modelState.dialogCheckBoxChecked,
+                              onChanged: (value) {
+                                debugPrint("onChanged value=$value");
+                                model.setDialogCheckBoxChecked(value!);
+                              },
+                            ),
+                          ),
+                          SizedBox(
+                            width: 8,
+                          ),
+                          Text(
+                            globalLocalizations.templates_don_t_prompt_next_time,
+                            style: TextStyle(color: designColors.dark_01.auto(ref), fontSize: 16),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 16,
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: buttons
+                            .map((e) => [
+                                  Expanded(child: e),
+                                  SizedBox(
+                                    width: 12,
+                                  )
+                                ])
+                            .expand((element) => element)
+                            .toList()
+                          ..removeLast(),
+                      )
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        });
+  }
+
+  void getRandomBadge() {
+    SetBadgeScreenModelState modelState = ref.watch(widget.provider);
+    SetBadgeScreenViewModel model = ref.read(widget.provider.notifier);
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return LoadingDialog(LoadingDialogController());
+        });
+    String? userId = ref.read(globalUserInfoProvider.state).state?.id;
+    model.getRandomBadge(userId!, callback: () {
+      Navigator.of(context).pop();
+    });
   }
 }

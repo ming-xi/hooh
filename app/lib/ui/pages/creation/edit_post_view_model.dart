@@ -1,11 +1,10 @@
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:app/extensions/extensions.dart';
-import 'package:app/ui/pages/creation/edit_post.dart';
 import 'package:app/ui/pages/user/register/draw_badge_view_model.dart';
 import 'package:app/ui/widgets/template_text_setting_view.dart';
 import 'package:app/utils/creation_strategy.dart';
+import 'package:common/extensions/extensions.dart';
 import 'package:common/models/template.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -201,30 +200,36 @@ class PostImageSetting {
       this.blur = false,
       this.lineHeight = 1.0});
 
-  factory PostImageSetting.withLocalFile(File imageFile, Color textColor, {String? text}) => PostImageSetting(
-      imageFile: imageFile,
-      text: text,
-      textColor: textColor,
-      fontSize: CreationStrategy.calculateFontSize(text ?? ""),
-      fontFamily: EditPostScreen.FONTS.random(),
-      lineHeight: CreationStrategy.calculateLineHeight(text ?? ""),
-      frameX: TemplateTextSettingView.MIN_MARGIN_PERCENT,
-      frameY: TemplateTextSettingView.MIN_MARGIN_PERCENT,
-      frameW: 100 - 2 * TemplateTextSettingView.MIN_MARGIN_PERCENT,
-      frameH: 100 - 2 * TemplateTextSettingView.MIN_MARGIN_PERCENT);
+  factory PostImageSetting.withLocalFile(File imageFile, Color textColor, {String? text}) {
+    String fontFamily = CreationStrategy.FONT_FOR_RANDOM.random();
+    return PostImageSetting(
+        imageFile: imageFile,
+        text: text,
+        textColor: textColor,
+        fontSize: CreationStrategy.calculateFontSize(fontFamily, text ?? ""),
+        fontFamily: fontFamily,
+        lineHeight: CreationStrategy.calculateLineHeight(fontFamily, text ?? ""),
+        frameX: TemplateTextSettingView.MIN_MARGIN_PERCENT,
+        frameY: TemplateTextSettingView.MIN_MARGIN_PERCENT,
+        frameW: 100 - 2 * TemplateTextSettingView.MIN_MARGIN_PERCENT,
+        frameH: 100 - 2 * TemplateTextSettingView.MIN_MARGIN_PERCENT);
+  }
 
-  factory PostImageSetting.withTemplate(Template template, {String? text}) => PostImageSetting(
-      imageUrl: template.imageUrl,
-      text: text,
-      templateId: template.id,
-      textColor: HexColor.fromHex(template.textColor),
-      fontSize: CreationStrategy.calculateFontSize(text ?? ""),
-      fontFamily: EditPostScreen.FONTS.random(),
-      lineHeight: CreationStrategy.calculateLineHeight(text ?? ""),
-      frameX: double.tryParse(template.frameX)!,
-      frameY: double.tryParse(template.frameY)!,
-      frameW: double.tryParse(template.frameWidth)!,
-      frameH: double.tryParse(template.frameHeight)!);
+  factory PostImageSetting.withTemplate(Template template, {String? text, String? font}) {
+    String fontFamily = font ?? CreationStrategy.FONT_FOR_RANDOM.random();
+    return PostImageSetting(
+        imageUrl: template.imageUrl,
+        text: text,
+        templateId: template.id,
+        textColor: HexColor.fromHex(template.textColor),
+        fontSize: CreationStrategy.calculateFontSize(fontFamily, text ?? ""),
+        fontFamily: fontFamily,
+        lineHeight: CreationStrategy.calculateLineHeight(fontFamily, text ?? ""),
+        frameX: double.tryParse(template.frameX)!,
+        frameY: double.tryParse(template.frameY)!,
+        frameW: double.tryParse(template.frameWidth)!,
+        frameH: double.tryParse(template.frameHeight)!);
+  }
 }
 
 enum TextAlignment { left, center, right }

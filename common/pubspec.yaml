@@ -11,6 +11,7 @@ dependencies:
     sdk: flutter
   json_serializable: ^6.2.0
   json_annotation: ^4.5.0
+  hooks_riverpod: ^1.0.4
   http: ^0.13.4
   pretty_json: ^2.0.0
   shared_preferences: ^2.0.15

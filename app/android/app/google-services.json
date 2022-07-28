@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "130363947190",
+    "project_id": "hooh-flutter",
+    "storage_bucket": "hooh-flutter.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:130363947190:android:ba6db941458ae6fe4d4e17",
+        "android_client_info": {
+          "package_name": "xyz.hooh.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "130363947190-ih3ob1ugvnikrm25h52l3av153633f6h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBCl2xkItf5jB-_nEQzaFYfl8T_iqz6zDc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "130363947190-ih3ob1ugvnikrm25h52l3av153633f6h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "130363947190-c795gqmgv7cqkf3frhned255g1d76hof.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "xyz.hooh.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

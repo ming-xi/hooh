@@ -1,8 +1,10 @@
 import 'package:app/global.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/pages/user/templates_view_model.dart';
 import 'package:app/ui/widgets/empty_views.dart';
 import 'package:app/ui/widgets/template_detail_view.dart';
+import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/page_state.dart';
 import 'package:flutter/material.dart';
@@ -27,6 +29,7 @@ class UserTemplateScreen extends ConsumerStatefulWidget {
 
 class _UserTemplateScreenState extends ConsumerState<UserTemplateScreen> {
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
+  ScrollController scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +37,22 @@ class _UserTemplateScreenState extends ConsumerState<UserTemplateScreen> {
     UserTemplateScreenViewModel model = ref.read(widget.provider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: Text(globalLocalizations.user_profile_templates)),
+      appBar: HoohAppBar(title: Text(globalLocalizations.user_profile_templates)),
+      floatingActionButton: SafeArea(
+          child: SizedBox(
+        width: 40,
+        height: 40,
+        child: FloatingActionButton(
+            backgroundColor: designColors.feiyu_blue.auto(ref),
+            onPressed: () {
+              scrollController.animateTo(0, duration: Duration(milliseconds: 250), curve: Curves.easeOutCubic);
+            },
+            child: HoohIcon(
+              "assets/images/icon_back_to_top.svg",
+              width: 16,
+              color: designColors.light_01.light,
+            )),
+      )),
       body: SmartRefresher(
         enablePullDown: true,
         enablePullUp: true,
@@ -61,6 +79,7 @@ class _UserTemplateScreenState extends ConsumerState<UserTemplateScreen> {
         child: modelState.templates.isEmpty
             ? EmptyView(text: globalLocalizations.empty_view_no_templates)
             : ListView.separated(
+          controller: scrollController,
                 separatorBuilder: (context, index) => SizedBox(
                   height: 32,
                 ),
@@ -72,25 +91,24 @@ class _UserTemplateScreenState extends ConsumerState<UserTemplateScreen> {
                     onDelete: model.onDeleteTemplate,
                     onFavorite: (template, error) {
                       if (error != null) {
-                        // Toast.showSnackBar(context, error.message);
-                        showCommonRequestErrorDialog(ref, context, error);
-                        return;
-                      }
-                      template.favorited = !template.favorited;
-                      model.updateTemplateData(template, index);
-                    },
-                    onFollow: (template, error) {
-                      if (error != null) {
-                        // Toast.showSnackBar(context, error.message);
-                        showCommonRequestErrorDialog(ref, context, error);
-                        return;
-                      }
-                      template.author!.followed = true;
-                      model.updateTemplateData(template, index);
-                    },
-                  );
-                },
-                itemCount: modelState.templates.length,
+                  // Toast.showSnackBar(context, error.message);
+                  showCommonRequestErrorDialog(ref, context, error);
+                  return;
+                }
+                model.updateTemplateData(template, index);
+              },
+              onFollow: (template, error) {
+                if (error != null) {
+                  // Toast.showSnackBar(context, error.message);
+                  showCommonRequestErrorDialog(ref, context, error);
+                  return;
+                }
+                template.author!.followed = true;
+                model.updateTemplateData(template, index);
+              },
+            );
+          },
+          itemCount: modelState.templates.length,
               ),
       ),
     );

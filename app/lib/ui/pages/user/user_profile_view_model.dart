@@ -1,8 +1,11 @@
-import 'package:app/extensions/extensions.dart';
+import 'package:app/utils/ui_utils.dart';
+import 'package:common/extensions/extensions.dart';
 import 'package:common/models/hooh_api_error_response.dart';
+import 'package:common/models/network/responses.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/network.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 part 'user_profile_view_model.g.dart';
@@ -35,12 +38,15 @@ class UserProfileScreenViewModel extends StateNotifier<UserProfileScreenModelSta
     });
   }
 
-  void setFollowState(bool newState, {Function(HoohApiErrorResponse error)? callback}) {
+  void setFollowState(BuildContext context, bool newState, {Function(HoohApiErrorResponse error)? callback}) {
     if (state.user == null) {
       return;
     }
-    Future<void> request = newState ? network.followUser(state.userId) : network.cancelFollowUser(state.userId);
-    network.requestAsync<void>(request, (newData) {
+    Future request = newState ? network.followUser(state.userId) : network.cancelFollowUser(state.userId);
+    network.requestAsync(request, (data) {
+      if (data is FollowUserResponse && data.receivedBadge != null) {
+        showReceiveBadgeDialog(context, data.receivedBadge!);
+      }
       state.user!.followed = newState;
       updateState(state.copyWith(user: User.fromJson(state.user!.toJson())));
     }, (error) {

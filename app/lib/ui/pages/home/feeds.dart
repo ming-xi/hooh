@@ -5,7 +5,6 @@ import 'package:app/ui/pages/feeds/waiting_list.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/home/home_view_model.dart';
 import 'package:app/utils/design_colors.dart';
-import 'package:app/utils/ui_utils.dart';
 import 'package:blur/blur.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -15,7 +14,7 @@ class FeedsPage extends ConsumerStatefulWidget {
   static const PAGE_INDEX_MAIN = 1;
   static const PAGE_INDEX_WAITING = 2;
 
-  static const double LIST_TOP_PADDING = 100;
+  static const double LIST_TOP_PADDING = 16;
   static const double LIST_BOTTOM_PADDING = 100;
   final List<Widget> tabWidgets = [
     FollowedUserPostsPage(),
@@ -55,14 +54,16 @@ class _FeedsPageState extends ConsumerState<FeedsPage> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    // important! make it change text when locale changes
+    ref.watch(globalLocaleProvider);
     HomePageModelState homeModelState = ref.watch(homePageProvider);
-
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight),
         child: SafeArea(
           child: Material(
+            color: designColors.light_00.auto(ref),
             child: Row(
               mainAxisSize: MainAxisSize.max,
               children: [
@@ -74,7 +75,7 @@ class _FeedsPageState extends ConsumerState<FeedsPage> with TickerProviderStateM
                   onPressed: null,
                 ),
                 Expanded(
-                  child: TabBar(controller: tabController, tabs: [
+                  child: TabBar(controller: tabController, indicatorSize: TabBarIndicatorSize.tab, tabs: [
                     Tab(
                       text: globalLocalizations.feeds_tag_following,
                     ),

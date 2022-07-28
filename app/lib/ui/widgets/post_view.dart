@@ -1,11 +1,14 @@
 import 'package:app/global.dart';
 import 'package:app/ui/pages/feeds/post_detail.dart';
 import 'package:app/ui/pages/feeds/tagged_list.dart';
+import 'package:app/ui/pages/misc/share.dart';
 import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
+import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/hooh_api_error_response.dart';
+import 'package:common/models/network/responses.dart';
 import 'package:common/models/post.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/date_util.dart';
@@ -54,6 +57,7 @@ class _PostViewState extends ConsumerState<PostView> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Material(
+              color: designColors.light_00.auto(ref),
               child: Ink(
                 child: InkWell(
                   onTap: () {
@@ -61,7 +65,7 @@ class _PostViewState extends ConsumerState<PostView> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => PostDetailScreen(
-                              postId: post.id,
+                                  postId: post.id,
                                   post: widget.displayAsVotingPost ? null : post,
                                 )));
                   },
@@ -116,6 +120,9 @@ class _PostViewState extends ConsumerState<PostView> {
                 List<Widget> widgets = [];
                 if (widget.displayAsVotingPost) {
                   widgets.add(buildUserInfoRow(post));
+                  widgets.add(SizedBox(
+                    height: 8,
+                  ));
                 } else {
                   widgets.add(buildUserInfoRow(post));
                   widgets.add(SizedBox(
@@ -148,10 +155,28 @@ class _PostViewState extends ConsumerState<PostView> {
     );
   }
 
+  void showProfitDialog() {
+    RegisterStyles.showRegisterStyleDialog(
+        ref: ref,
+        barrierDismissible: false,
+        context: context,
+        title: globalLocalizations.post_view_profit_dialog_title,
+        content: globalLocalizations.post_view_profit_dialog_content,
+        okText: globalLocalizations.templates_local_image_dialog_button,
+        onOk: () {});
+  }
+
   Builder buildButtons(Post post) {
     return Builder(builder: (context) {
       List<Widget> widgets = [
-        ...buildIconAndAmount(iconPath: "assets/images/common_ore.svg", size: 24, amount: formatCurrency(post.profitInt)),
+        ...buildIconAndAmount(
+            iconPath: "assets/images/common_ore.svg",
+            size: 24,
+            textWidth: 36,
+            amount: formatCurrency(post.profitInt),
+            onPress: () {
+              showProfitDialog();
+            }),
         Spacer(),
         ...buildIconAndAmount(
             iconPath: "assets/images/icon_post_like.svg",
@@ -204,11 +229,14 @@ class _PostViewState extends ConsumerState<PostView> {
     });
   }
 
-  void onFollowPress(Post post) {
+  void onFollowPress(BuildContext context, Post post) {
     if (post.author.followed ?? false) {
       return;
     }
-    network.requestAsync<void>(network.followUser(post.author.id), (data) {
+    network.requestAsync(network.followUser(post.author.id), (data) {
+      if (data is FollowUserResponse && data.receivedBadge != null) {
+        showReceiveBadgeDialog(context, data.receivedBadge!);
+      }
       if (widget.onFollow != null) {
         widget.onFollow!(post, null);
       }
@@ -250,7 +278,17 @@ class _PostViewState extends ConsumerState<PostView> {
     if (widget.onShare != null) {
       widget.onShare!(post, null);
     } else {
-      // Navigator.push(context, MaterialPageRoute(builder: (context) =>));
+      Navigator.push(
+          context,
+          PageRouteBuilder(
+              pageBuilder: (context, anim1, anim2) => ShareScreen(
+                    scene: ShareScreen.SCENE_POST_IMAGE,
+                    post: post,
+                  ),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return child;
+              },
+              opaque: false));
     }
   }
 
@@ -293,11 +331,11 @@ class _PostViewState extends ConsumerState<PostView> {
     );
   }
 
-  List<Widget> buildIconAndAmount({required String iconPath, double size = 32, Color? color, String? amount, Function()? onPress}) {
+  List<Widget> buildIconAndAmount({required String iconPath, double size = 32, double textWidth = 28, Color? color, String? amount, Function()? onPress}) {
     List<Widget> list = [
       IconButton(
         onPressed: onPress,
-        // padding: EdgeInsets.zero,
+        splashRadius: 24,
         icon: HoohIcon(
           iconPath,
           width: size,
@@ -308,10 +346,10 @@ class _PostViewState extends ConsumerState<PostView> {
     ];
     if (amount != null) {
       list.add(SizedBox(
-        width: 28,
+        width: textWidth,
         child: Text(
           amount,
-          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref)),
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref)),
         ),
       ));
     }
@@ -351,7 +389,7 @@ class _PostViewState extends ConsumerState<PostView> {
   }
 
   Widget? buildFollowButton(Post post) {
-    User? user = ref.watch(globalUserInfoProvider.state).state;
+    User? user = ref.watch(globalUserInfoProvider);
     User author = post.author;
     if ((author.followed ?? false) || (user?.id == author.id)) {
       return null;
@@ -359,7 +397,7 @@ class _PostViewState extends ConsumerState<PostView> {
     return _buildButton(
         text: Text(
           globalLocalizations.common_follow,
-          style: TextStyle(fontFamily: 'Linotte'),
+          style: TextStyle(fontFamily: 'Baloo'),
         ),
         isEnabled: true,
         onPress: () {
@@ -368,7 +406,7 @@ class _PostViewState extends ConsumerState<PostView> {
             Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
             return;
           }
-          onFollowPress(post);
+          onFollowPress(context, post);
         });
   }
 
@@ -380,7 +418,7 @@ class _PostViewState extends ConsumerState<PostView> {
     return _buildButton(
         text: Text(
           text,
-          style: TextStyle(fontFamily: 'Linotte'),
+          style: TextStyle(fontFamily: 'Baloo'),
         ),
         isEnabled: (post.myVoteCount ?? 0) == 0,
         onPress: () {
@@ -389,13 +427,17 @@ class _PostViewState extends ConsumerState<PostView> {
             Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
             return;
           }
+          if (post.author.id == user.id) {
+            Toast.showSnackBar(context, globalLocalizations.waiting_list_vote_my_post_failed);
+            return;
+          }
           onVotePress(post);
         });
   }
 
   Widget _buildButton({required Widget text, required bool isEnabled, required Function() onPress}) {
     ButtonStyle style = RegisterStyles.blueButtonStyle(ref, cornerRadius: 14).copyWith(
-        textStyle: MaterialStateProperty.all(const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        textStyle: MaterialStateProperty.all(const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, textBaseline: TextBaseline.ideographic)),
         // fixedSize: MaterialStateProperty.all(Size(120,24)),
         minimumSize: MaterialStateProperty.all(Size(120, 40)),
         padding: MaterialStateProperty.all(EdgeInsets.zero),

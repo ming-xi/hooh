@@ -1,4 +1,4 @@
-import 'package:app/extensions/extensions.dart';
+import 'package:common/extensions/extensions.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/network/responses.dart';
 import 'package:common/models/page_state.dart';

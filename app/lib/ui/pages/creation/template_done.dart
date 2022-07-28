@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:app/global.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/pages/creation/template_add_tag_view_model.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/home/home_view_model.dart';
@@ -48,8 +49,8 @@ class _TemplateDoneScreenState extends ConsumerState<TemplateDoneScreen> with Si
     return WillPopScope(
       onWillPop: () => Future.value(false),
       child: Scaffold(
-        appBar: AppBar(
-          leading: null,
+        appBar: HoohAppBar(
+          hoohLeading: null,
           automaticallyImplyLeading: false,
           title: Text(globalLocalizations.common_done),
         ),
@@ -75,14 +76,19 @@ class _TemplateDoneScreenState extends ConsumerState<TemplateDoneScreen> with Si
                     padding: const EdgeInsets.all(50.0),
                     child: Column(
                       children: [
-                        MainStyles.blueButton(ref, globalLocalizations.template_done_to_my_templates, () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => UserTemplateScreen(
-                                        userId: ref.read(globalUserInfoProvider)!.id,
-                                      )));
-                        }, cornerRadius: 22),
+                        MainStyles.blueButton(
+                          ref,
+                          globalLocalizations.template_done_to_my_templates,
+                          () {
+                            popToHomeScreen(context);
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => UserTemplateScreen(
+                                          userId: ref.read(globalUserInfoProvider)!.id,
+                                        )));
+                          },
+                        ),
                         SizedBox(
                           height: 20,
                         ),
@@ -146,9 +152,10 @@ class _TemplateDoneScreenState extends ConsumerState<TemplateDoneScreen> with Si
         "# $tag",
         style: TextStyle(fontSize: 14, color: designColors.dark_01.auto(ref)),
       ),
-      deleteIcon: Icon(
-        Icons.cancel,
-        size: 14,
+      deleteIcon: HoohIcon(
+        "assets/images/icon_delete_tag.svg",
+        width: 16,
+        height: 16,
         color: designColors.feiyu_blue.auto(ref),
       ),
       onDeleted: () {

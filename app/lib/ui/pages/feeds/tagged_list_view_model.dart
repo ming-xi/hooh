@@ -1,4 +1,4 @@
-import 'package:app/extensions/extensions.dart';
+import 'package:common/extensions/extensions.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/network/responses.dart';
 import 'package:common/models/page_state.dart';
@@ -22,6 +22,7 @@ class TaggedListScreenModelState {
   final bool infoDialogChecked;
   final bool isTrending;
   final double scrollDistance;
+  final int page;
 
   TaggedListScreenModelState({
     required this.tagName,
@@ -33,6 +34,7 @@ class TaggedListScreenModelState {
     this.isTrending = false,
     this.postCount = 0,
     this.scrollDistance = 0,
+    this.page = 1,
   });
 
   factory TaggedListScreenModelState.init(String tagName) => TaggedListScreenModelState(
@@ -67,7 +69,7 @@ class TaggedListScreenViewModel extends StateNotifier<TaggedListScreenModelState
 
   void getPosts(Function(PageState)? callback, {bool isRefresh = true}) {
     if (isRefresh) {
-      updateState(state.copyWith(lastTimestamp: null));
+      updateState(state.copyWith(lastTimestamp: null, page: 1));
       if (state.pageState == PageState.loading) {
         if (callback != null) {
           callback(state.pageState);
@@ -94,7 +96,7 @@ class TaggedListScreenViewModel extends StateNotifier<TaggedListScreenModelState
 
     DateTime date = state.lastTimestamp ?? DateUtil.getCurrentUtcDate();
 
-    network.requestAsync<List<Post>>(network.getTaggedPosts(state.tagName, trending: state.isTrending, date: date), (newData) {
+    network.requestAsync<List<Post>>(network.getTaggedPosts(state.tagName, trending: state.isTrending, page: state.page, date: date), (newData) {
       if (newData.isEmpty) {
         //no data
         if (isRefresh) {
@@ -108,12 +110,14 @@ class TaggedListScreenViewModel extends StateNotifier<TaggedListScreenModelState
         if (isRefresh) {
           updateState(state.copyWith(
             pageState: PageState.dataLoaded,
+            page: state.page + 1,
             lastTimestamp: newData.last.createdAt,
             posts: newData,
           ));
         } else {
           updateState(state.copyWith(
             pageState: PageState.dataLoaded,
+            page: state.page + 1,
             lastTimestamp: newData.last.createdAt,
             posts: [...state.posts, ...newData],
           ));

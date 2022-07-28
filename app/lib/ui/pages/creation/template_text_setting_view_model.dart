@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:app/extensions/extensions.dart';
+import 'package:common/extensions/extensions.dart';
 import 'package:app/ui/pages/user/register/draw_badge_view_model.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';

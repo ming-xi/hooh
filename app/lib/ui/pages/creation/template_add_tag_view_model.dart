@@ -1,6 +1,7 @@
 import 'dart:io';
 
-import 'package:app/extensions/extensions.dart';
+import 'package:common/extensions/extensions.dart';
+import 'package:app/ui/pages/creation/template_add_tag.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/network/requests.dart';
 import 'package:common/models/network/responses.dart';
@@ -27,16 +28,20 @@ class TemplateAddTagPageViewModel extends StateNotifier<TemplateAddTagPageModelS
     // search(isRefresh: true);
   }
 
-  void addTag(String text, {required Function(String tag) onDuplicateTagAdded}) {
+  void addTag(String text, {required Function(String tag) onDuplicateTagAdded, required Function(String tag) onMaxReached}) {
     text = text.trim();
     if (text.isEmpty) {
+      return;
+    }
+    if (state.tags.length >= TemplateAddTagScreen.MAX_TAG_COUNT) {
+      onMaxReached(text);
       return;
     }
     if (state.tags.contains(text)) {
       onDuplicateTagAdded(text);
       return;
     }
-    updateState(state.copyWith(tags: [...state.tags, text]));
+    updateState(state.copyWith(tags: [text, ...state.tags]));
   }
 
   void deleteTag(String text) {
@@ -86,6 +91,7 @@ class TemplateAddTagPageViewModel extends StateNotifier<TemplateAddTagPageModelS
         frameX: frameX.toStringAsFixed(2),
         frameY: frameY.toStringAsFixed(2),
         imageKey: imageKey,
+        tags: state.tags,
         textColor: textColor);
     try {
       Template template = await network.createTemplate(request);

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:app/global.dart';
@@ -7,6 +8,7 @@ import 'package:app/ui/pages/creation/template_adjust.dart';
 import 'package:app/ui/pages/misc/image_cropper.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/pages/user/user_profile.dart';
+import 'package:app/utils/design_colors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/user.dart';
@@ -19,9 +21,12 @@ import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:sprintf/sprintf.dart';
+
+const GENERAL_CURVE = Curves.easeOutCubic;
 
 void showSelectLocalImageActionSheet(
     {required BuildContext context, required WidgetRef ref, double? cropRatio, bool adjustTemplateImage = false, required Function(File? file) onSelected}) {
@@ -136,7 +141,7 @@ void _openImagePicker(
 }
 
 void showKeyboard(WidgetRef ref, FocusNode node) {
-  if (ref.read(globalKeyboardInfoProvider)) {
+  if (ref.read(globalKeyboardVisibilityProvider)) {
     node.requestFocus();
   } else {
     if (node.hasFocus) {
@@ -150,25 +155,37 @@ void showKeyboard(WidgetRef ref, FocusNode node) {
   }
 }
 
-void showCommonRequestErrorDialog(WidgetRef ref, BuildContext context, dynamic response) {
-  showDialog(
+Future showReceiveBadgeDialog(BuildContext context, UserBadge badge) {
+  return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          contentPadding: EdgeInsets.zero,
+          insetPadding: EdgeInsets.zero,
+          content: ReceivedBadgeView(badge: badge),
+        );
+      });
+}
+
+Future showCommonRequestErrorDialog(WidgetRef ref, BuildContext context, dynamic error) {
+  return showDialog(
       context: context,
       builder: (context) {
         String title = globalLocalizations.error_network_error;
         String content;
-        if (response is HoohApiErrorResponse) {
-          content = response.message;
+        if (error is HoohApiErrorResponse) {
+          content = error.message;
           if (FlavorConfig.instance.variables[Launcher.KEY_ADMIN_MODE]) {
-            content = content + "\n\n[Admin Mode] dev message:\n\n" + response.devMessage;
+            content = content + "\n\n[Admin Mode] dev message:\n\n" + error.devMessage;
           }
         } else {
-          if (response is String) {
-            content = response;
+          if (error is String) {
+            content = error;
           } else {
-            if (response == null) {
+            if (error == null) {
               content = "error";
             } else {
-              content = response.toString();
+              content = error.toString();
             }
           }
         }
@@ -183,24 +200,45 @@ void hideKeyboard() {
   FocusManager.instance.primaryFocus?.unfocus();
 }
 
-String formatCurrency(int? currency, {bool? precise = false}) {
+String formatCurrency(int? currency, {bool precise = false, bool withSymbol = false}) {
+  String result;
   final formatter = NumberFormat("#,##0.00", "en_US");
-  if (precise ?? false) {
+  if (precise) {
     if (currency == null) {
-      return "0";
+      result = "0";
+    } else {
+      double value = currency / 100.0;
+      result = formatter.format(value);
     }
-    double value = currency / 100.0;
-    return formatter.format(value);
   } else {
     if (currency == null) {
-      return "";
-    }
-    double value = currency / 100.0;
-    if (value > 1000000) {
-      return sprintf("%.1f", value / 1000000);
+      result = "";
     } else {
-      return formatter.format(value);
+      double value = currency / 100.0;
+      if (value > 1000000) {
+        result = sprintf("%.1f", value / 1000000);
+      } else {
+        result = formatter.format(value);
+      }
     }
+  }
+  if (withSymbol && currency != null && currency > 0) {
+    result = "+$result";
+  }
+  return result;
+}
+
+String formatFileSize(int bytes) {
+  if (bytes < 1024) {
+    return "$bytes B";
+  } else if (bytes < 1024 * 1024) {
+    return sprintf("%.1f KB", [bytes / 1024]);
+  } else if (bytes < 1024 * 1024 * 1024) {
+    return sprintf("%.1f MB", [bytes / 1024 / 1024]);
+  } else if (bytes < 1024 * 1024 * 1024 * 1024) {
+    return sprintf("%.1f GB", [bytes / 1024 / 1024 / 1024]);
+  } else {
+    return sprintf("%.1f TB", [bytes / 1024 / 1024 / 1024 / 1024]);
   }
 }
 
@@ -238,6 +276,33 @@ String formatDate(BuildContext context, DateTime date, {String? absoluteDateForm
   } else {
     return DateUtil.getZonedDateString(date, format: absoluteDateFormat);
   }
+}
+
+bool isImageDarkColor(Uint8List fileBytes) {
+  img.Image? image = img.decodeImage(fileBytes);
+  debugPrint("fileBytes len= ${fileBytes.length} image=$image");
+  Uint32List pixels = image!.data;
+  // check 1000 pixels
+  int count = 1000;
+  int gap = pixels.length ~/ count;
+  int lightCount = 0;
+  int darkCount = 0;
+  for (int i = 0; i < pixels.length; i += gap) {
+    int pixel = pixels[i];
+    Color color = Color(pixel);
+    int a = color.alpha;
+    int b = color.red;
+    int g = color.green;
+    int r = color.blue;
+    color = Color.fromARGB(a, r, g, b);
+    if ((r * 0.299 + g * 0.587 + b * 0.114) > 186) {
+      lightCount++;
+    } else {
+      darkCount++;
+    }
+  }
+  debugPrint("darkCount=$darkCount lightCount=$lightCount");
+  return darkCount >= lightCount;
 }
 
 mixin KeyboardLogic<T extends StatefulWidget> on State<T>, WidgetsBindingObserver {
@@ -667,6 +732,83 @@ class HoohIcon extends ConsumerWidget {
   }
 }
 
+class ReceivedBadgeView extends ConsumerStatefulWidget {
+  final UserBadge badge;
+
+  const ReceivedBadgeView({
+    required this.badge,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  ConsumerState createState() => _ReceivedBadgeViewState();
+}
+
+class _ReceivedBadgeViewState extends ConsumerState<ReceivedBadgeView> {
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: SizedBox(
+        width: 335,
+        height: 480,
+        child: Stack(
+          children: [
+            const Positioned.fill(
+                child: HoohIcon(
+              "assets/images/figure_received_badge.png",
+              width: 335,
+              height: 480,
+            )),
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 191,
+              child: Center(
+                child: HoohImage(
+                  imageUrl: widget.badge.imageUrl,
+                  isBadge: true,
+                  width: 120,
+                  height: 135,
+                ),
+              ),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 30,
+              child: Column(
+                children: [
+                  HoohImage(
+                    imageUrl: widget.badge.designer.avatarUrl!,
+                    width: 48,
+                    height: 48,
+                    cornerRadius: 100,
+                  ),
+                  const SizedBox(
+                    height: 4,
+                  ),
+                  Text(
+                    widget.badge.designer.name,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: designColors.dark_01.light),
+                  ),
+                  const SizedBox(
+                    height: 4,
+                  ),
+                  Text(
+                    "@${widget.badge.designer.username}",
+                    style: TextStyle(fontSize: 12, color: designColors.light_06.light),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class LoadingDialog extends ConsumerStatefulWidget {
   final LoadingDialogController _controller;
 
@@ -705,4 +847,27 @@ class LoadingDialogController {
   double? progress() {
     return hasProgress ? (value / max) : null;
   }
+}
+
+class MaterialTransparentRoute<T> extends PageRoute<T> with MaterialRouteTransitionMixin<T> {
+  MaterialTransparentRoute({
+    required this.builder,
+    RouteSettings? settings,
+    this.maintainState = true,
+    bool fullscreenDialog = false,
+  }) : super(settings: settings, fullscreenDialog: fullscreenDialog);
+
+  final WidgetBuilder builder;
+
+  @override
+  Widget buildContent(BuildContext context) => builder(context);
+
+  @override
+  bool get opaque => false;
+
+  @override
+  final bool maintainState;
+
+  @override
+  String get debugLabel => '${super.debugLabel}(${settings.name})';
 }

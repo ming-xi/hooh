@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:app/global.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/file_utils.dart';
 import 'package:app/utils/ui_utils.dart';
@@ -26,6 +27,7 @@ class ImageCropperScreen extends ConsumerStatefulWidget {
 class _ImageCropperScreenState extends ConsumerState<ImageCropperScreen> {
   final _controller = CropController();
   late Uint8List imageBytes;
+  bool ready = false;
 
   @override
   void initState() {
@@ -36,21 +38,28 @@ class _ImageCropperScreenState extends ConsumerState<ImageCropperScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
+        appBar: HoohAppBar(
           title: Text(globalLocalizations.crop_image_title),
           centerTitle: true,
           actions: <Widget>[
             IconButton(
-              onPressed: () {
-                showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (context) {
-                      return LoadingDialog(LoadingDialogController());
-                    });
-                _controller.crop();
-              },
-              icon: const Icon(Icons.done_rounded),
+              onPressed: !ready
+                  ? null
+                  : () {
+                      showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) {
+                            return LoadingDialog(LoadingDialogController());
+                          });
+                      _controller.crop();
+                    },
+              icon: HoohIcon(
+                "assets/images/icon_ok.svg",
+                width: 24,
+                height: 24,
+                color: designColors.dark_01.auto(ref),
+              ),
             )
           ],
         ),
@@ -88,6 +97,11 @@ class _ImageCropperScreenState extends ConsumerState<ImageCropperScreen> {
           },
           onStatusChanged: (status) {
             // do something with current CropStatus
+            if (status == CropStatus.ready) {
+              setState(() {
+                ready = true;
+              });
+            }
           },
 
           // cornerDotBuilder: (size, edgeAlignment) => const DotControl(color: Colors.blue),

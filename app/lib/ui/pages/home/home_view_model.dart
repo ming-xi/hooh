@@ -1,4 +1,4 @@
-import 'package:app/extensions/extensions.dart';
+import 'package:common/extensions/extensions.dart';
 import 'package:app/ui/pages/home/feeds.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';

@@ -7,8 +7,10 @@ import 'package:app/ui/pages/creation/publish_post.dart';
 import 'package:app/ui/pages/home/input_view_model.dart';
 import 'package:app/ui/pages/user/register/draw_badge_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/widgets/template_compose_view.dart';
 import 'package:app/ui/widgets/template_text_setting_view.dart';
+import 'package:app/utils/creation_strategy.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/utils/date_util.dart';
@@ -16,21 +18,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class EditPostScreen extends ConsumerStatefulWidget {
-  static const FONTS = [
-    'Linotte',
-    'Pacifico',
-    'Ryujinattack',
-    'Antonio',
-    'Baloo',
-    'Edo',
-    'Montserrat',
-    'Montserrat Bold',
-    'Lobster',
-    'Finserifdisplay',
-    'Abrilfatface',
-    'Heiti',
-    'Zhuokai',
-  ];
   static const PALETTE_COLORS = [
     Color(0xFFFFFFFF),
     Color(0xFF000000),
@@ -60,10 +47,13 @@ class EditPostScreen extends ConsumerStatefulWidget {
     Key? key,
   }) : super(key: key) {
     provider = StateNotifierProvider((ref) {
+      if (setting.text == null || setting.text!.isEmpty) {
+        setting = setting.copyWith(fontSize: CreationStrategy.getEmptyTextDefaultFontSize());
+      }
       List<PaletteItem> colors =
           PALETTE_COLORS.map((e) => PaletteItem(color: e, type: PALETTE_COLORS.indexOf(e) < 2 ? PaletteItem.TYPE_OUTLINED : PaletteItem.TYPE_NORMAL)).toList();
       colors.firstWhere((element) => element.color.value == setting.textColor.value, orElse: () => colors[0]).selected = true;
-      List<FontItem> fonts = FONTS.map((e) => FontItem(fontFamily: e)).toList();
+      List<FontItem> fonts = CreationStrategy.FONT_LIST.map((e) => FontItem(fontFamily: e)).toList();
       fonts.firstWhere((element) => element.fontFamily == setting.fontFamily, orElse: () => fonts[0]).selected = true;
       return EditPostScreenViewModel(EditPostScreenModelState.init(colors, fonts, setting));
     });
@@ -104,6 +94,8 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (textController.text.isNotEmpty) {
         tabController.index = 1;
+      } else {
+        showKeyboard(ref, node);
       }
     });
   }
@@ -118,7 +110,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
     EditPostScreenModelState modelState = ref.watch(widget.provider);
     double tabbarHeight = 54;
     double statusbarHeight = MediaQuery.of(context).viewPadding.top;
-    AppBar appBar = AppBar(
+    HoohAppBar appBar = HoohAppBar(
       title: Text(globalLocalizations.common_edit),
       actions: [
         IconButton(
@@ -131,7 +123,12 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
                             setting: modelState.setting,
                           )));
             },
-            icon: Icon(Icons.arrow_forward))
+            icon: HoohIcon(
+              "assets/images/icon_arrow_next.svg",
+              width: 24,
+              height: 24,
+              color: designColors.dark_01.auto(ref),
+            ))
       ],
     );
     var size2 = MediaQuery.of(context).size;
@@ -240,8 +237,8 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
         ui.Rect buttonRect = ui.Rect.fromCenter(
             center: Offset(translate(modelState.setting.frameX + modelState.setting.frameW, width),
                 translate(modelState.setting.frameY + modelState.setting.frameH, height)),
-            width: 24,
-            height: 24);
+            width: 48,
+            height: 48);
         ui.Rect frameRect = ui.Rect.fromLTWH(
           translate(modelState.setting.frameX, width),
           translate(modelState.setting.frameY, height),
@@ -457,9 +454,10 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
             onPressed: () {
               tabController.index = 1;
             },
-            child: Icon(
-              Icons.done,
-              size: 24,
+            child: HoohIcon(
+              "assets/images/icon_ok.svg",
+              width: 24,
+              height: 24,
               color: Colors.white,
             ),
             style: RegisterStyles.blueButtonStyle(ref, cornerRadius: 0)
@@ -515,6 +513,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
       height: itemSize,
       child: ListView(scrollDirection: Axis.horizontal, padding: EdgeInsets.symmetric(horizontal: 16), children: [
         Material(
+          color: designColors.light_00.auto(ref),
           type: MaterialType.transparency,
           child: Ink(
             width: itemSize,

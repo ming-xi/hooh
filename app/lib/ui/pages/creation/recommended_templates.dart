@@ -4,8 +4,8 @@ import 'package:app/ui/pages/creation/edit_post_view_model.dart';
 import 'package:app/ui/pages/creation/recommended_templates_view_model.dart';
 import 'package:app/ui/pages/gallery/gallery.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/widgets/template_compose_view.dart';
-import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/template.dart';
@@ -45,7 +45,7 @@ class _RecommendedTemplatesScreenState extends ConsumerState<RecommendedTemplate
     double imageSize = (screenWidth - padding * 2 - spacing * (gridColumnCount - 1)) / gridColumnCount;
     double scale = imageSize / screenWidth;
     return Scaffold(
-      appBar: AppBar(
+      appBar: HoohAppBar(
         title: Text(globalLocalizations.recommended_templates_title),
       ),
       body: SmartRefresher(
@@ -117,8 +117,10 @@ class _RecommendedTemplatesScreenState extends ConsumerState<RecommendedTemplate
             if (file == null) {
               return;
             }
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => EditPostScreen(setting: PostImageSetting.withLocalFile(file, Colors.white, text: getText()))));
+            Color textColor = isImageDarkColor(file.readAsBytesSync()) ? Colors.white : Colors.black;
+            Navigator.push(context, MaterialPageRoute(builder: (context) {
+              return EditPostScreen(setting: PostImageSetting.withLocalFile(file, textColor, text: getText()));
+            }));
           });
     }, "assets/images/select_photos.svg", globalLocalizations.recommended_templates_from_local);
   }

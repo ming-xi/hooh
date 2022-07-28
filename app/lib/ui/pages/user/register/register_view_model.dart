@@ -1,5 +1,6 @@
-import 'package:app/extensions/extensions.dart';
+import 'package:common/extensions/extensions.dart';
 import 'package:app/global.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/utils/constants.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/network/responses.dart';
@@ -11,7 +12,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 part 'register_view_model.g.dart';
 
 @CopyWith()
-class RegisterModelState {
+class RegisterScreenModelState {
   final String? usernameErrorText;
   final String? emailErrorText;
   final String? passwordErrorText;
@@ -20,7 +21,7 @@ class RegisterModelState {
   final bool passwordVisible;
   final bool confirmPasswordVisible;
 
-  RegisterModelState(
+  RegisterScreenModelState(
       {this.usernameErrorText,
       this.emailErrorText,
       this.passwordErrorText,
@@ -29,11 +30,11 @@ class RegisterModelState {
       this.passwordVisible = false,
       this.confirmPasswordVisible = false});
 
-  factory RegisterModelState.init() => RegisterModelState();
+  factory RegisterScreenModelState.init() => RegisterScreenModelState();
 }
 
-class RegisterViewModel extends StateNotifier<RegisterModelState> {
-  RegisterViewModel(RegisterModelState state) : super(state) {}
+class RegisterScreenViewModel extends StateNotifier<RegisterScreenModelState> {
+  RegisterScreenViewModel(RegisterScreenModelState state) : super(state) {}
 
   void togglePasswordVisible() {
     updateState(state.copyWith(passwordVisible: !state.passwordVisible));

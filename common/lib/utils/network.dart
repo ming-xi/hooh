@@ -33,6 +33,7 @@ class Network {
   }
 
   static const HOST_LOCAL = "192.168.31.136:8080";
+  // static const HOST_LOCAL = "192.168.3.100:8080";
   static const HOST_STAGING = "stgapi.hooh.zone";
   static const HOST_PRODUCTION = "api.hooh.zone";
   static const SERVER_HOSTS = {
@@ -118,10 +119,10 @@ class Network {
         body: LoginWithPasswordRequest(username, encryptedPassword).toJson(), deserializer: LoginResponse.fromJson);
   }
 
-  Future<RequestValidationCodeResponse> resetPasswordRequestValidationCode(String target, int type) {
-    assert([RequestValidationCodeResponse.typeEmail, RequestValidationCodeResponse.typeMobile].contains(type));
-    return _getResponseObject<RequestValidationCodeResponse>(HttpMethod.post, _buildHoohUri("users/reset-password/request-validation-code"),
-        body: RequestValidationCodeRequest(type, target).toJson(), deserializer: RequestValidationCodeResponse.fromJson);
+  Future<void> resetPasswordRequestValidationCode(String target, int type) {
+    assert([RequestValidationCodeResponse.TYPE_EMAIL, RequestValidationCodeResponse.TYPE_MOBILE].contains(type));
+    return _getResponseObject<void>(HttpMethod.post, _buildHoohUri("users/reset-password/request-validation-code"),
+        body: RequestValidationCodeRequest(type, target).toJson());
   }
 
   Future<ValidateCodeResponse> resetPasswordValidateCode(String target, String code) {
@@ -129,20 +130,24 @@ class Network {
         body: ValidateCodeRequest(target, code).toJson(), deserializer: ValidateCodeResponse.fromJson);
   }
 
-  Future<void> resetPassword(String token, String password) {
+  Future<User> resetPassword(String token, String password) {
     String encryptedPassword = sha512.convert(utf8.encode(password)).toString().toLowerCase();
-    return _getResponseObject<void>(HttpMethod.post, _buildHoohUri("users/reset-password"), body: ResetPasswordRequest(token, encryptedPassword).toJson());
+    return _getResponseObject<User>(HttpMethod.post, _buildHoohUri("users/reset-password"),
+        body: ResetPasswordRequest(token, encryptedPassword).toJson(), deserializer: User.fromJson);
   }
 
-  Future<RequestValidationCodeResponse> bindAccountRequestValidationCode(String target, int type) {
-    assert([RequestValidationCodeResponse.typeEmail, RequestValidationCodeResponse.typeMobile].contains(type));
-    return _getResponseObject<RequestValidationCodeResponse>(HttpMethod.post, _buildHoohUri("users/binding/request-validation-code"),
-        body: RequestValidationCodeRequest(type, target).toJson(), deserializer: RequestValidationCodeResponse.fromJson);
+  Future<void> bindAccountRequestValidationCode(String target, int type) {
+    assert([RequestValidationCodeResponse.TYPE_EMAIL, RequestValidationCodeResponse.TYPE_MOBILE].contains(type));
+    return _getResponseObject<void>(
+      HttpMethod.post,
+      _buildHoohUri("users/binding/request-validation-code"),
+      body: RequestValidationCodeRequest(type, target).toJson(),
+    );
   }
 
-  Future<ValidateCodeResponse> bindAccountValidateCode(String target, String code) {
-    return _getResponseObject<ValidateCodeResponse>(HttpMethod.post, _buildHoohUri("users/binding/validate"),
-        body: ValidateCodeRequest(target, code).toJson(), deserializer: ValidateCodeResponse.fromJson);
+  Future<User> bindAccountValidateCode(String target, String code) {
+    return _getResponseObject<User>(HttpMethod.post, _buildHoohUri("users/binding/validate"),
+        body: ValidateCodeRequest(target, code).toJson(), deserializer: User.fromJson);
   }
 
   //endregion
@@ -194,6 +199,11 @@ class Network {
 
   Future<UserWalletResponse> getUserWalletInfo(String userId) {
     return _getResponseObject<UserWalletResponse>(HttpMethod.get, _buildHoohUri("users/$userId/wallet"), deserializer: UserWalletResponse.fromJson);
+  }
+
+  Future<UserWalletOverviewResponse> getUserWalletOverview(String userId) {
+    return _getResponseObject<UserWalletOverviewResponse>(HttpMethod.get, _buildHoohUri("users/$userId/wallet/overview"),
+        deserializer: UserWalletOverviewResponse.fromJson);
   }
 
   Future<List<WalletLog>> getWalletPowLogs(String userId) {
@@ -259,11 +269,8 @@ class Network {
         body: RequestUploadingFileRequest(fileMd5, ext).toJson(), deserializer: RequestUploadingFileResponse.fromJson);
   }
 
-  Future<void> followUser(String userId) {
-    return _getResponseObject<void>(
-      HttpMethod.put,
-      _buildHoohUri("users/$userId/follow"),
-    );
+  Future<FollowUserResponse> followUser(String userId) {
+    return _getResponseObject<FollowUserResponse>(HttpMethod.put, _buildHoohUri("users/$userId/follow"), deserializer: FollowUserResponse.fromJson);
   }
 
   Future<void> cancelFollowUser(String userId) {
@@ -452,10 +459,13 @@ class Network {
     );
   }
 
-  Future<List<Post>> getWaitingListPosts({required bool trending, DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
+  Future<List<Post>> getWaitingListPosts({required bool trending, DateTime? date, int? page, int size = DEFAULT_PAGE_SIZE}) {
     Map<String, dynamic> params = {
       "size": size,
     };
+    if (page != null) {
+      params["page"] = page;
+    }
     if (date != null) {
       params["timestamp"] = DateUtil.getUtcDateString(date);
     }
@@ -463,10 +473,13 @@ class Network {
         deserializer: Post.fromJson);
   }
 
-  Future<List<Post>> getMainListPosts({required bool trending, DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
+  Future<List<Post>> getMainListPosts({required bool trending, DateTime? date, int? page, int size = DEFAULT_PAGE_SIZE}) {
     Map<String, dynamic> params = {
       "size": size,
     };
+    if (page != null) {
+      params["page"] = page;
+    }
     if (date != null) {
       params["timestamp"] = DateUtil.getUtcDateString(date);
     }
@@ -478,10 +491,13 @@ class Network {
     return _getResponseObject<TagDetailResponse>(HttpMethod.get, _buildHoohUri("post-tags/$tagName"), deserializer: TagDetailResponse.fromJson);
   }
 
-  Future<List<Post>> getTaggedPosts(String tagName, {required bool trending, DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
+  Future<List<Post>> getTaggedPosts(String tagName, {required bool trending, DateTime? date, int? page, int size = DEFAULT_PAGE_SIZE}) {
     Map<String, dynamic> params = {
       "size": size,
     };
+    if (page != null) {
+      params["page"] = page;
+    }
     if (date != null) {
       params["timestamp"] = DateUtil.getUtcDateString(date);
     }
@@ -489,10 +505,13 @@ class Network {
         deserializer: Post.fromJson);
   }
 
-  Future<List<Post>> getFollowedUserPosts({required bool trending, DateTime? date, int size = DEFAULT_PAGE_SIZE}) {
+  Future<List<Post>> getFollowedUserPosts({required bool trending, DateTime? date, int? page, int size = DEFAULT_PAGE_SIZE}) {
     Map<String, dynamic> params = {
       "size": size,
     };
+    if (page != null) {
+      params["page"] = page;
+    }
     if (date != null) {
       params["timestamp"] = DateUtil.getUtcDateString(date);
     }

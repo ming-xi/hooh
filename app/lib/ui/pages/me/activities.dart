@@ -1,9 +1,11 @@
 import 'package:app/global.dart';
 import 'package:app/ui/pages/me/activities_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/widgets/empty_views.dart';
 import 'package:app/ui/widgets/user_activity_view.dart';
 import 'package:app/utils/design_colors.dart';
+import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/page_state.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/date_util.dart';
@@ -32,11 +34,29 @@ class UserActivityScreen extends ConsumerStatefulWidget {
 }
 
 class _UserActivityScreenState extends ConsumerState<UserActivityScreen> {
+  ScrollController scrollController = ScrollController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(globalLocalizations.me_tile_trends)),
+      appBar: HoohAppBar(title: Text(globalLocalizations.me_tile_trends)),
+      floatingActionButton: SafeArea(
+          child: SizedBox(
+        width: 40,
+        height: 40,
+        child: FloatingActionButton(
+            backgroundColor: designColors.feiyu_blue.auto(ref),
+            onPressed: () {
+              scrollController.animateTo(0, duration: Duration(milliseconds: 250), curve: Curves.easeOutCubic);
+            },
+            child: HoohIcon(
+              "assets/images/icon_back_to_top.svg",
+              width: 16,
+              color: designColors.light_01.light,
+            )),
+      )),
       body: UserActivityPage(
+        scrollController: scrollController,
         provider: widget.provider,
       ),
     );
@@ -45,19 +65,23 @@ class _UserActivityScreenState extends ConsumerState<UserActivityScreen> {
 
 class UserActivityPage extends ConsumerStatefulWidget {
   final StateNotifierProvider<ActivitiesScreenViewModel, ActivitiesScreenModelState> provider;
+  final ScrollController? scrollController;
 
   UserActivityPage({
     required this.provider,
+    this.scrollController,
     Key? key,
   }) : super(key: key) {}
 
   @override
   ConsumerState createState() => _UserActivityPageState();
 
-  static List<Widget> buildGridView(BuildContext context, WidgetRef ref, ActivitiesScreenModelState modelState, ActivitiesScreenViewModel model) {
-    List<Widget> list = _prepareGroupedItems(context, modelState.activities).map((e) {
+  static List<Widget> buildGridView(
+      BuildContext context, WidgetRef ref, ActivitiesScreenModelState modelState, ActivitiesScreenViewModel model, double topPadding) {
+    List objs = _prepareGroupedItems(context, modelState.activities);
+    List<Widget> list = objs.map((e) {
       if (e is String) {
-        return SliverToBoxAdapter(child: _buildDateHeader(ref, e));
+        return SliverToBoxAdapter(child: _buildDateHeader(ref, e, objs.indexOf(e), topPadding));
       } else if (e is List<UserActivity>) {
         return SliverPadding(
           padding: EdgeInsets.symmetric(horizontal: 20),
@@ -162,9 +186,9 @@ class UserActivityPage extends ConsumerStatefulWidget {
   //   );
   // }
 
-  static Widget _buildDateHeader(WidgetRef ref, String dateString) {
+  static Widget _buildDateHeader(WidgetRef ref, String dateString, int index, double topPadding) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+      padding: EdgeInsets.only(bottom: 12, top: index == 0 ? topPadding : 40, left: 20, right: 20),
       child: Text(
         dateString,
         style: TextStyle(fontSize: 18, color: designColors.light_06.auto(ref), fontWeight: FontWeight.bold),
@@ -207,7 +231,8 @@ class _UserActivityPageState extends ConsumerState<UserActivityPage> {
       child: modelState.activities.isEmpty
           ? EmptyView(text: globalLocalizations.empty_view_no_activities)
           : CustomScrollView(
-              slivers: UserActivityPage.buildGridView(context, ref, modelState, model),
+              controller: widget.scrollController,
+              slivers: UserActivityPage.buildGridView(context, ref, modelState, model, 20),
             ),
     );
   }

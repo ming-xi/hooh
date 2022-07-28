@@ -1,3 +1,4 @@
+import 'package:common/extensions/extensions.dart';
 import 'package:intl/intl.dart';
 
 class DateUtil {
@@ -11,7 +12,7 @@ class DateUtil {
   }
 
   static DateTime getUtcDate(String dateString) {
-    return DateTime.parse(dateString);
+    return DateTimeExtension.parseUtc(dateString);
   }
 
   static String getUtcDateString(DateTime dateTime, {String? format}) {

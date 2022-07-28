@@ -1,4 +1,4 @@
-import 'package:app/extensions/extensions.dart';
+import 'package:common/extensions/extensions.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/page_state.dart';
 import 'package:common/models/post.dart';
@@ -6,7 +6,6 @@ import 'package:common/utils/date_util.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 part 'main_list_view_model.g.dart';
@@ -19,6 +18,7 @@ class MainListPageModelState {
   final DateTime? lastTimestamp;
   final bool infoDialogChecked;
   final bool isTrending;
+  final int page;
   final double scrollDistance;
 
   MainListPageModelState({
@@ -29,6 +29,7 @@ class MainListPageModelState {
     required this.infoDialogChecked,
     this.isTrending = false,
     this.scrollDistance = 0,
+    this.page = 1,
   });
 
   factory MainListPageModelState.init() => MainListPageModelState(
@@ -47,7 +48,7 @@ class MainListPageViewModel extends StateNotifier<MainListPageModelState> {
 
   void getPosts(Function(PageState)? callback, {bool isRefresh = true}) {
     if (isRefresh) {
-      updateState(state.copyWith(lastTimestamp: null));
+      updateState(state.copyWith(lastTimestamp: null, page: 1));
       if (state.pageState == PageState.loading) {
         if (callback != null) {
           callback(state.pageState);
@@ -74,7 +75,7 @@ class MainListPageViewModel extends StateNotifier<MainListPageModelState> {
 
     DateTime date = state.lastTimestamp ?? DateUtil.getCurrentUtcDate();
 
-    network.requestAsync<List<Post>>(network.getMainListPosts(trending: state.isTrending, date: date), (newData) {
+    network.requestAsync<List<Post>>(network.getMainListPosts(trending: state.isTrending, page: state.page, date: date), (newData) {
       if (newData.isEmpty) {
         //no data
         if (isRefresh) {
@@ -89,12 +90,14 @@ class MainListPageViewModel extends StateNotifier<MainListPageModelState> {
           updateState(state.copyWith(
             pageState: PageState.dataLoaded,
             lastTimestamp: newData.last.createdAt,
+            page: state.page + 1,
             posts: newData,
           ));
         } else {
           updateState(state.copyWith(
             pageState: PageState.dataLoaded,
             lastTimestamp: newData.last.createdAt,
+            page: state.page + 1,
             posts: [...state.posts, ...newData],
           ));
         }

@@ -1,7 +1,9 @@
 import 'package:app/global.dart';
 import 'package:app/ui/pages/me/badges_view_model.dart';
+import 'package:app/ui/pages/user/register/set_badge.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/pages/user/user_profile.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/network/responses.dart';
@@ -14,13 +16,14 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:sprintf/sprintf.dart';
 
 class BadgesScreen extends ConsumerStatefulWidget {
-  late final StateNotifierProvider<BadgesScreenViewModel, BadgesScreenModelState> templatesProvider;
+  late final StateNotifierProvider<BadgesScreenViewModel, BadgesScreenModelState> provider;
+  final String userId;
 
   BadgesScreen({
-    required String userId,
+    required this.userId,
     Key? key,
   }) : super(key: key) {
-    templatesProvider = StateNotifierProvider((ref) {
+    provider = StateNotifierProvider((ref) {
       return BadgesScreenViewModel(BadgesScreenModelState.init(userId));
     });
   }
@@ -39,10 +42,11 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
     const double padding = 20;
     const double spacing = 4;
     double tileWidth = (screenWidth - padding * 2 - spacing) / 2;
-    BadgesScreenModelState modelState = ref.watch(widget.templatesProvider);
-    BadgesScreenViewModel model = ref.read(widget.templatesProvider.notifier);
+    BadgesScreenModelState modelState = ref.watch(widget.provider);
+    BadgesScreenViewModel model = ref.read(widget.provider.notifier);
+    User? currentUser = ref.read(globalUserInfoProvider);
     return Scaffold(
-      appBar: AppBar(title: Text(globalLocalizations.badges_title)),
+      appBar: HoohAppBar(title: Text(globalLocalizations.badges_title)),
       body: SmartRefresher(
         enablePullDown: true,
         enablePullUp: true,
@@ -70,10 +74,21 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
           slivers: [
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.only(left: padding, right: padding, top: 28, bottom: padding),
-                child: Text(
-                  sprintf(globalLocalizations.badges_created_count, [modelState.createdBadgeCount]),
-                  style: titleTextStyle,
+                padding: const EdgeInsets.only(left: padding, top: 28, bottom: padding),
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        sprintf(globalLocalizations.badges_created_count, [modelState.createdBadgeCount]),
+                        style: titleTextStyle,
+                      ),
+                    ),
+                    Visibility(
+                      child: buildCreateButton(),
+                      visible: currentUser?.id == widget.userId,
+                    )
+                  ],
                 ),
               ),
             ),
@@ -122,7 +137,7 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
       template = globalLocalizations.badges_amt;
       textStyle = TextStyle(fontSize: 14, color: designColors.light_01.auto(ref), fontWeight: FontWeight.bold);
     }
-    return BadgeView(imageUrl: badge.imageUrl, ratio: 165 / 180, ended: ended, content: [
+    return BadgeView(imageUrl: badge.imageUrl, ratio: 165 / 180, ended: ended, isCreatedBadge: true, content: [
       SizedBox(
         height: 16,
       ),
@@ -141,7 +156,7 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
   }
 
   Widget buildReceivedBadge(UserBadge badge) {
-    return BadgeView(imageUrl: badge.imageUrl, ratio: 165 / 204, content: [
+    return BadgeView(imageUrl: badge.imageUrl, ratio: 165 / 204, isCreatedBadge: false, content: [
       SizedBox(
         height: 16,
       ),
@@ -155,9 +170,15 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                globalLocalizations.badges_from,
-                style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
+              Expanded(
+                child: Text(
+                  globalLocalizations.badges_from,
+                  textAlign: TextAlign.right,
+                  style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
+                ),
+              ),
+              SizedBox(
+                width: 4,
               ),
               ClipOval(
                 child: HoohImage(
@@ -167,13 +188,13 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
                 ),
               ),
               SizedBox(
-                width: 2,
+                width: 4,
               ),
               Expanded(
                 child: Text(
                   badge.designer.name,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 14, color: designColors.blue_dark.auto(ref), fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                  style: TextStyle(fontSize: 14, color: designColors.blue_dark.auto(ref), decoration: TextDecoration.underline),
                 ),
               ),
             ],
@@ -196,6 +217,45 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
       ),
     ]);
   }
+
+  Widget buildCreateButton() {
+    return TextButton(
+      onPressed: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => SetBadgeScreen(scene: SetBadgeScreen.SCENE_CHANGE))).then((result) {
+          if (result != null && result is bool && result) {
+            ref.read(widget.provider.notifier).getBadgeStats(forced: true);
+          }
+        });
+      },
+      child: Row(
+        children: [
+          SizedBox(
+            width: 8,
+          ),
+          Text(
+            globalLocalizations.badges_create,
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: designColors.light_01.light),
+          ),
+          HoohIcon(
+            "assets/images/icon_arrow_next_ios.svg",
+            color: designColors.light_01.light,
+            width: 16,
+            height: 16,
+          )
+        ],
+      ),
+      style: TextButton.styleFrom(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8), topRight: Radius.zero, bottomRight: Radius.zero),
+        ),
+        primary: Colors.white,
+        onSurface: Colors.white,
+        padding: EdgeInsets.zero,
+        minimumSize: Size(100, 32),
+        backgroundColor: designColors.feiyu_blue.auto(ref),
+      ),
+    );
+  }
 }
 
 class BadgeView extends ConsumerWidget {
@@ -203,11 +263,13 @@ class BadgeView extends ConsumerWidget {
   final List<Widget> content;
   final double ratio;
   final bool ended;
+  final bool isCreatedBadge;
 
   const BadgeView({
     required this.imageUrl,
     required this.content,
     required this.ratio,
+    required this.isCreatedBadge,
     this.ended = true,
     Key? key,
   }) : super(key: key);
@@ -215,14 +277,16 @@ class BadgeView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     const double radius = 20;
-    if (ended) {
-      return AspectRatio(
-        aspectRatio: ratio,
-        child: Container(
-          padding: EdgeInsets.all(1),
-          decoration: BoxDecoration(gradient: MainStyles.badgeGradient(ref), borderRadius: BorderRadius.circular(radius)),
+    final BoxShadow boxShadow = BoxShadow(color: designColors.dark_00.auto(ref).withOpacity(0.2), offset: Offset.zero, blurRadius: 10, spreadRadius: -4);
+    if (isCreatedBadge) {
+      if (ended) {
+        return AspectRatio(
+          aspectRatio: ratio,
           child: Container(
-            decoration: BoxDecoration(color: designColors.light_01.auto(ref), borderRadius: BorderRadius.circular(radius - 1)),
+            decoration: BoxDecoration(
+              color: designColors.light_02.auto(ref),
+              borderRadius: BorderRadius.circular(radius),
+            ),
             child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -238,25 +302,50 @@ class BadgeView extends ConsumerWidget {
               ),
             ),
           ),
-        ),
-      );
+        );
+      } else {
+        return AspectRatio(
+          aspectRatio: ratio,
+          child: Container(
+            decoration: BoxDecoration(gradient: MainStyles.badgeGradient(ref), borderRadius: BorderRadius.circular(radius), boxShadow: [boxShadow]),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  HoohImage(
+                    imageUrl: imageUrl,
+                    isBadge: true,
+                    width: 80,
+                  ),
+                  ...content
+                ],
+              ),
+            ),
+          ),
+        );
+      }
     } else {
       return AspectRatio(
         aspectRatio: ratio,
         child: Container(
-          decoration: BoxDecoration(gradient: MainStyles.badgeGradient(ref), borderRadius: BorderRadius.circular(radius)),
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                HoohImage(
-                  imageUrl: imageUrl,
-                  isBadge: true,
-                  width: 80,
-                ),
-                ...content
-              ],
+          padding: EdgeInsets.all(1),
+          decoration: BoxDecoration(gradient: MainStyles.badgeGradient(ref), borderRadius: BorderRadius.circular(radius), boxShadow: [boxShadow]),
+          child: Container(
+            decoration: BoxDecoration(color: designColors.light_01.auto(ref), borderRadius: BorderRadius.circular(radius - 1)),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  HoohImage(
+                    imageUrl: imageUrl,
+                    isBadge: true,
+                    width: 80,
+                  ),
+                  ...content
+                ],
+              ),
             ),
           ),
         ),

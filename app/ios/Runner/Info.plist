@@ -2,8 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 	<dict>
-	    <key>NSCameraUsageDescription</key>
-        <string>Example usage description</string>
+		<key>CADisableMinimumFrameDurationOnPhone</key>
+		<true/>
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
@@ -27,12 +27,71 @@
 		<string>$(FLUTTER_BUILD_NAME)</string>
 		<key>CFBundleSignature</key>
 		<string>????</string>
+		<key>CFBundleURLTypes</key>
+		<array>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLName</key>
+				<string>Twitter</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>twitterkit-QYV9wSN6XEkGCfiiJlGcjR93W</string>
+				</array>
+			</dict>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLName</key>
+				<string>facebook</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>fb1200223860750258</string>
+				</array>
+			</dict>
+		</array>
 		<key>CFBundleVersion</key>
 		<string>$(FLUTTER_BUILD_NUMBER)</string>
 		<key>LSApplicationQueriesSchemes</key>
 		<array>
-			<string>https</string>
-			<string>http</string>
+			<string>wechat</string>
+			<string>weixin</string>
+			<string>sinaweibohd</string>
+			<string>sinaweibo</string>
+			<string>sinaweibosso</string>
+			<string>weibosdk</string>
+			<string>weibosdk2.5</string>
+			<string>mqqapi</string>
+			<string>mqq</string>
+			<string>mqqOpensdkSSoLogin</string>
+			<string>mqqconnect</string>
+			<string>mqqopensdkdataline</string>
+			<string>mqqopensdkgrouptribeshare</string>
+			<string>mqqopensdkfriend</string>
+			<string>mqqopensdkapi</string>
+			<string>mqqopensdkapiV2</string>
+			<string>mqqopensdkapiV3</string>
+			<string>mqqopensdkapiV4</string>
+			<string>mqzoneopensdk</string>
+			<string>wtloginmqq</string>
+			<string>wtloginmqq2</string>
+			<string>mqqwpa</string>
+			<string>mqzone</string>
+			<string>mqzonev2</string>
+			<string>mqzoneshare</string>
+			<string>wtloginqzone</string>
+			<string>mqzonewx</string>
+			<string>mqzoneopensdkapiV2</string>
+			<string>mqzoneopensdkapi19</string>
+			<string>mqzoneopensdkapi</string>
+			<string>mqqbrowser</string>
+			<string>mttbrowser</string>
+			<string>fbapi</string>
+			<string>fb-messenger-api</string>
+			<string>fbauth2</string>
+			<string>fbshareextension</string>
+			<string>twitter</string>
+			<string>twitterauth</string>
 		</array>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
@@ -45,6 +104,8 @@
 		</dict>
 		<key>NSAppleMusicUsageDescription</key>
 		<string>Explain why your app uses music</string>
+		<key>NSCameraUsageDescription</key>
+		<string>Example usage description</string>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>Explain why your app uses photo library</string>
 		<key>UIBackgroundModes</key>
@@ -77,8 +138,18 @@
 		<false/>
 		<key>io.flutter.embedded_views_preview</key>
 		<true/>
-		<key>CADisableMinimumFrameDurationOnPhone</key>
-
-	<true/>
-</dict>
+		 <key>CFBundleURLTypes</key>
+          <array>
+            <dict>
+              <key>CFBundleTypeRole</key>
+              <string>Editor</string>
+              <key>CFBundleURLName</key>
+              <string>lz.hooh.zone</string>
+              <key>CFBundleURLSchemes</key>
+              <array>
+                <string>hoohlanding</string>
+              </array>
+            </dict>
+          </array>
+	</dict>
 </plist>

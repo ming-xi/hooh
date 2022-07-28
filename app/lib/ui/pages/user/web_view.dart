@@ -1,3 +1,4 @@
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
@@ -6,11 +7,10 @@ class WebViewScreen extends ConsumerStatefulWidget {
   final String url;
   final String title;
 
-  const WebViewScreen(
-    this.title,
-    this.url, {
-    Key? key,
-  }) : super(key: key);
+  const WebViewScreen(this.title,
+      this.url, {
+        Key? key,
+      }) : super(key: key);
 
   @override
   ConsumerState createState() => _WebViewState();
@@ -20,7 +20,7 @@ class _WebViewState extends ConsumerState<WebViewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: HoohAppBar(
         title: Text(widget.title),
       ),
       body: WebViewPlus(

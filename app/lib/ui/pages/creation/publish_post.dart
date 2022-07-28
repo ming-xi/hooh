@@ -7,20 +7,22 @@ import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/home/home_view_model.dart';
 import 'package:app/ui/pages/home/input.dart';
 import 'package:app/ui/pages/home/input_view_model.dart';
+import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/widgets/template_compose_view.dart';
 import 'package:app/ui/widgets/toast.dart';
-import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
-import 'package:common/models/hooh_api_error_response.dart';
+import 'package:common/models/user.dart';
+import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sprintf/sprintf.dart';
 
 class PublishPostScreen extends ConsumerStatefulWidget {
-  late StateNotifierProvider<PublishPostScreenViewModel, PublishPostScreenModelState> provider;
+  late final StateNotifierProvider<PublishPostScreenViewModel, PublishPostScreenModelState> provider;
 
   PublishPostScreen({
     required PostImageSetting setting,
@@ -44,127 +46,137 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
     double screenWidth = MediaQuery.of(context).size.width;
     TextStyle bottomTextStyle = TextStyle(color: designColors.light_06.auto(ref), fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Linotte');
     return Scaffold(
-      appBar: AppBar(
+      appBar: HoohAppBar(
         title: Text(globalLocalizations.common_post),
       ),
       body: CustomScrollView(
         slivers: [
           SliverFillRemaining(
             hasScrollBody: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      child: SizedBox.square(
-                        dimension: 128,
-                        child: TemplateView(modelState.setting, viewSetting: viewSetting, scale: 128 / screenWidth, radius: 20, onPressBody: () {
-                          showDialog(
-                              context: context,
-                              builder: (context) {
-                                return Dialog(
-                                    backgroundColor: Colors.transparent,
-                                    insetPadding: EdgeInsets.zero,
-                                    child: SizedBox.square(
-                                      dimension: screenWidth,
-                                      child: TemplateView(
-                                        modelState.setting,
-                                        viewSetting: viewSetting,
-                                        radius: 0,
-                                      ),
-                                    ));
-                              });
-                        }),
+            child: SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        child: SizedBox.square(
+                          dimension: 128,
+                          child: TemplateView(modelState.setting, viewSetting: viewSetting, scale: 128 / screenWidth, radius: 20, onPressBody: () {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return Dialog(
+                                      backgroundColor: Colors.transparent,
+                                      insetPadding: EdgeInsets.zero,
+                                      child: SizedBox.square(
+                                        dimension: screenWidth,
+                                        child: TemplateView(
+                                          modelState.setting,
+                                          viewSetting: viewSetting,
+                                          radius: 0,
+                                        ),
+                                      ));
+                                });
+                          }),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                MainStyles.buildListDivider(ref),
-                buildTags(modelState.tags),
-                MainStyles.buildListDivider(ref),
-                MainStyles.buildListTile(ref, globalLocalizations.publish_post_download,
-                    tailWidget: Switch(
-                        value: modelState.allowDownload,
-                        onChanged: (newState) {
-                          model.setAllowDownload(newState);
-                        }), onPress: () {
-                  model.setAllowDownload(!modelState.allowDownload);
-                }),
-                MainStyles.buildListTile(ref, globalLocalizations.publish_post_private,
-                    tailWidget: Switch(
-                        value: modelState.isPrivate,
-                        onChanged: (newState) {
-                          model.setIsPrivate(newState);
-                        }), onPress: () {
-                  model.setIsPrivate(!modelState.isPrivate);
-                }),
-                Spacer(),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 48.0),
-                  child: MainStyles.blueButton(ref, globalLocalizations.publish_post_publish_to_homepage, () {
-                    publishPost(false);
-                  }, cornerRadius: 22),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 48.0),
-                  child: MainStyles.gradientButton(ref, globalLocalizations.publish_post_publish_to_waiting_list, () {
-                    publishPost(true);
-                  }, cornerRadius: 22),
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: 24,
-                    ),
-                    HoohLocalizedRichText(
-                        text: globalLocalizations.publish_post_spends_ore,
-                        keys: [
-                          HoohLocalizedWidgetKey(
-                            key: globalLocalizations.publish_post_spends_ore_placeholder,
-                            widget: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 4),
-                              child: HoohIcon(
-                                "assets/images/common_ore.svg",
-                                width: 18,
-                                height: 18,
+                    ],
+                  ),
+                  MainStyles.buildListDivider(ref),
+                  buildTags(modelState.tags),
+                  MainStyles.buildListDivider(ref),
+                  MainStyles.buildListTile(ref, globalLocalizations.publish_post_download,
+                      tailWidget: Switch(
+                          value: modelState.allowDownload,
+                          onChanged: (newState) {
+                            model.setAllowDownload(newState);
+                          }), onPress: () {
+                    model.setAllowDownload(!modelState.allowDownload);
+                  }),
+                  MainStyles.buildListTile(ref, globalLocalizations.publish_post_private,
+                      tailWidget: Switch(
+                          value: modelState.isPrivate,
+                          onChanged: (newState) {
+                            model.setIsPrivate(newState);
+                          }), onPress: () {
+                    model.setIsPrivate(!modelState.isPrivate);
+                  }),
+                  Spacer(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 48.0),
+                    child: MainStyles.blueButton(ref, globalLocalizations.publish_post_publish_to_homepage, () {
+                      publishPost(false);
+                    }),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 48.0),
+                    child: MainStyles.gradientButton(ref, globalLocalizations.publish_post_publish_to_waiting_list, () {
+                      if (!(preferences.getBool(Preferences.KEY_ADD_TO_VOTE_LIST_DIALOG_CHECKED) ?? false)) {
+                        showWaitingListHintDialog();
+                        // return;
+                      } else {
+                        publishPost(true);
+                      }
+                    }),
+                  ),
+                  SizedBox(
+                    height: 4,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 24,
+                      ),
+                      HoohLocalizedRichText(
+                          text: globalLocalizations.publish_post_spends_ore,
+                          keys: [
+                            HoohLocalizedWidgetKey(
+                              key: globalLocalizations.publish_post_spends_ore_placeholder,
+                              widget: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 4),
+                                child: HoohIcon(
+                                  "assets/images/common_ore.svg",
+                                  width: 18,
+                                  height: 18,
+                                ),
                               ),
-                            ),
-                          )
-                        ],
-                        defaultTextStyle: bottomTextStyle),
-                    IconButton(
-                        onPressed: () {
-                          showDialog(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: Text(globalLocalizations.publish_post_spends_ore_dialog_title),
-                                  content: Text(globalLocalizations.publish_post_spends_ore_dialog_content),
-                                );
-                              });
-                        },
-                        icon: Icon(
-                          Icons.info_rounded,
-                          size: 18,
-                          color: designColors.dark_03.auto(ref),
-                        )),
-                  ],
-                ),
-                SizedBox(
-                  height: 24,
-                ),
-              ],
+                            )
+                          ],
+                          defaultTextStyle: bottomTextStyle),
+                      IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: BoxConstraints(minHeight: 24, minWidth: 24),
+                          splashRadius: 24,
+                          onPressed: () {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: Text(globalLocalizations.publish_post_spends_ore_dialog_title),
+                                    content: Text(globalLocalizations.publish_post_spends_ore_dialog_content),
+                                  );
+                                });
+                          },
+                          icon: Icon(
+                            Icons.info_rounded,
+                            size: 18,
+                            color: designColors.dark_03.auto(ref),
+                          )),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 24,
+                  ),
+                ],
+              ),
             ),
           )
         ],
@@ -172,10 +184,139 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
     );
   }
 
+  void _showDialogWithCheckBox({
+    required String title,
+    required String content,
+    required bool Function(WidgetRef ref) checked,
+    required String checkBoxText,
+    required String okText,
+    required Function(bool?) onCheckBoxChanged,
+    required Function() onOkClick,
+  }) {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (popContext) {
+          double screenHeight = MediaQuery.of(context).size.height;
+          double screenWidth = MediaQuery.of(context).size.width;
+          return Consumer(builder: (consumerContext, ref, child) {
+            return AlertDialog(
+              insetPadding: EdgeInsets.all(20),
+              title: Text(
+                title,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+              ),
+              titlePadding: EdgeInsets.only(top: 24, left: 24, right: 24),
+              contentPadding: EdgeInsets.all(16),
+              content: SizedBox(
+                width: screenWidth,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: SizedBox(
+                        height: screenHeight / 4,
+                        child: CustomScrollView(
+                          slivers: [
+                            SliverFillRemaining(
+                              hasScrollBody: false,
+                              child: Text(
+                                content,
+                                style: TextStyle(fontSize: 16, color: designColors.light_06.auto(ref)),
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 24,
+                    ),
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 4,
+                        ),
+                        SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: Checkbox(
+                            value: checked(ref),
+                            onChanged: onCheckBoxChanged,
+                          ),
+                        ),
+                        SizedBox(
+                          width: 8,
+                        ),
+                        Text(
+                          checkBoxText,
+                          style: TextStyle(color: designColors.dark_01.auto(ref), fontSize: 16),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 24,
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Expanded(
+                          child: MainStyles.outlinedTextButton(ref, globalLocalizations.common_cancel, () {
+                            Navigator.pop(context);
+                          }),
+                        ),
+                        SizedBox(
+                          width: 12,
+                        ),
+                        Expanded(
+                          child: MainStyles.gradientButton(ref, okText, onOkClick),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          });
+        });
+  }
+
+  void showWaitingListHintDialog() {
+    PublishPostScreenViewModel model = ref.read(widget.provider.notifier);
+    PublishPostScreenModelState modelState = ref.watch(widget.provider);
+    network.getFeeInfo().then((response) {
+      _showDialogWithCheckBox(
+          title: globalLocalizations.publish_post_hint_dialog_title,
+          content: sprintf(globalLocalizations.publish_post_hint_dialog_content, [formatCurrency(response.joinWaitingList)]),
+          checked: (ref) {
+            PublishPostScreenModelState modelState = ref.watch(widget.provider);
+            return modelState.hintChecked;
+          },
+          checkBoxText: globalLocalizations.templates_don_t_prompt_next_time,
+          okText: globalLocalizations.common_confirm,
+          onCheckBoxChanged: (value) {
+            debugPrint("onChanged value=$value");
+            model.setHintChecked(value!);
+          },
+          onOkClick: () {
+            preferences.putBool(Preferences.KEY_ADD_TO_VOTE_LIST_DIALOG_CHECKED, modelState.hintChecked);
+            Navigator.pop(context);
+            User? user = ref.read(globalUserInfoProvider);
+            if (user == null) {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+              return;
+            }
+            publishPost(true);
+          });
+    });
+  }
+
   void publishPost(bool publishToWaitingList) {
     PublishPostScreenModelState modelState = ref.read(widget.provider);
     PublishPostScreenViewModel model = ref.read(widget.provider.notifier);
-
+    User user = ref.read(globalUserInfoProvider)!;
     showDialog(
         context: context,
         barrierDismissible: false,
@@ -184,6 +325,7 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
         });
     model.publishPost(
         context: context,
+        currentUser: user,
         publishToWaitingList: publishToWaitingList,
         onSuccess: (post) {
           // Navigator.popUntil(context, ModalRoute.withName("/home"));
@@ -230,12 +372,14 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
         ),
       ),
     ];
-    children.add(Icon(
-      Icons.arrow_forward_ios_rounded,
-      size: 18,
+    children.add(HoohIcon(
+      "assets/images/icon_arrow_next_ios.svg",
+      width: 24,
+      height: 24,
       color: designColors.light_06.auto(ref),
     ));
     return Material(
+      color: designColors.light_00.auto(ref),
       child: Ink(
         height: 48,
         // color: designColors.light_02.auto(ref),

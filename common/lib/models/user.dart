@@ -24,6 +24,7 @@ class User {
   String? badgeImageUrl;
   String? signature;
   String? website;
+  String? email;
   List<String>? receivedBadges;
 
   bool? followed;
@@ -48,6 +49,7 @@ class User {
       this.badgeImageUrl,
       this.signature,
       this.website,
+      this.email,
       this.receivedBadges,
       this.followed,
       this.createdAt,

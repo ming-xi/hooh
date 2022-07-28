@@ -6,11 +6,15 @@ import 'package:app/ui/pages/me/followers.dart';
 import 'package:app/ui/pages/me/notifications.dart';
 import 'package:app/ui/pages/me/settings/edit_profile.dart';
 import 'package:app/ui/pages/me/settings/setting.dart';
+import 'package:app/ui/pages/me/wallet.dart';
+import 'package:app/ui/pages/misc/share.dart';
 import 'package:app/ui/pages/user/posts.dart';
 import 'package:app/ui/pages/user/posts_view_model.dart';
 import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/pages/user/templates.dart';
+import 'package:app/ui/widgets/appbar.dart';
+import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:badges/badges.dart';
@@ -36,72 +40,15 @@ class MePage extends ConsumerStatefulWidget {
 
 class _MePageState extends ConsumerState<MePage> {
   @override
-  void initState() {
-    super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   Future.delayed(const Duration(seconds: 1), () {
-    //     User? user = ref.read(globalUserInfoProvider);
-    //     if (user != null) {
-    //       network.requestAsync<User>(network.getUserInfo(user.id), (data) {
-    //         if (mounted) {
-    //           ref.read(globalUserInfoProvider.state).state = data;
-    //           preferences.putString(Preferences.KEY_USER_INFO, json.encode(user.toJson()));
-    //         }
-    //       }, (error) {});
-    //     }
-    //   });
-    // });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return ref.watch(globalUserInfoProvider.state).state == null ? const GuestPage() : MyProfilePage();
-  }
-}
-
-class GuestPage extends ConsumerWidget {
-  const GuestPage({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return StartScreen(
-      scene: StartScreen.SCENE_ME,
-    );
-    // return Container(
-    //   color: Colors.yellow.withAlpha(100),
-    //   child: Padding(
-    //     padding: const EdgeInsets.all(24.0),
-    //     child: Center(
-    //       child: Column(
-    //         mainAxisSize: MainAxisSize.min,
-    //         children: [
-    //           const Text("not login"),
-    //           const SizedBox(
-    //             height: 24,
-    //           ),
-    //           TextButton(
-    //               onPressed: () {
-    //                 Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
-    //               },
-    //               style: RegisterStyles.blackButtonStyle(ref),
-    //               child: const Text('Sign Up')),
-    //           const SizedBox(
-    //             height: 20,
-    //           ),
-    //           TextButton(
-    //             onPressed: () {
-    //               Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
-    //             },
-    //             child: const Text('Or Login'),
-    //             style: RegisterStyles.blackOutlineButtonStyle(ref),
-    //           ),
-    //         ],
-    //       ),
-    //     ),
-    //   ),
-    // );
+    // important! make it change text when locale changes
+    ref.watch(globalLocaleProvider);
+    debugPrint("me build");
+    return ref.watch(globalUserInfoProvider) == null
+        ? StartScreen(
+            scene: StartScreen.SCENE_ME,
+          )
+        : MyProfilePage();
   }
 }
 
@@ -123,17 +70,17 @@ class MyProfilePage extends ConsumerStatefulWidget {
 
 class _MyProfilePageState extends ConsumerState<MyProfilePage> {
   late final Color cardShadowColor;
-  late final List<BoxShadow> cardShadow;
+  late List<BoxShadow> cardShadow;
 
   _MyProfilePageState() {
     cardShadowColor = Colors.black.withAlpha((255 * 0.2).toInt());
-    cardShadow = [BoxShadow(color: cardShadowColor, blurRadius: 10, spreadRadius: -4)];
   }
 
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
 
   @override
   Widget build(BuildContext context) {
+    cardShadow = [BoxShadow(color: cardShadowColor, blurRadius: 10, spreadRadius: -4)];
     MePageModelState modelState = ref.watch(widget.provider);
     MePageViewModel model = ref.read(widget.provider.notifier);
     TextStyle? titleTextStyle = TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: designColors.dark_01.auto(ref));
@@ -148,7 +95,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
     double avatarSize = 72;
     double badgeOffset = 22;
     return Scaffold(
-      appBar: AppBar(
+      appBar: HoohAppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -187,17 +134,24 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                 ),
               ))
         ],
-        leading: IconButton(
+        hoohLeading: IconButton(
             onPressed: () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen())).then((value) {
                 refreshPage(ref.read(widget.provider.notifier));
               });
             },
-            icon: HoohIcon(
-              "assets/images/icon_me_setting.svg",
-              width: 24,
-              height: 24,
-              color: designColors.dark_01.auto(ref),
+            icon: Badge(
+              badgeColor: designColors.orange.auto(ref),
+              padding: EdgeInsets.all(4),
+              elevation: 0,
+              position: BadgePosition.topEnd(end: -2, top: -2),
+              showBadge: !(user.emailValidated ?? false),
+              child: HoohIcon(
+                "assets/images/icon_me_setting.svg",
+                width: 24,
+                height: 24,
+                color: designColors.dark_01.auto(ref),
+              ),
             )),
         centerTitle: true,
       ),
@@ -222,40 +176,48 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                     ),
                     Row(
                       children: [
-                        Expanded(
-                          child: Center(
-                            child: SizedBox(
-                              width: avatarSize + badgeOffset * 2,
-                              height: avatarSize,
-                              child: Stack(
-                                children: [
-                                  Center(
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfileScreen()));
-                                      },
-                                      child: HoohImage(
-                                        imageUrl: user.avatarUrl ?? "",
-                                        cornerRadius: 100,
-                                        width: avatarSize,
-                                        height: avatarSize,
-                                      ),
+                        Spacer(),
+                        Center(
+                          child: SizedBox(
+                            width: avatarSize + badgeOffset * 2,
+                            height: avatarSize,
+                            child: Stack(
+                              children: [
+                                Center(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfileScreen()));
+                                    },
+                                    child: HoohImage(
+                                      imageUrl: user.avatarUrl ?? "",
+                                      cornerRadius: 100,
+                                      width: avatarSize,
+                                      height: avatarSize,
                                     ),
                                   ),
-                                  Positioned(
-                                      left: 0,
-                                      bottom: 0,
-                                      child: HoohImage(
-                                        isBadge: true,
-                                        imageUrl: user.badgeImageUrl ?? "",
-                                        width: 32,
-                                        height: 36,
-                                      ))
-                                ],
-                              ),
+                                ),
+                                Positioned(
+                                    left: 0,
+                                    bottom: 0,
+                                    child: HoohImage(
+                                      isBadge: true,
+                                      imageUrl: user.badgeImageUrl ?? "",
+                                      width: 32,
+                                      height: 36,
+                                    ))
+                              ],
                             ),
                           ),
                         ),
+                        Expanded(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Spacer(),
+                              buildShareCardButton(),
+                            ],
+                          ),
+                        )
                       ],
                     ),
                     Padding(
@@ -294,11 +256,11 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                     const SizedBox(
                       height: 32,
                     ),
-                    buildWalletCard(user, modelState.wallet, titleTextStyle),
+                    buildTileButtons(user),
                     const SizedBox(
                       height: 32,
                     ),
-                    buildTileButtons(user),
+                    buildWalletCard(user, modelState.wallet, titleTextStyle),
                     const SizedBox(
                       height: 24,
                     ),
@@ -353,13 +315,48 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
           onPrimary: designColors.light_02.auto(ref),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           shadowColor: cardShadowColor,
-          elevation: 4),
+          elevation: 8),
     );
     return card;
     // return Container(
     //   decoration: buildCardDecoration(),
     //   child: column,
     // );
+  }
+
+  Widget buildShareCardButton() {
+    User user = ref.read(globalUserInfoProvider)!;
+    var borderRadius = BorderRadius.only(topLeft: Radius.circular(14), bottomLeft: Radius.circular(14), topRight: Radius.zero, bottomRight: Radius.zero);
+    return Material(
+      type: MaterialType.transparency,
+      child: Ink(
+        decoration: BoxDecoration(gradient: MainStyles.badgeGradient(ref), borderRadius: borderRadius),
+        child: InkWell(
+          borderRadius: borderRadius,
+          onTap: () {
+            Navigator.push(
+                context,
+                PageRouteBuilder(
+                    pageBuilder: (context, anim1, anim2) => ShareScreen(
+                          scene: ShareScreen.SCENE_USER_CARD,
+                        ),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      return child;
+                    },
+                    opaque: false));
+          },
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 48),
+            padding: EdgeInsets.symmetric(horizontal: 12),
+            child: Center(
+                child: Text(
+              globalLocalizations.me_share_card,
+              style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 14),
+            )),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget buildTileButtons(User user) {
@@ -379,7 +376,9 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                       userId: user.id,
                     )));
       }),
-      Tuple4(globalLocalizations.me_tile_nfts, "assets/images/icon_user_center_nft.svg", false, null),
+      Tuple4(globalLocalizations.me_tile_nfts, "assets/images/icon_user_center_nft.svg", false, () {
+        Toast.showSnackBar(context, globalLocalizations.me_tile_nfts_coming_soon);
+      }),
       Tuple4(globalLocalizations.me_tile_bookmarks, "assets/images/icon_user_center_fav.svg", true, () {
         Navigator.push(
             context,
@@ -408,50 +407,6 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
     }
     LinearGradient gradient = LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight);
     Color disabledColor = designColors.dark_03.auto(ref);
-    // return Padding(
-    //   padding: const EdgeInsets.symmetric(horizontal: 20),
-    //   child: Wrap(children:
-    //       configs.map((config) =>  AspectRatio(
-    //         aspectRatio: 1,
-    //         child: Material(
-    //           type: MaterialType.transparency,
-    //           child: Ink(
-    //             decoration:
-    //             BoxDecoration(gradient: config.item3 ? gradient : null, color: config.item3 ? disabledColor : null, borderRadius: BorderRadius.circular(20)),
-    //             child: InkWell(
-    //               onTap: config.item4,
-    //               child: Column(
-    //                 mainAxisSize: MainAxisSize.max,
-    //                 crossAxisAlignment: CrossAxisAlignment.stretch,
-    //                 children: [
-    //                   Expanded(
-    //                     child: Row(
-    //                       mainAxisSize: MainAxisSize.min,
-    //                       children: [
-    //                         HoohIcon(
-    //                           config.item2,
-    //                           width: 48,
-    //                           height: 48,
-    //                         ),
-    //                         Spacer()
-    //                       ],
-    //                     ),
-    //                   ),
-    //                   Expanded(
-    //                     child: Center(
-    //                       child: Text(
-    //                         config.item1,
-    //                         style: TextStyle(fontSize: 16, color: Colors.white),
-    //                       ),
-    //                     ),
-    //                   )
-    //                 ],
-    //               ),
-    //             ),
-    //           ),
-    //         ),
-    //       )).toList(),runSpacing: 4,spacing: 4,),
-    // );
     const int columnCount = 3;
     const double spacing = 4;
     const double padding = 20;
@@ -469,6 +424,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
           itemBuilder: (context, index) {
             Tuple4<String, String, bool, void Function()?> config = configs[index];
             return Material(
+              color: designColors.light_00.auto(ref),
               type: MaterialType.transparency,
               child: Ink(
                 decoration: BoxDecoration(
@@ -518,17 +474,6 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
 
   BoxDecoration buildCardDecoration() => BoxDecoration(boxShadow: cardShadow, borderRadius: BorderRadius.circular(20), color: designColors.light_01.auto(ref));
 
-  Widget buildMainCard(Widget child) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20, top: 12),
-        decoration: buildCardDecoration(),
-        child: child,
-      ),
-    );
-  }
-
   Widget buildWalletCard(User user, UserWalletResponse? wallet, TextStyle titleTextStyle) {
     if (wallet == null) {
       return Container();
@@ -545,10 +490,10 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
         "totalReputationPercentage=$totalReputationPercentage,"
         "yesterdayPowPercentage=$yesterdayPowPercentage,"
         "yesterdayReputationPercentage=$yesterdayReputationPercentage,");
-    return buildMainCard(Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      const SizedBox(
-        height: 16,
-      ),
+    var column = Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      // const SizedBox(
+      //   height: 16,
+      // ),
       Text(
         globalLocalizations.me_wallet,
         style: titleTextStyle,
@@ -561,17 +506,29 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(globalLocalizations.me_wallet_balance, style: TextStyle(color: designColors.dark_01.auto(ref), fontSize: 16)),
-          Spacer(),
-          HoohIcon(
-            "assets/images/common_ore.svg",
-            width: 24,
-            height: 24,
-          ),
           SizedBox(
-            width: 4,
+            width: 16,
           ),
-          Text(sprintf(globalLocalizations.me_wallet_ore_amount, [formatCurrency(wallet.balanceInt, precise: true)]),
-              style: TextStyle(color: designColors.feiyu_blue.auto(ref), fontSize: 16, fontWeight: FontWeight.bold)),
+          Expanded(
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                HoohIcon(
+                  "assets/images/common_ore.svg",
+                  width: 24,
+                  height: 24,
+                ),
+                SizedBox(
+                  width: 4,
+                ),
+                Expanded(
+                  child: Text(sprintf(globalLocalizations.me_wallet_ore_amount, [formatCurrency(wallet.balanceInt, precise: true)]),
+                      style: TextStyle(color: designColors.feiyu_blue.auto(ref), fontSize: 16, fontWeight: FontWeight.bold, overflow: TextOverflow.fade)),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
       SizedBox(
@@ -585,7 +542,33 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
           buildEarnDetail(globalLocalizations.me_wallet_yesterday_earn, yesterday, yesterdayPowPercentage, yesterdayReputationPercentage),
         ],
       )
-    ]));
+    ]);
+    // return buildMainCard(column);
+    ElevatedButton card = ElevatedButton(
+      onPressed: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => WalletScreen(
+                      userId: ref.read(globalUserInfoProvider)!.id,
+                    )));
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: column,
+      ),
+      style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.all(10),
+          primary: designColors.light_01.auto(ref),
+          onPrimary: designColors.light_02.auto(ref),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shadowColor: cardShadowColor,
+          elevation: 8),
+    );
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: card,
+    );
   }
 
   Widget buildEarnDetail(String title, int amount, double powPercentage, double reputationPercentage) {
@@ -638,18 +621,23 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
   }
 
   Widget buildProfileCard(User user, TextStyle titleTextStyle) {
-    return buildMainCard(Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisSize: MainAxisSize.max,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20, top: 4),
+        decoration: buildCardDecoration(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              globalLocalizations.me_profile,
-              style: titleTextStyle,
-            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Text(
+                  globalLocalizations.me_profile,
+                  style: titleTextStyle,
+                ),
             const Spacer(),
             TextButton(
               style: MainStyles.textButtonStyle(ref),
@@ -701,21 +689,33 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
             ],
           ),
         ),
-        Visibility(
+
+            Visibility(
             visible: (user.website?.trim() ?? "").isNotEmpty,
-            child: GestureDetector(
-              onTap: () {
-                if ((user.website ?? "").isNotEmpty) {
-                  openLink(context, user.website ?? "");
-                }
-              },
-              child: Text(
-                user.website ?? "",
-                style: TextStyle(fontSize: 14, color: designColors.feiyu_blue.auto(ref), decoration: TextDecoration.underline),
-              ),
-            )),
-      ],
-    ));
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(
+                      height: 2,
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        if ((user.website ?? "").isNotEmpty) {
+                          openLink(context, user.website ?? "");
+                        }
+                      },
+                      child: Text(
+                        user.website ?? "",
+                        style: TextStyle(fontSize: 14, color: designColors.feiyu_blue.auto(ref), decoration: TextDecoration.underline),
+                      ),
+                    ),
+                  ],
+                )),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget buildBadgeBar(User user) {
@@ -766,10 +766,11 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
           onPressed: () {
             goToBadgeScreen(user);
           },
-          icon: Icon(
-            Icons.more_horiz_rounded,
+          icon: HoohIcon(
+            "assets/images/icon_more.svg",
+            width: 32,
+            height: 32,
             color: designColors.dark_03.auto(ref),
-            size: 32,
           )),
       const SizedBox(
         width: paddingRight,

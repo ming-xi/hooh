@@ -1,22 +1,17 @@
-import 'dart:convert';
-
 import 'package:app/global.dart';
+import 'package:app/ui/pages/user/register/bind_email.dart';
 import 'package:app/ui/pages/user/register/login_view_model.dart';
 import 'package:app/ui/pages/user/register/register.dart';
 import 'package:app/ui/pages/user/register/set_badge.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
-import 'package:app/ui/widgets/toast.dart';
-import 'package:app/utils/design_colors.dart';
-import 'package:app/utils/push.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/utils/ui_utils.dart';
-import 'package:common/models/user.dart';
-import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
-  final StateNotifierProvider<LoginViewModel, LoginModelState> provider = StateNotifierProvider((ref) {
-    return LoginViewModel(LoginModelState.init());
+  final StateNotifierProvider<LoginScreenViewModel, LoginScreenModelState> provider = StateNotifierProvider((ref) {
+    return LoginScreenViewModel(LoginScreenModelState.init());
   });
 
   LoginScreen({
@@ -36,10 +31,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     // debugPrint("_LoginScreenState build");
-    LoginModelState modelState = ref.watch(widget.provider);
-    LoginViewModel model = ref.read(widget.provider.notifier);
+    LoginScreenModelState modelState = ref.watch(widget.provider);
+    LoginScreenViewModel model = ref.read(widget.provider.notifier);
     return Scaffold(
-      appBar: AppBar(
+      appBar: HoohAppBar(
+        // leading: Text("test"),
         title: const Text(""),
         actions: [
           TextButton(
@@ -130,7 +126,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 Navigator.of(context).pop(true);
                               } else {
                                 // Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => SetBadgeScreen()), (route) => false)
-                                Navigator.push(context, MaterialPageRoute(builder: (context) => SetBadgeScreen())).then((result) {
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => SetBadgeScreen(scene: SetBadgeScreen.SCENE_REGISTER)))
+                                    .then((result) {
                                   if (result != null && result is bool && result) {
                                     Navigator.of(context).pop(true);
                                   }
@@ -142,18 +139,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           },
                     child: Text(globalLocalizations.login_login),
                   ),
-                  GestureDetector(
-                    onTap: () {
-                      Toast.showSnackBar(context, "暂不支持");
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        globalLocalizations.login_forget_password,
-                        style: TextStyle(color: designColors.blue_dark.auto(ref), decoration: TextDecoration.underline),
-                      ),
-                    ),
-                  ),
+                  MainStyles.smallTextButton(
+                      ref: ref,
+                      context: context,
+                      text: globalLocalizations.login_forget_password,
+                      onClick: () {
+                        Navigator.push<bool>(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => BindEmailScreen(
+                                      scene: BindEmailScreen.SCENE_FORGET_PASSWORD,
+                                    ))).then((result) {
+                          if (result != null && result) {
+                            Navigator.of(context, rootNavigator: true).pop();
+                          }
+                        });
+                      })
                 ],
               ),
             ),

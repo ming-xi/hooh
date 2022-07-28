@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'package:app/global.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/ui_utils.dart';
+import 'package:barcode/barcode.dart';
 import 'package:common/utils/date_util.dart';
 import 'package:common/utils/network.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
@@ -84,9 +85,9 @@ class FileUtil {
     if (fileBytes == null) {
       return null;
     }
-    img.Image first = img.decodePng(fileBytes[0])!;
+    img.Image first = img.decodeImage(fileBytes[0])!;
     for (int i = 1; i < fileBytes.length; i++) {
-      img.Image image = img.decodePng(fileBytes[i])!;
+      img.Image image = img.decodeImage(fileBytes[i])!;
       img.copyInto(first, image);
     }
     return Uint8List.fromList(img.encodePng(first));
@@ -122,6 +123,16 @@ class FileUtil {
     return path == null ? null : File(path);
   }
 
+  static Future<File> generateQrCodeSvgFile(String content, double size) async {
+    // Create a DataMatrix barcode
+    final bc = Barcode.qrCode();
+
+// Generate a SVG with "Hello World!"
+    final svg = bc.toSvg(content, width: size, height: size, drawText: false);
+
+// Save the image
+    return await File("${(await getApplicationSupportDirectory()).path}/barcode_${DateUtil.getCurrentUtcDate().millisecondsSinceEpoch}.svg").writeAsString(svg);
+  }
 // static Future<File?> pickImage() async {
 //   final XFile? pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 1920, maxHeight: 1920);
 //   return pickedFile == null ? null : File(pickedFile.path);

@@ -9,6 +9,7 @@ import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/pages/user/templates.dart';
 import 'package:app/ui/pages/user/user_profile_view_model.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
@@ -20,6 +21,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:sprintf/sprintf.dart';
+import 'package:tuple/tuple.dart';
 
 class UserProfileScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -46,6 +48,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   User? user;
   final List<BoxShadow> cardShadow = [BoxShadow(color: const Color(0x00000000).withAlpha((255 * 0.2).toInt()), blurRadius: 10, spreadRadius: -4)];
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
+  ScrollController scrollController = ScrollController();
 
   @override
   void initState() {
@@ -72,7 +75,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       title = user.name;
       subtitle = user.username == null ? "" : "@${user.username}";
     }
-    AppBar appBar = buildAppBar(title, subtitle);
+    HoohAppBar appBar = buildAppBar(title, subtitle);
     if (loading) {
       return Scaffold(
         appBar: appBar,
@@ -86,6 +89,21 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     User user = modelState.user!;
     return Scaffold(
       appBar: appBar,
+      floatingActionButton: SafeArea(
+          child: SizedBox(
+        width: 40,
+        height: 40,
+        child: FloatingActionButton(
+            backgroundColor: designColors.feiyu_blue.auto(ref),
+            onPressed: () {
+              scrollController.animateTo(0, duration: Duration(milliseconds: 250), curve: Curves.easeOutCubic);
+            },
+            child: HoohIcon(
+              "assets/images/icon_back_to_top.svg",
+              width: 16,
+              color: designColors.light_01.light,
+            )),
+      )),
       body: SmartRefresher(
         enablePullDown: true,
         enablePullUp: true,
@@ -112,17 +130,18 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         },
         controller: _refreshController,
         child: CustomScrollView(
+          controller: scrollController,
           slivers: [
             buildUserInfo(avatarSize, badgeOffset, user, context, titleTextStyle),
-            ...UserActivityPage.buildGridView(context, ref, trendsModelState, trendsModel)
+            ...UserActivityPage.buildGridView(context, ref, trendsModelState, trendsModel, 12)
           ],
         ),
       ),
     );
   }
 
-  AppBar buildAppBar(String title, String subtitle) {
-    return AppBar(
+  HoohAppBar buildAppBar(String title, String subtitle) {
+    return HoohAppBar(
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -257,50 +276,153 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
             height: 32,
           ),
           buildProfileCard(user, titleTextStyle),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: SizedBox(
-              height: 80,
-              child: Row(
-                children: [
-                  Expanded(
-                      child: buildFollowerCard(
-                          title: globalLocalizations.user_profile_posts,
-                          amount: user.publicPostCount,
-                          onClick: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => UserPostsScreen(
-                                        title: globalLocalizations.user_profile_posts, userId: user.id, type: UserPostsScreenModelState.TYPE_CREATED)));
-                          })),
-                  const SizedBox(
-                    width: 8,
-                  ),
-                  Expanded(
-                      child: buildFollowerCard(
-                          title: globalLocalizations.user_profile_templates,
-                          amount: user.templateCount,
-                          onClick: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => UserTemplateScreen(
-                                          userId: user.id,
-                                        )));
-                          })),
-                ],
-              ),
-            ),
+          const SizedBox(
+            height: 36,
           ),
+          buildTileButtons(user),
+          // buildPostAndTemplateCards(user, context),
           Padding(
-            padding: const EdgeInsets.only(left: 20, right: 20, top: 20),
+            padding: const EdgeInsets.only(left: 20, right: 20, top: 32),
             child: Text(
               globalLocalizations.me_tile_trends,
               style: titleTextStyle,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget buildTileButtons(User user) {
+    List<Tuple4<String, String, bool, void Function()?>> configs = [
+      Tuple4(globalLocalizations.me_tile_posts, "assets/images/icon_user_center_post.svg", true, () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    UserPostsScreen(title: globalLocalizations.me_tile_posts, userId: user.id, type: UserPostsScreenModelState.TYPE_CREATED)));
+      }),
+      Tuple4(globalLocalizations.me_tile_templates, "assets/images/icon_user_center_contents.svg", true, () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => UserTemplateScreen(
+                      userId: user.id,
+                    )));
+      }),
+      Tuple4(globalLocalizations.me_tile_nfts, "assets/images/icon_user_center_nft.svg", false, () {
+        Toast.showSnackBar(context, globalLocalizations.me_tile_nfts_coming_soon);
+      }),
+    ];
+    List<Color> colors = [
+      const Color(0xFF0167F9),
+      const Color(0xFF20E0C2),
+    ];
+    if (MainStyles.isDarkMode(ref)) {
+      colors = colors.map((e) => e.withAlpha(globalDarkModeImageAlpha)).toList();
+    }
+    LinearGradient gradient = LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight);
+    Color disabledColor = designColors.dark_03.auto(ref);
+    const int columnCount = 3;
+    const double spacing = 4;
+    const double padding = 20;
+    double screenWidth = MediaQuery.of(context).size.width;
+    double itemSize = (screenWidth - padding * 2 - (columnCount - 1) * spacing) / columnCount;
+    var rowCount = (configs.length / columnCount).ceil();
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: padding),
+      child: SizedBox(
+        height: itemSize * rowCount + spacing * (rowCount - 1),
+        child: GridView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: columnCount, mainAxisSpacing: spacing, crossAxisSpacing: spacing, childAspectRatio: 1),
+          itemBuilder: (context, index) {
+            Tuple4<String, String, bool, void Function()?> config = configs[index];
+            return Material(
+              color: designColors.light_00.auto(ref),
+              type: MaterialType.transparency,
+              child: Ink(
+                decoration: BoxDecoration(
+                    gradient: config.item3 ? gradient : null, color: !config.item3 ? disabledColor : null, borderRadius: BorderRadius.circular(20)),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: config.item4,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12, left: 12),
+                              child: HoohIcon(
+                                config.item2,
+                                width: 48,
+                                height: 48,
+                              ),
+                            ),
+                            const Spacer()
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            config.item1,
+                            style: const TextStyle(fontSize: 16, color: Colors.white),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+          itemCount: configs.length,
+        ),
+      ),
+    );
+  }
+
+  Padding buildPostAndTemplateCards(User user, BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: SizedBox(
+        height: 80,
+        child: Row(
+          children: [
+            Expanded(
+                child: buildFollowerCard(
+                    title: globalLocalizations.user_profile_posts,
+                    amount: user.publicPostCount,
+                    onClick: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => UserPostsScreen(
+                                  title: globalLocalizations.user_profile_posts, userId: user.id, type: UserPostsScreenModelState.TYPE_CREATED)));
+                    })),
+            const SizedBox(
+              width: 8,
+            ),
+            Expanded(
+                child: buildFollowerCard(
+                    title: globalLocalizations.user_profile_templates,
+                    amount: user.templateCount,
+                    onClick: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => UserTemplateScreen(
+                                    userId: user.id,
+                                  )));
+                    })),
+          ],
+        ),
       ),
     );
   }
@@ -320,14 +442,14 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           return;
         }
         UserProfileScreenViewModel model = ref.read(widget.provider.notifier);
-        model.setFollowState(!followed, callback: (error) {
+        model.setFollowState(context, !followed, callback: (error) {
           // Toast.showSnackBar(context, msg);
           showCommonRequestErrorDialog(ref, context, error);
         });
       },
       child: Text(
         followed ? globalLocalizations.common_unfollow : globalLocalizations.common_follow,
-        style: TextStyle(fontFamily: 'Linotte', fontSize: 18, fontWeight: FontWeight.bold),
+        style: TextStyle(fontFamily: 'Baloo', fontSize: 18, fontWeight: FontWeight.bold),
       ),
       style: TextButton.styleFrom(
         shape: RoundedRectangleBorder(
@@ -518,12 +640,13 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       const Spacer(),
       IconButton(
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => BadgesScreen(userId: user.id)));
+            goToBadgeScreen(user);
           },
-          icon: Icon(
-            Icons.more_horiz_rounded,
+          icon: HoohIcon(
+            "assets/images/icon_more.svg",
+            width: 32,
+            height: 32,
             color: designColors.dark_03.auto(ref),
-            size: 32,
           )),
       const SizedBox(
         width: paddingRight,
@@ -542,14 +665,24 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
             bottomLeft: const Radius.circular(24),
           ),
         ),
-        child: Material(
-          type: MaterialType.transparency,
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            children: list,
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () {
+            goToBadgeScreen(user);
+          },
+          child: Material(
+            type: MaterialType.transparency,
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              children: list,
+            ),
           ),
         ),
       ),
     );
+  }
+
+  void goToBadgeScreen(User user) {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => BadgesScreen(userId: user.id)));
   }
 }

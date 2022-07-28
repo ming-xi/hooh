@@ -1,9 +1,11 @@
 import 'package:app/global.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/pages/user/posts_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/empty_views.dart';
 import 'package:app/ui/widgets/post_view.dart';
 import 'package:app/ui/widgets/toast.dart';
+import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/page_state.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +34,7 @@ class UserPostsScreen extends ConsumerStatefulWidget {
 
 class _UserPostsScreenState extends ConsumerState<UserPostsScreen> {
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
+  ScrollController scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +63,22 @@ class _UserPostsScreenState extends ConsumerState<UserPostsScreen> {
         }
     }
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      appBar: HoohAppBar(title: Text(widget.title)),
+      floatingActionButton: SafeArea(
+          child: SizedBox(
+        width: 40,
+        height: 40,
+        child: FloatingActionButton(
+            backgroundColor: designColors.feiyu_blue.auto(ref),
+            onPressed: () {
+              scrollController.animateTo(0, duration: Duration(milliseconds: 250), curve: Curves.easeOutCubic);
+            },
+            child: HoohIcon(
+              "assets/images/icon_back_to_top.svg",
+              width: 16,
+              color: designColors.light_01.light,
+            )),
+      )),
       body: SmartRefresher(
         enablePullDown: true,
         enablePullUp: true,
@@ -87,6 +105,7 @@ class _UserPostsScreenState extends ConsumerState<UserPostsScreen> {
         child: modelState.posts.isEmpty
             ? EmptyView(text: emptyViewText)
             : ListView.separated(
+          controller: scrollController,
                 separatorBuilder: (context, index) => SizedBox(
                   height: 32,
                 ),
@@ -94,9 +113,9 @@ class _UserPostsScreenState extends ConsumerState<UserPostsScreen> {
                 itemBuilder: (context, index) {
                   return PostView(
                     post: modelState.posts[index],
-                    onShare: (post, error) {
-                      Toast.showSnackBar(context, "share...");
-                    },
+                    // onShare: (post, error) {
+                    //   Toast.showSnackBar(context, "share...");
+                    // },
                     onLike: (post, error) {
                       if (error != null) {
                         // Toast.showSnackBar(context, error.message);
@@ -108,21 +127,21 @@ class _UserPostsScreenState extends ConsumerState<UserPostsScreen> {
                       } else {
                         post.likeCount += 1;
                       }
-                      post.liked = !post.liked;
-                      model.updatePostData(post, index);
-                    },
-                    onFollow: (post, error) {
-                      if (error != null) {
-                        // Toast.showSnackBar(context, error.message);
-                        showCommonRequestErrorDialog(ref, context, error);
-                        return;
-                      }
-                      post.author.followed = true;
-                      model.updatePostData(post, index);
-                    },
-                  );
-                },
-                itemCount: modelState.posts.length,
+                post.liked = !post.liked;
+                model.updatePostData(post, index);
+              },
+              onFollow: (post, error) {
+                if (error != null) {
+                  // Toast.showSnackBar(context, error.message);
+                  showCommonRequestErrorDialog(ref, context, error);
+                  return;
+                }
+                post.author.followed = true;
+                model.updatePostData(post, index);
+              },
+            );
+          },
+          itemCount: modelState.posts.length,
               ),
       ),
     );

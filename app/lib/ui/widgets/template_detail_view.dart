@@ -9,7 +9,9 @@ import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:blur/blur.dart';
+import 'package:common/extensions/extensions.dart';
 import 'package:common/models/hooh_api_error_response.dart';
+import 'package:common/models/network/responses.dart';
 import 'package:common/models/template.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/date_util.dart';
@@ -149,6 +151,7 @@ class _TemplateDetailViewState extends ConsumerState<TemplateDetailView> {
     var column = Container(
       color: designColors.light_01.auto(ref),
       child: SafeArea(
+        bottom: widget.type == TemplateDetailView.TYPE_DIALOG,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -203,8 +206,9 @@ class _TemplateDetailViewState extends ConsumerState<TemplateDetailView> {
         Center(
           child: HoohIcon(
             "assets/images/icon_template_bookmark_on.png",
-            width: 16,
-            color: template.favorited ? null : designColors.dark_01.auto(ref),
+            width: 20,
+            // color: template.favorited ? null : designColors.dark_01.auto(ref),
+            color: template.favorited ? HexColor.fromHex("#ea3f4a") : designColors.dark_01.auto(ref),
           ),
         ));
   }
@@ -213,11 +217,13 @@ class _TemplateDetailViewState extends ConsumerState<TemplateDetailView> {
     User? currentUser = ref.read(globalUserInfoProvider);
     var popupMenuButton = PopupMenuButton(
       padding: EdgeInsets.zero,
-
+      color: designColors.light_00.auto(ref),
       // splashRadius: 16,
       // constraints: BoxConstraints(minHeight: 24, minWidth: 24),
-      icon: Icon(
-        Icons.more_horiz_rounded,
+      icon: HoohIcon(
+        "assets/images/icon_more.svg",
+        width: 24,
+        height: 24,
         color: designColors.dark_01.auto(ref),
       ),
       onSelected: (value) {},
@@ -278,6 +284,17 @@ class _TemplateDetailViewState extends ConsumerState<TemplateDetailView> {
     );
   }
 
+  void showProfitDialog() {
+    RegisterStyles.showRegisterStyleDialog(
+        ref: ref,
+        barrierDismissible: false,
+        context: context,
+        title: globalLocalizations.template_view_profit_dialog_title,
+        content: globalLocalizations.template_view_profit_dialog_content,
+        okText: globalLocalizations.templates_local_image_dialog_button,
+        onOk: () {});
+  }
+
   Widget buildCreateButton(Template template, {Function(Template template)? onClick}) {
     return buildButtonBackground(
         onClick: onClick,
@@ -332,17 +349,25 @@ class _TemplateDetailViewState extends ConsumerState<TemplateDetailView> {
   Builder buildButtons(Template template) {
     return Builder(builder: (context) {
       List<Widget> widgets = [
-        HoohIcon(
-          "assets/images/common_ore.svg",
-          width: 24,
-          height: 24,
+        IconButton(
+          padding: EdgeInsets.zero,
+          constraints: BoxConstraints(minHeight: 24, minWidth: 24),
+          splashRadius: 24,
+          onPressed: () {
+            showProfitDialog();
+          },
+          icon: HoohIcon(
+            "assets/images/common_ore.svg",
+            width: 24,
+            height: 24,
+          ),
         ),
         SizedBox(
           width: 8,
         ),
         Text(
           formatCurrency(template.profitInt),
-          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref)),
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref)),
         ),
         Spacer(),
         ...buildTitleAndAmount(globalLocalizations.template_detail_favorite_count, template.favoriteCount),
@@ -364,7 +389,7 @@ class _TemplateDetailViewState extends ConsumerState<TemplateDetailView> {
     return [
       Text(
         title,
-        style: TextStyle(fontSize: 12, color: designColors.dark_03.auto(ref)),
+        style: TextStyle(fontSize: 12, color: designColors.light_06.auto(ref)),
       ),
       SizedBox(
         width: 6,
@@ -373,7 +398,7 @@ class _TemplateDetailViewState extends ConsumerState<TemplateDetailView> {
           width: 32,
           child: Text(
             formatAmount(amount),
-            style: TextStyle(fontSize: 12, color: designColors.dark_01.auto(ref), fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 12, color: designColors.light_06.auto(ref), fontWeight: FontWeight.bold),
           )),
     ];
   }
@@ -434,7 +459,7 @@ class _TemplateDetailViewState extends ConsumerState<TemplateDetailView> {
   }
 
   Widget? buildFollowButton(Template template) {
-    User? user = ref.watch(globalUserInfoProvider.state).state;
+    User? user = ref.watch(globalUserInfoProvider);
     User author = template.author!;
     if ((author.followed ?? false) || (user?.id == author.id)) {
       return null;
@@ -442,7 +467,7 @@ class _TemplateDetailViewState extends ConsumerState<TemplateDetailView> {
     return _buildButton(
         text: Text(
           globalLocalizations.common_follow,
-          style: TextStyle(fontFamily: 'Linotte'),
+          style: TextStyle(fontFamily: 'Baloo'),
         ),
         isEnabled: true,
         onPress: () {
@@ -459,7 +484,10 @@ class _TemplateDetailViewState extends ConsumerState<TemplateDetailView> {
     if (template.author!.followed ?? false) {
       return;
     }
-    network.requestAsync<void>(network.followUser(template.author!.id), (data) {
+    network.requestAsync(network.followUser(template.author!.id), (data) {
+      if (data is FollowUserResponse && data.receivedBadge != null) {
+        showReceiveBadgeDialog(context, data.receivedBadge!);
+      }
       template.author!.followed = true;
       if (widget.onFollow != null) {
         widget.onFollow!(template, null);

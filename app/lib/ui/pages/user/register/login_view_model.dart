@@ -1,4 +1,5 @@
-import 'package:app/extensions/extensions.dart';
+import 'package:app/global.dart';
+import 'package:common/extensions/extensions.dart';
 import 'package:app/utils/constants.dart';
 import 'package:common/models/network/responses.dart';
 import 'package:common/models/user.dart';
@@ -10,17 +11,17 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 part 'login_view_model.g.dart';
 
 @CopyWith()
-class LoginModelState {
+class LoginScreenModelState {
   final bool loginButtonEnabled;
   final bool passwordVisible;
 
-  LoginModelState({this.loginButtonEnabled = false, this.passwordVisible = false});
+  LoginScreenModelState({this.loginButtonEnabled = false, this.passwordVisible = false});
 
-  factory LoginModelState.init() => LoginModelState();
+  factory LoginScreenModelState.init() => LoginScreenModelState();
 }
 
-class LoginViewModel extends StateNotifier<LoginModelState> {
-  LoginViewModel(LoginModelState state) : super(state) {}
+class LoginScreenViewModel extends StateNotifier<LoginScreenModelState> {
+  LoginScreenViewModel(LoginScreenModelState state) : super(state) {}
 
   void togglePasswordVisible() {
     updateState(state.copyWith(passwordVisible: !state.passwordVisible));
@@ -37,7 +38,7 @@ class LoginViewModel extends StateNotifier<LoginModelState> {
       }
       String msg = error.message;
       if (error.errorCode == Constants.INVALID_USERNAME_AND_PASSWORD) {
-        msg = "用户名或密码错误";
+        msg = globalLocalizations.login_wrong_password;
       }
       showDialog(
           context: context,

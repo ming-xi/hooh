@@ -39,7 +39,7 @@ class DayNightColor extends DesignColor {
 
   @override
   Color auto(WidgetRef ref) {
-    int darkMode = ref.watch(globalDarkModeProvider.state).state;
+    int darkMode = ref.watch(globalDarkModeProvider);
     switch (darkMode) {
       case DARK_MODE_LIGHT:
         return light;
@@ -47,7 +47,7 @@ class DayNightColor extends DesignColor {
         return dark;
       case DARK_MODE_SYSTEM:
       default:
-      Brightness brightness = SchedulerBinding.instance.window.platformBrightness;
+        Brightness brightness = SchedulerBinding.instance.window.platformBrightness;
         return brightness == Brightness.light ? light : dark;
     }
   }

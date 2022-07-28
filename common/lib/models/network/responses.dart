@@ -42,8 +42,8 @@ class ValidateAccountResponse {
 
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class RequestValidationCodeResponse {
-  static const typeEmail = 0;
-  static const typeMobile = 1;
+  static const TYPE_EMAIL = 0;
+  static const TYPE_MOBILE = 1;
   String code;
 
   RequestValidationCodeResponse(this.code);
@@ -158,6 +158,21 @@ class UserWalletResponse {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
+class UserWalletOverviewResponse {
+  int balanceInt;
+  int totalCostInt;
+  int totalEarnedPowInt;
+  int totalEarnedReputationInt;
+  Map<int, int> costByCategory;
+
+  UserWalletOverviewResponse(this.balanceInt, this.totalCostInt, this.totalEarnedPowInt, this.totalEarnedReputationInt, this.costByCategory);
+
+  factory UserWalletOverviewResponse.fromJson(Map<String, dynamic> json) => _$UserWalletOverviewResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$UserWalletOverviewResponseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class FeeInfoResponse {
   int joinWaitingList;
   int createBadge;
@@ -204,4 +219,15 @@ class TagDetailResponse {
   factory TagDetailResponse.fromJson(Map<String, dynamic> json) => _$TagDetailResponseFromJson(json);
 
   Map<String, dynamic> toJson() => _$TagDetailResponseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
+class FollowUserResponse {
+  UserBadge? receivedBadge;
+
+  FollowUserResponse(this.receivedBadge);
+
+  factory FollowUserResponse.fromJson(Map<String, dynamic> json) => _$FollowUserResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$FollowUserResponseToJson(this);
 }

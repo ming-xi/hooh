@@ -1,5 +1,6 @@
 import 'package:app/ui/pages/user/register/set_nickname.dart';
 import 'package:app/ui/pages/user/register/verify_code_view_model.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:common/models/network/responses.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
@@ -33,7 +34,7 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: HoohAppBar(
         title: const Text("Enter Verification Code"),
       ),
       body: CustomScrollView(

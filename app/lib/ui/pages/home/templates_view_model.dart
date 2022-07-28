@@ -1,4 +1,4 @@
-import 'package:app/extensions/extensions.dart';
+import 'package:common/extensions/extensions.dart';
 import 'package:collection/collection.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/network/responses.dart';
@@ -22,6 +22,7 @@ class TemplatesPageModelState {
   final List<TemplateTagItem> tags;
   final DateTime? lastTimestamp;
   final bool agreementChecked;
+  final bool noRewardsChecked;
 
   TemplatesPageModelState({
     required this.templates,
@@ -32,6 +33,7 @@ class TemplatesPageModelState {
     required this.page,
     required this.lastTimestamp,
     required this.agreementChecked,
+    required this.noRewardsChecked,
   });
 
   TemplateTagItem? selectedTag() => tags.singleWhereOrNull((element) => element.selected);
@@ -44,7 +46,8 @@ class TemplatesPageModelState {
       tags: [],
       page: 1,
       lastTimestamp: null,
-      agreementChecked: preferences.getBool(Preferences.KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED) ?? false);
+      agreementChecked: preferences.getBool(Preferences.KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED) ?? false,
+      noRewardsChecked: preferences.getBool(Preferences.KEY_USE_LOCAL_IMAGE_NO_REWARDS_CHECKED) ?? false);
 }
 
 class TemplatesPageViewModel extends StateNotifier<TemplatesPageModelState> {
@@ -159,6 +162,10 @@ class TemplatesPageViewModel extends StateNotifier<TemplatesPageModelState> {
 
   void setAgreementChecked(bool checked) {
     updateState(state.copyWith(agreementChecked: checked));
+  }
+
+  void setNoRewardsChecked(bool checked) {
+    updateState(state.copyWith(noRewardsChecked: checked));
   }
 
   void setSelectedTag(int index) {

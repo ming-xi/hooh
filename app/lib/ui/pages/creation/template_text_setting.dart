@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:app/global.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/pages/creation/template_add_tag.dart';
 import 'package:app/ui/pages/creation/template_text_setting_view_model.dart';
 import 'package:app/ui/pages/user/register/draw_badge_view_model.dart';
@@ -95,7 +96,7 @@ class _TemplateTextSettingScreenState extends ConsumerState<TemplateTextSettingS
     TemplateTextSettingViewModel textSettingModel = ref.read(widget.textSettingProvider.notifier);
     TemplateTextSettingModelState textSettingModelState = ref.watch(widget.textSettingProvider);
     return Scaffold(
-      appBar: AppBar(
+      appBar: HoohAppBar(
         title: Text(globalLocalizations.template_text_setting_title),
         actions: [
           IconButton(
@@ -110,7 +111,12 @@ class _TemplateTextSettingScreenState extends ConsumerState<TemplateTextSettingS
                               }),
                             )));
               },
-              icon: Icon(Icons.arrow_forward))
+              icon: HoohIcon(
+                "assets/images/icon_arrow_next.svg",
+                width: 24,
+                height: 24,
+                color: designColors.dark_01.auto(ref),
+              ))
         ],
       ),
       body: Column(

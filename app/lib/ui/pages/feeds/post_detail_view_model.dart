@@ -1,10 +1,12 @@
 import 'dart:math';
 
-import 'package:app/extensions/extensions.dart';
+import 'package:app/utils/ui_utils.dart';
+import 'package:common/extensions/extensions.dart';
 import 'package:app/ui/widgets/comment_view.dart';
 import 'package:app/utils/constants.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/network/requests.dart';
+import 'package:common/models/network/responses.dart';
 import 'package:common/models/page_state.dart';
 import 'package:common/models/post.dart';
 import 'package:common/models/post_comment.dart';
@@ -12,6 +14,7 @@ import 'package:common/models/user.dart';
 import 'package:common/utils/date_util.dart';
 import 'package:common/utils/network.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 part 'post_detail_view_model.g.dart';
@@ -270,12 +273,15 @@ class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState
     });
   }
 
-  void onFollowPress(bool newState, void Function(HoohApiErrorResponse error)? onError) {
+  void onFollowPress(BuildContext context, bool newState, void Function(HoohApiErrorResponse error)? onError) {
     if (state.post == null) {
       return;
     }
-    Future<void> request = state.post!.author.followed ?? false ? network.cancelFollowUser(state.post!.author.id) : network.followUser(state.post!.author.id);
-    network.requestAsync<void>(request, (data) {
+    Future request = state.post!.author.followed ?? false ? network.cancelFollowUser(state.post!.author.id) : network.followUser(state.post!.author.id);
+    network.requestAsync(request, (data) {
+      if (data is FollowUserResponse && data.receivedBadge != null) {
+        showReceiveBadgeDialog(context, data.receivedBadge!);
+      }
       // to create a new object
       state.post!.author.followed = newState;
       updateState(state.copyWith(post: Post.fromJson(state.post!.toJson())));
@@ -286,7 +292,6 @@ class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState
     });
   }
 
-  void onPostSharePress() {}
 
   void createComment(PostComment? repliedComment, String text, void Function()? onComplete, void Function(HoohApiErrorResponse error)? onError) {
     Future<PostComment> request;

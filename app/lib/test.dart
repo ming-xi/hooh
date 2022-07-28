@@ -3,20 +3,18 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:app/global.dart';
-import 'package:app/ui/pages/feeds/post_detail.dart';
-import 'package:app/ui/pages/home/input.dart';
-import 'package:app/ui/pages/home/input_view_model.dart';
-import 'package:app/ui/pages/user/register/set_badge.dart';
+import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/ipfs_node.dart';
-import 'package:app/ui/widgets/user_activity_view.dart';
+import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
-import 'package:common/models/network/requests.dart';
-import 'package:common/models/user.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+// import 'package:jshare_flutter_plugin/jshare_flutter_plugin.dart';
 import 'package:pretty_json/pretty_json.dart';
+import 'package:sprintf/sprintf.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
@@ -49,45 +47,35 @@ class _TestMenuScreenState extends ConsumerState<TestMenuScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ElevatedButton(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => PostDetailScreen(postId: "asdasdasd")));
-                },
-                child: Text("test")),
+            MainStyles.blueButton(
+              ref,
+              "test",
+              () {},
+            ),
             SizedBox(
               height: 16,
             ),
-            ElevatedButton(
-                onPressed: () {
-                  handleUserLogout(ref);
-                  // ref.read(globalUserInfoProvider.state).state = null;
-                  // preferences.putString(Preferences.KEY_USER_INFO, null);
-                  // Navigator.pushAndRemoveUntil(
-                  //   context,
-                  //   MaterialPageRoute(builder: (context) => StartScreen()),
-                  //   (route) => false,
-                  // );
-                  Navigator.pop(context);
-                },
-                child: Text("log out")),
-            SizedBox(
-              height: 16,
+            MainStyles.blueButton(
+              ref,
+              "clear preferences",
+              () {
+                preferences.clear();
+              },
             ),
-            ElevatedButton(
-                onPressed: () {
-                  preferences.clear();
-                },
-                child: Text("clear preferences")),
             SizedBox(
               height: 16,
             ),
             Row(
               children: [
                 Expanded(
-                  child: Text("choose server:"),
+                  child: Text(
+                    "choose server:",
+                    style: TextStyle(color: designColors.dark_01.auto(ref)),
+                  ),
                 ),
                 DropdownButton<int>(
                   value: networkType,
+                  style: TextStyle(color: designColors.dark_01.auto(ref)),
                   items: [Network.TYPE_LOCAL, Network.TYPE_STAGING, Network.TYPE_PRODUCTION]
                       .map((e) => DropdownMenuItem<int>(
                             child: Text(Network.SERVER_HOST_NAMES[e]!),

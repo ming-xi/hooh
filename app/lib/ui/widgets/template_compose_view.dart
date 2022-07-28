@@ -8,6 +8,7 @@ import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:blur/blur.dart';
 import 'package:common/models/template.dart';
+import 'package:common/utils/date_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -89,13 +90,15 @@ class TemplateView extends ConsumerStatefulWidget {
 }
 
 class _TemplateViewState extends ConsumerState<TemplateView> {
+  bool fontSizeCalculated = false;
+  double? properFontSize;
   StateProvider<bool> visibleProvider = StateProvider(
     (ref) => false,
   );
 
   @override
   Widget build(BuildContext context) {
-    var visible = ref.watch(visibleProvider.state).state;
+    var visible = ref.watch(visibleProvider);
     List<Widget> widgets = [
       buildMainImage(),
     ];
@@ -204,8 +207,8 @@ class _TemplateViewState extends ConsumerState<TemplateView> {
   Widget buildMaskView() {
     return Positioned.fill(
         child: Container(
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(widget.radius ?? 0), color: Color(TemplateView.MASK_COLOR)),
-    ));
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(widget.radius ?? 0), color: Color(TemplateView.MASK_COLOR)),
+        ));
   }
 
   Widget buildTextView() {
@@ -217,7 +220,7 @@ class _TemplateViewState extends ConsumerState<TemplateView> {
             frameY: widget.setting.frameY,
             frameW: widget.setting.frameW,
             frameH: widget.setting.frameH,
-            fontSize: widget.setting.fontSize,
+            fontSize: properFontSize,
             fontFamily: widget.setting.fontFamily,
             alignment: widget.setting.alignment,
             bold: widget.setting.bold,
@@ -314,7 +317,7 @@ class PostTextPainter extends CustomPainter {
   final bool bold;
   final bool showFrame;
   double lineHeight;
-  final double fontSize;
+  double? fontSize;
   final String fontFamily;
   final TextAlignment alignment;
   final double frameX; //0~100
@@ -326,6 +329,7 @@ class PostTextPainter extends CustomPainter {
   final TextPainter tp = TextPainter(
     textDirection: TextDirection.ltr,
   );
+  bool userChanged = false;
 
   PostTextPainter(
     this.text,
@@ -334,12 +338,12 @@ class PostTextPainter extends CustomPainter {
     required this.frameY,
     required this.frameW,
     required this.frameH,
-    required this.fontSize,
     required this.fontFamily,
     this.alignment = TextAlignment.left,
     this.drawShadow = false,
     this.drawStroke = false,
     this.bold = false,
+    this.fontSize,
     this.showFrame = true,
     this.lineHeight = 0,
     this.scale = 1,
@@ -372,11 +376,11 @@ class PostTextPainter extends CustomPainter {
   }
 
   void drawFrame(Canvas canvas, Size size) {
-    if (!showFrame) {
-      return;
-    }
+    // if (!showFrame) {
+    //   return;
+    // }
     p.style = PaintingStyle.stroke;
-    p.color = textColor;
+    p.color = textColor.withOpacity(0.5);
     canvas.drawRect(
         Rect.fromLTWH(translate(frameX, size.width), translate(frameY, size.height), translate(frameW, size.width), translate(frameH, size.height)), p);
   }
@@ -425,6 +429,7 @@ class PostTextPainter extends CustomPainter {
             ],
       foreground: paint,
     );
+
     final textSpan = TextSpan(
       text: text,
       style: textStyle,
@@ -436,13 +441,61 @@ class PostTextPainter extends CustomPainter {
     };
     tp.text = textSpan;
     tp.textAlign = alignMap[alignment]!;
+    if (fontSize == null) {
+      fontSize = _calculateProperFontSize(textStyle, size);
+      // final offset = Offset(translate(frameX, size.width) + textPadding, translate(frameY, size.height) + textPadding);
+      // tp.paint(canvas, offset);
+    }
+    final span = TextSpan(
+      text: text,
+      style: textStyle.copyWith(fontSize: fontSize),
+    );
+    tp.text = span;
     tp.layout(
       // minWidth:0,
       minWidth: translate(frameW, size.width) - textPadding * 2,
       maxWidth: translate(frameW, size.width) - textPadding * 2,
     );
-    final offset = Offset(translate(frameX, size.width) + textPadding, translate(frameY, size.height) + textPadding);
+    final offset = Offset(translate(frameX, size.width) + textPadding, translate(frameY, size.height) + (translate(frameH, size.height) - tp.height) / 2);
     tp.paint(canvas, offset);
+  }
+
+  double _calculateProperFontSize(TextStyle textStyle, Size size) {
+    var currentUtcDate = DateUtil.getCurrentUtcDate();
+    double properFontSize = 8;
+    double tempFontSize = 8;
+    int lift = 40;
+    var frameHeight = translate(frameH, size.height);
+    // debugPrint("frameY=$frameY size.height=${size.height}");
+    bool outOfBox = false;
+    int calculateCount = 0;
+    while (!outOfBox) {
+      final span = TextSpan(
+        text: text,
+        style: textStyle.copyWith(fontSize: tempFontSize),
+      );
+      tp.text = span;
+      tp.layout(
+        minWidth: 0,
+        maxWidth: translate(frameW, size.width) - textPadding * 2,
+      );
+      // debugPrint("text=${text.substring(0, min(4, text.length))} size=$tempFontSize lift=$lift [${tp.size.height}/$frameHeight]");
+      if (tp.size.height > frameHeight) {
+        if (lift == 1) {
+          outOfBox = true;
+        } else {
+          tempFontSize -= lift;
+          lift ~/= 2;
+          tempFontSize += lift;
+        }
+      } else {
+        properFontSize = tempFontSize;
+        tempFontSize += lift;
+      }
+      calculateCount++;
+    }
+    debugPrint("$calculateCount counts in ${DateUtil.getCurrentUtcDate().difference(currentUtcDate).inMilliseconds}ms");
+    return properFontSize;
   }
 
   double translate(double value, double size) {

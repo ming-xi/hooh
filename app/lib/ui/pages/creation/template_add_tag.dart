@@ -1,10 +1,11 @@
 import 'dart:io';
 
-import 'package:app/extensions/extensions.dart';
+import 'package:common/extensions/extensions.dart';
 import 'package:app/global.dart';
 import 'package:app/ui/pages/creation/template_add_tag_view_model.dart';
 import 'package:app/ui/pages/creation/template_done.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/widgets/template_text_setting_view.dart';
 import 'package:app/ui/widgets/template_text_setting_view_model.dart';
 import 'package:app/ui/widgets/toast.dart';
@@ -14,8 +15,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sprintf/sprintf.dart';
 
 class TemplateAddTagScreen extends ConsumerStatefulWidget {
+  static const MAX_TAG_COUNT = 100;
+
   final File? imageFile;
   final StateNotifierProvider<TemplateAddTagPageViewModel, TemplateAddTagPageModelState> provider = StateNotifierProvider((ref) {
     return TemplateAddTagPageViewModel(TemplateAddTagPageModelState.init());
@@ -52,7 +56,7 @@ class _TemplateAddTagScreenState extends ConsumerState<TemplateAddTagScreen> wit
         hideKeyboard();
       },
       child: Scaffold(
-        appBar: AppBar(
+        appBar: HoohAppBar(
           title: Text(globalLocalizations.template_add_tag_title),
         ),
         body: CustomScrollView(
@@ -127,10 +131,10 @@ class _TemplateAddTagScreenState extends ConsumerState<TemplateAddTagScreen> wit
                     children: [
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.only(left: 8, right: 8, top: 8, bottom: 0),
+                          padding: const EdgeInsets.only(left: 20, right: 20, top: 0, bottom: 0),
                           child: Wrap(
                             spacing: 0,
-                            runSpacing: 0,
+                            runSpacing: -20,
                             children: modelState.tags.map((e) => buildTagClip(e, model)).toList(),
                           ),
                         ),
@@ -185,32 +189,38 @@ class _TemplateAddTagScreenState extends ConsumerState<TemplateAddTagScreen> wit
   }
 
   void addTag(TemplateAddTagPageViewModel model, String text) {
-    model.addTag(
-      text,
-      onDuplicateTagAdded: (tag) {
-        Toast.showSnackBar(context, globalLocalizations.select_topic_duplicated_tag);
-      },
-    );
+    model.addTag(text, onDuplicateTagAdded: (tag) {
+      Toast.showSnackBar(context, globalLocalizations.select_topic_duplicated_tag);
+    }, onMaxReached: (tag) {
+      Toast.showSnackBar(context, sprintf(globalLocalizations.select_topic_reach_max_tag_limit, [TemplateAddTagScreen.MAX_TAG_COUNT]));
+    });
   }
 
   Widget buildTagClip(String tag, TemplateAddTagPageViewModel model) {
-    return Chip(
-      backgroundColor: Colors.transparent,
-      label: Text(
-        "# $tag",
-        style: TextStyle(
-          fontSize: 14,
-          color: designColors.dark_01.auto(ref),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          "# $tag",
+          style: TextStyle(
+            fontSize: 14,
+            color: designColors.dark_01.auto(ref),
+          ),
         ),
-      ),
-      deleteIcon: Icon(
-        Icons.cancel,
-        size: 14,
-        color: designColors.feiyu_blue.auto(ref),
-      ),
-      onDeleted: () {
-        model.deleteTag(tag);
-      },
+        IconButton(
+          onPressed: () {
+            model.deleteTag(tag);
+          },
+          icon: HoohIcon(
+            "assets/images/icon_delete_tag.svg",
+            width: 16,
+            height: 16,
+            color: designColors.feiyu_blue.auto(ref),
+          ),
+          splashRadius: 16,
+        )
+      ],
     );
   }
 }

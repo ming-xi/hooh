@@ -1,11 +1,14 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:app/global.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/pages/home/feeds.dart';
 import 'package:app/ui/pages/home/home_view_model.dart';
 import 'package:app/ui/pages/home/input.dart';
 import 'package:app/ui/pages/home/me.dart';
 import 'package:app/ui/pages/home/templates.dart';
+import 'package:app/utils/app_link.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:blur/blur.dart';
@@ -18,6 +21,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:uni_links/uni_links.dart';
 
 final StateProvider<bool> bottomBarVisibilityProvider = StateProvider((ref) => true);
 final StateNotifierProvider<HomePageViewModel, HomePageModelState> homePageProvider = StateNotifierProvider((ref) {
@@ -46,6 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    initUniLinks();
     globalHomeScreenIsInStack = true;
     pageContents = [
       InputPage(),
@@ -103,11 +108,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void dispose() {
     controller.dispose();
     globalHomeScreenIsInStack = false;
+    _sub.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    debugPrint("home build");
     HomePageModelState modelState = ref.watch(homePageProvider);
     User? currentUser = ref.watch(globalUserInfoProvider);
     // debugPrint("home tab_index=${modelState.tabIndex}");
@@ -120,15 +127,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             height: avatarSize,
           )
         : HoohImage(
-            imageUrl: currentUser.avatarUrl ?? "",
-            width: avatarSize,
-            height: avatarSize,
-          );
+      imageUrl: currentUser.avatarUrl ?? "",
+      width: avatarSize,
+      height: avatarSize,
+    );
     meTabIcon = Container(
       width: 28,
       height: 28,
       child: ClipOval(child: meTabIcon),
-      decoration: BoxDecoration(border: Border.all(color: designColors.light_06.auto(ref), width: avatarStrokeWidth), shape: BoxShape.circle),
+      decoration: BoxDecoration(
+          border: Border.all(color: modelState.tabIndex != 3 ? designColors.light_06.auto(ref) : designColors.feiyu_blue.auto(ref), width: avatarStrokeWidth),
+          shape: BoxShape.circle),
     );
     return Scaffold(
       floatingActionButton: floatingButtons[modelState.tabIndex],
@@ -199,6 +208,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
     );
+  }
+
+  late StreamSubscription _sub;
+
+  Future<void> initUniLinks() async {
+    // ... check initialUri
+
+    // Attach a listener to the stream
+    _sub = uriLinkStream.listen((Uri? uri) {
+      debugPrint("app link uri=$uri");
+      openAppLink(context, uri.toString());
+      // Use the uri and warn the user, if it is not correct
+    }, onError: (err) {
+      // Handle exception by warning the user their action did not succeed
+    });
+
+    // NOTE: Don't forget to call _sub.cancel() in dispose()
   }
 
 // String getTitle(int index) {

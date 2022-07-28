@@ -1,4 +1,5 @@
 import 'package:app/global.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/utils/app_link.dart';
 import 'package:app/utils/design_colors.dart';
@@ -229,7 +230,7 @@ class SystemNotificationView extends ConsumerWidget {
 
   Widget buildTitle(WidgetRef ref, String? name) {
     return Text(
-      name ?? globalLocalizations.common_app_name,
+      name ?? globalLocalizations.common_system_notice,
       style: TextStyle(color: designColors.light_06.auto(ref), fontSize: 14, fontWeight: FontWeight.bold),
     );
   }
@@ -248,7 +249,7 @@ class SystemNotificationView extends ConsumerWidget {
                   cornerRadius: 100,
                 )
               : HoohIcon(
-                  "assets/images/logo_ios.png",
+            "assets/images/system_notice.png",
                   width: 40,
                   height: 40,
                 )),

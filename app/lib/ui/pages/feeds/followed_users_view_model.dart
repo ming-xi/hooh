@@ -1,4 +1,4 @@
-import 'package:app/extensions/extensions.dart';
+import 'package:common/extensions/extensions.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/page_state.dart';
 import 'package:common/models/post.dart';
@@ -27,6 +27,7 @@ class FollowedUserPostsPageModelState {
   final bool isTrending;
   final double scrollDistance;
   final User? currentUser;
+  final int page;
 
   FollowedUserPostsPageModelState({
     required this.posts,
@@ -38,6 +39,7 @@ class FollowedUserPostsPageModelState {
     required this.currentUser,
     this.isTrending = false,
     this.scrollDistance = 0,
+    this.page = 1,
   });
 
   factory FollowedUserPostsPageModelState.init(User? user) {
@@ -64,7 +66,7 @@ class FollowedUserPostsPageViewModel extends StateNotifier<FollowedUserPostsPage
 
   void getPosts(Function(PageState)? callback, {bool isRefresh = true}) {
     if (isRefresh) {
-      updateState(state.copyWith(lastTimestamp: null));
+      updateState(state.copyWith(lastTimestamp: null, page: 1));
       if (state.pageState == PageState.loading) {
         if (callback != null) {
           callback(state.pageState);
@@ -91,7 +93,7 @@ class FollowedUserPostsPageViewModel extends StateNotifier<FollowedUserPostsPage
 
     DateTime date = state.lastTimestamp ?? DateUtil.getCurrentUtcDate();
 
-    network.requestAsync<List<Post>>(network.getFollowedUserPosts(trending: state.isTrending, date: date), (newData) {
+    network.requestAsync<List<Post>>(network.getFollowedUserPosts(trending: state.isTrending, page: state.page, date: date), (newData) {
       int viewState = FollowedUserPostsPageModelState.STATE_NORMAL;
       if (newData.isEmpty) {
         //no data
@@ -99,7 +101,6 @@ class FollowedUserPostsPageViewModel extends StateNotifier<FollowedUserPostsPage
           if (state.currentUser != null && state.currentUser!.followingCount == 0) {
             viewState = FollowedUserPostsPageModelState.STATE_NO_FOLLOWING;
           }
-
           updateState(state.copyWith(viewState: viewState, pageState: isRefresh ? PageState.empty : PageState.noMore, posts: []));
         } else {
           updateState(state.copyWith(viewState: viewState, pageState: isRefresh ? PageState.empty : PageState.noMore));
@@ -112,12 +113,14 @@ class FollowedUserPostsPageViewModel extends StateNotifier<FollowedUserPostsPage
             viewState: viewState,
             pageState: PageState.dataLoaded,
             lastTimestamp: newData.last.createdAt,
+            page: state.page + 1,
             posts: newData,
           ));
         } else {
           updateState(state.copyWith(
             viewState: viewState,
             pageState: PageState.dataLoaded,
+            page: state.page + 1,
             lastTimestamp: newData.last.createdAt,
             posts: [...state.posts, ...newData],
           ));

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:app/global.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/user/register/set_badge.dart';
 import 'package:app/ui/pages/user/register/start.dart';
@@ -32,6 +33,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           String? jsonString = preferences.getString(Preferences.KEY_USER_INFO);
           int darkMode = preferences.getInt(Preferences.KEY_DARK_MODE) ?? DARK_MODE_SYSTEM;
           ref.read(globalDarkModeProvider.state).state = darkMode;
+          String? languageCode = preferences.getString(Preferences.KEY_LANGUAGE);
+          debugPrint("languageCode=$languageCode");
+          ref.read(globalLocaleProvider.state).state = languageCode == null ? null : Locale(languageCode);
           User? user;
           if (jsonString != null) {
             user = User.fromJson(json.decode(jsonString));
@@ -56,7 +60,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               // int register_step = user.register_step!;
               // ......
               // Navigator.pushReplacement(context, pageRouteBuilder(SetBadgeScreen()));
-              Navigator.push(context, pageRouteBuilder(SetBadgeScreen())).then((result) {
+              Navigator.push(
+                  context,
+                  pageRouteBuilder(SetBadgeScreen(
+                    scene: SetBadgeScreen.SCENE_REGISTER,
+                  ))).then((result) {
                 if (result != null && result is bool && result) {
                   debugPrint("set badge success");
                   popToHomeScreen(context);

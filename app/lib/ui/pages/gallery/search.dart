@@ -1,7 +1,8 @@
 import 'dart:async';
 
-import 'package:app/extensions/extensions.dart';
+import 'package:common/extensions/extensions.dart';
 import 'package:app/global.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/pages/creation/edit_post_view_model.dart';
 import 'package:app/ui/pages/gallery/search_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';

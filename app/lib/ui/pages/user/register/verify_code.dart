@@ -1,5 +1,6 @@
 import 'package:app/ui/pages/user/register/set_password.dart';
 import 'package:app/ui/pages/user/register/verify_code_view_model.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +49,7 @@ class _VerifyCodeScreenState extends ConsumerState<VerifyCodeScreen> {
     var modelState = ref.watch(widget.provider);
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: HoohAppBar(
         title: const Text("Enter Verification Code"),
       ),
       body: CustomScrollView(

@@ -1,4 +1,5 @@
 import 'package:app/global.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/pages/feeds/tagged_list_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/post_view.dart';
@@ -67,12 +68,27 @@ class _TaggedListScreenState extends ConsumerState<TaggedListScreen> {
     TaggedListScreenModelState modelState = ref.watch(widget.provider);
     TaggedListScreenViewModel model = ref.read(widget.provider.notifier);
     return Scaffold(
-      appBar: AppBar(
+      appBar: HoohAppBar(
         title: Text(
           modelState.tagName,
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: designColors.dark_01.auto(ref)),
         ),
       ),
+      floatingActionButton: SafeArea(
+          child: SizedBox(
+        width: 40,
+        height: 40,
+        child: FloatingActionButton(
+            backgroundColor: designColors.feiyu_blue.auto(ref),
+            onPressed: () {
+              scrollController.animateTo(0, duration: Duration(milliseconds: 250), curve: Curves.easeOutCubic);
+            },
+            child: HoohIcon(
+              "assets/images/icon_back_to_top.svg",
+              width: 16,
+              color: designColors.light_01.light,
+            )),
+      )),
       body: SmartRefresher(
         enablePullDown: true,
         enablePullUp: true,
@@ -193,7 +209,7 @@ class _TaggedListScreenState extends ConsumerState<TaggedListScreen> {
             child: Center(
               child: Text(
                 trending ? globalLocalizations.common_trending : globalLocalizations.common_recent,
-                style: TextStyle(color: selected ? designColors.light_01.auto(ref) : designColors.light_06.auto(ref)),
+                style: TextStyle(color: selected ? Colors.white : designColors.light_06.auto(ref)),
               ),
             ),
           ),
@@ -205,9 +221,9 @@ class _TaggedListScreenState extends ConsumerState<TaggedListScreen> {
   Widget buildPostView(BuildContext context, int index, TaggedListScreenViewModel model, TaggedListScreenModelState modelState) {
     return PostView(
       post: modelState.posts[index],
-      onShare: (post, error) {
-        Toast.showSnackBar(context, "share...");
-      },
+      // onShare: (post, error) {
+      //   Toast.showSnackBar(context, "share...");
+      // },
       onLike: (post, error) {
         if (error != null) {
           // Toast.showSnackBar(context, error.message);

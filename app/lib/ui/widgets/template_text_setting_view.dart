@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 
+import 'package:app/global.dart';
 import 'package:app/ui/widgets/template_text_setting_view_model.dart';
 import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
@@ -48,8 +49,8 @@ class _TemplateTextSettingViewState extends ConsumerState<TemplateTextSettingVie
           double height = constraints.maxHeight;
           ui.Rect buttonRect = ui.Rect.fromCenter(
               center: Offset(translate(modelState.frameX + modelState.frameW, width), translate(modelState.frameY + modelState.frameH, height)),
-              width: 24,
-              height: 24);
+              width: 48,
+              height: 48);
           ui.Rect frameRect = ui.Rect.fromLTWH(
             translate(modelState.frameX, width),
             translate(modelState.frameY, height),
@@ -149,7 +150,6 @@ class _CanvasPainter extends CustomPainter {
 
   final Paint p = Paint();
   Offset? pointer;
-
   _CanvasPainter(
     WidgetRef ref, {
     required this.frameX,
@@ -159,7 +159,7 @@ class _CanvasPainter extends CustomPainter {
     required this.textColor,
     this.frameLocked = false,
   }) {
-    frameColor = designColors.dark_03.auto(ref);
+    frameColor = designColors.dark_03.auto(ref).withOpacity(0.5);
     p.strokeCap = StrokeCap.square;
     p.strokeWidth = 1;
     p.style = PaintingStyle.stroke;
@@ -193,7 +193,7 @@ class _CanvasPainter extends CustomPainter {
       fontSize: 16,
     );
     final textSpan = TextSpan(
-      text: 'here is the text box',
+      text: globalLocalizations.template_adjustment_hint,
       style: textStyle,
     );
     final textPainter = TextPainter(

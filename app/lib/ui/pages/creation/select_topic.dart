@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:app/global.dart';
 import 'package:app/ui/pages/creation/select_topic_view_model.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
@@ -43,20 +44,30 @@ class _SelectTopicScreenState extends ConsumerState<SelectTopicScreen> {
         hideKeyboard();
       },
       child: Scaffold(
-        appBar: AppBar(
+        appBar: HoohAppBar(
           title: Text(globalLocalizations.select_topic_title),
           actions: [
             IconButton(
                 onPressed: () {
                   Navigator.pop(context, modelState.userTags);
                 },
-                icon: Icon(Icons.done_rounded))
+                icon: HoohIcon(
+                  "assets/images/icon_ok.svg",
+                  width: 24,
+                  height: 24,
+                  color: designColors.dark_01.auto(ref),
+                ))
           ],
-          leading: IconButton(
+          hoohLeading: IconButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              icon: Icon(Icons.clear_rounded)),
+              icon: HoohIcon(
+                "assets/images/icon_no.svg",
+                width: 24,
+                height: 24,
+                color: designColors.dark_01.auto(ref),
+              )),
         ),
         body: Column(
           children: [
@@ -123,10 +134,13 @@ class _SelectTopicScreenState extends ConsumerState<SelectTopicScreen> {
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(border: Border(bottom: BorderSide(color: designColors.light_02.auto(ref), width: 1))),
-                    child: Wrap(
-                      spacing: 0,
-                      runSpacing: 0,
-                      children: modelState.userTags.map((e) => buildTagClip(e, model)).toList(),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Wrap(
+                        spacing: 0,
+                        runSpacing: -20,
+                        children: modelState.userTags.map((e) => buildTagClip(e, model)).toList(),
+                      ),
                     ),
                   ),
                 ),
@@ -175,26 +189,30 @@ class _SelectTopicScreenState extends ConsumerState<SelectTopicScreen> {
   }
 
   Widget buildTagClip(String tag, SelectTopicScreenViewModel model) {
-    return Chip(
-      backgroundColor: Colors.transparent,
-      label: Padding(
-        padding: const EdgeInsets.only(left: 8.0),
-        child: Text(
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
           "# $tag",
           style: TextStyle(
             fontSize: 14,
             color: designColors.dark_01.auto(ref),
           ),
         ),
-      ),
-      deleteIcon: Icon(
-        Icons.cancel,
-        size: 14,
-        color: designColors.feiyu_blue.auto(ref),
-      ),
-      onDeleted: () {
-        model.deleteTag(tag);
-      },
+        IconButton(
+          onPressed: () {
+            model.deleteTag(tag);
+          },
+          icon: HoohIcon(
+            "assets/images/icon_delete_tag.svg",
+            width: 16,
+            height: 16,
+            color: designColors.feiyu_blue.auto(ref),
+          ),
+          splashRadius: 16,
+        )
+      ],
     );
   }
 }

@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:app/global.dart';
+import 'package:app/ui/widgets/appbar.dart';
+import 'package:app/ui/pages/me/settings/about.dart';
 import 'package:app/ui/pages/user/register/login.dart';
 import 'package:app/ui/pages/user/register/register_view_model.dart';
 import 'package:app/ui/pages/user/register/set_badge.dart';
@@ -14,8 +16,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
-  final StateNotifierProvider<RegisterViewModel, RegisterModelState> provider = StateNotifierProvider((ref) {
-    return RegisterViewModel(RegisterModelState.init());
+  final StateNotifierProvider<RegisterScreenViewModel, RegisterScreenModelState> provider = StateNotifierProvider((ref) {
+    return RegisterScreenViewModel(RegisterScreenModelState.init());
   });
 
   RegisterScreen({
@@ -47,10 +49,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    RegisterModelState modelState = ref.watch(widget.provider);
-    RegisterViewModel model = ref.read(widget.provider.notifier);
+    RegisterScreenModelState modelState = ref.watch(widget.provider);
+    RegisterScreenViewModel model = ref.read(widget.provider.notifier);
     return Scaffold(
-      appBar: AppBar(
+      appBar: HoohAppBar(
         title: const Text(""),
         actions: [
           TextButton(
@@ -173,9 +175,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               //   context,
                               //   MaterialPageRoute(builder: (context) => SetBadgeScreen()),
                               //   (route) => false,
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => SetBadgeScreen())).then((result) {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => SetBadgeScreen(scene: SetBadgeScreen.SCENE_REGISTER)))
+                                  .then((result) {
                                 if (result != null && result is bool && result) {
-                                  Navigator.of(context).pop(true);
+                                  Navigator.of(context).pop();
                                 }
                               });
                             }, onFailed: (error) {
@@ -217,14 +220,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               text: userAgreement,
                               style: highlightedStyle,
                               onTap: () {
-                                openLink(context, 'https://www.google.com', title: userAgreement);
+                                openLink(context, AboutScreen.USER_AGREEMENT_URL, title: userAgreement);
                               }),
                           HoohLocalizedTextKey(
                               key: "%2\$s",
                               text: privacyPolicy,
                               style: highlightedStyle,
                               onTap: () {
-                                openLink(context, 'https://www.163.com', title: privacyPolicy);
+                                openLink(context, AboutScreen.PRIVACY_POLICY_URL, title: privacyPolicy);
                               }),
                         ],
                         defaultTextStyle: defaultTextStyle);

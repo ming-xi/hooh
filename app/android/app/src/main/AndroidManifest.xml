@@ -40,7 +40,20 @@
 				<action android:name = "android.intent.action.MAIN"/>
 				<category android:name = "android.intent.category.LAUNCHER"/>
 			</intent-filter>
+			<intent-filter>
+				<action android:name = "android.intent.action.VIEW"/>
+				<category android:name = "android.intent.category.DEFAULT"/>
+				<category android:name = "android.intent.category.BROWSABLE"/>
+				<!-- Accepts URIs that begin with YOUR_SCHEME://YOUR_HOST -->
+				<data
+					android:scheme = "hoohlanding"/>
+			</intent-filter>
 		</activity>
+		<!--		<provider-->
+		<!--			android:authorities="com.facebook.app.FacebookContentProvider1200223860750258"-->
+		<!--			android:name="cn.jiguang.share.facebook.FacebookContentProvider"-->
+		<!--			android:exported="true"-->
+		<!--		/>-->
 		<!--		<activity-->
 		<!--			android:name="com.yalantis.ucrop.UCropActivity"-->
 		<!--			android:screenOrientation="portrait"-->

@@ -14,8 +14,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 const _LINK_PREFIX = "$_LINK_SCHEME://$_LINK_HOST";
-const _LINK_SCHEME = "https";
-const _LINK_HOST = "landing.hooh.zone";
+const _LINK_SCHEME = "hoohlanding";
+const _LINK_HOST = "lz.hooh.zone";
 const _LINK_POSTS = "posts";
 const _LINK_USERS = "users";
 const _LINK_TEMPLATES = "templates";
@@ -26,7 +26,12 @@ String getTemplateAppLink(String id) {
   return "$_LINK_PREFIX/$_LINK_TEMPLATES/$id";
 }
 
+String getUserAppLink(String id) {
+  return "$_LINK_PREFIX/$_LINK_USERS/$id";
+}
+
 void openAppLink(BuildContext context, String? link, {WidgetRef? ref}) {
+  debugPrint("openAppLink link=$link");
   if (link == null) {
     return;
   }
@@ -87,8 +92,8 @@ void openAppLink(BuildContext context, String? link, {WidgetRef? ref}) {
               showDialog(
                   context: context,
                   builder: (popContext) => AlertDialog(
-                        title: Text(globalLocalizations.error_view_template_not_found),
-                      ));
+                    title: Text(globalLocalizations.error_view_template_not_found),
+                  ));
             } else {
               showCommonRequestErrorDialog(ref, context, error);
             }

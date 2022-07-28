@@ -21,6 +21,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+// import 'package:jshare_flutter_plugin/jshare_flutter_plugin.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:preferences_local_storage_inspector/preferences_local_storage_inspector.dart';
 import 'package:secure_storage_local_storage_inspector/secure_storage_local_storage_inspector.dart';
@@ -120,14 +122,14 @@ class HoohApp extends ConsumerStatefulWidget {
   }) : super(key: key);
 
   @override
-  ConsumerState createState() => _MyAppState();
+  ConsumerState createState() => _HoohAppState();
 }
 
-class _MyAppState extends ConsumerState<HoohApp> with WidgetsBindingObserver, KeyboardLogic {
+class _HoohAppState extends ConsumerState<HoohApp> with WidgetsBindingObserver, KeyboardLogic {
   @override
   void onKeyboardChanged(bool visible) {
     // globalIsKeyboardVisible = visible;
-    ref.read(globalKeyboardInfoProvider.state).state = visible;
+    ref.read(globalKeyboardVisibilityProvider.state).state = visible;
   }
 
   @override
@@ -146,12 +148,81 @@ class _MyAppState extends ConsumerState<HoohApp> with WidgetsBindingObserver, Ke
           iconTheme: IconThemeData(color: Colors.black),
           // shadowColor: Colors.transparent,
         ));
-    int darkMode = ref.watch(globalDarkModeProvider.state).state;
+    int darkMode = ref.watch(globalDarkModeProvider);
+    Locale? appLocale = ref.watch(globalLocaleProvider);
+    debugPrint("appLocale=${appLocale?.languageCode}");
     Brightness brightness = SchedulerBinding.instance.window.platformBrightness;
     // debugPrint("DesignColor brightness=$brightness");
+    var themeData = ThemeData(
+        primaryColor: designColors.bar90_1.auto(ref),
+        backgroundColor: designColors.light_00.auto(ref),
+        dialogBackgroundColor: designColors.light_00.auto(ref),
+        scaffoldBackgroundColor: designColors.light_00.auto(ref),
+        fontFamily: 'Linotte',
+        appBarTheme: AppBarTheme(
+          elevation: 0,
+          centerTitle: true,
+          backgroundColor: designColors.bar90_1.auto(ref),
+          titleTextStyle: TextStyle(color: designColors.dark_01.auto(ref), fontFamily: 'Linotte', fontWeight: FontWeight.bold, fontSize: 16),
+          actionsIconTheme: IconThemeData(color: designColors.dark_01.auto(ref)),
+          iconTheme: IconThemeData(color: designColors.dark_01.auto(ref)),
+
+          foregroundColor: designColors.feiyu_blue.generic,
+          toolbarTextStyle: TextStyle(color: designColors.feiyu_blue.generic, fontFamily: 'Linotte', fontWeight: FontWeight.bold, fontSize: 16),
+          // shadowColor: Colors.transparent,
+        ),
+        pageTransitionsTheme: const PageTransitionsTheme(builders: {
+          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.macOS: FadeUpwardsPageTransitionsBuilder(),
+        }),
+        dialogTheme: DialogTheme(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            titleTextStyle: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 24,
+              color: designColors.dark_01.auto(ref),
+              fontFamily: 'Linotte',
+            ),
+            contentTextStyle: TextStyle(
+              color: designColors.dark_01.auto(ref),
+              fontSize: 16,
+              fontFamily: 'Linotte',
+            )),
+        checkboxTheme: CheckboxThemeData(
+            checkColor: MaterialStateProperty.all(designColors.light_01.auto(ref)),
+            fillColor: MaterialStateProperty.all(designColors.dark_01.auto(ref)),
+            side: BorderSide(color: designColors.dark_01.auto(ref), width: 1),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(4),
+              ),
+            )),
+        tabBarTheme: TabBarTheme(
+            labelPadding: EdgeInsets.symmetric(horizontal: 8),
+            labelStyle: TextStyle(
+              color: designColors.dark_01.auto(ref),
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Linotte',
+            ),
+            unselectedLabelStyle: TextStyle(
+              color: designColors.dark_01.auto(ref),
+              fontSize: 16,
+              fontFamily: 'Linotte',
+            ),
+            indicatorSize: TabBarIndicatorSize.label,
+            indicator: UnderlineTabIndicator(
+              borderSide: BorderSide(color: designColors.dark_01.auto(ref), width: 2),
+            )),
+        textButtonTheme: TextButtonThemeData(
+            style: ButtonStyle(
+                textStyle: MaterialStateProperty.all(
+                    TextStyle(fontSize: 16, color: designColors.feiyu_blue.generic, fontFamily: 'Linotte', fontWeight: FontWeight.bold)))));
     return MaterialApp(
-      theme: globalLightTheme,
-      darkTheme: globalDarkTheme,
+      navigatorObservers: [routeObserver],
+      theme: themeData,
+      // darkTheme: themeData.copyWith(brightness: Brightness.dark),
       themeMode: getThemeMode(darkMode),
       localizationsDelegates: const [
         AppLocalizations.delegate, // Add this line
@@ -159,6 +230,7 @@ class _MyAppState extends ConsumerState<HoohApp> with WidgetsBindingObserver, Ke
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
+      locale: appLocale,
       localeResolutionCallback: (locale, locales) {
         if (locale != null) {
           for (Locale supportedLocale in locales) {
@@ -177,14 +249,16 @@ class _MyAppState extends ConsumerState<HoohApp> with WidgetsBindingObserver, Ke
       // home: HomeScreen(),
       home: const SplashScreen(),
       builder: (context, child) {
+        debugPrint("app builder build");
         globalLocalizations = AppLocalizations.of(context)!;
         return Scaffold(
           body: Stack(
             children: [
               child!,
               Positioned(
-                top: 8,
-                left: MediaQuery.of(context).size.width * 0.3,
+                top: 0,
+                left: 48,
+                // left: MediaQuery.of(context).size.width * 0.3,
                 child: SafeArea(
                   child: ElevatedButton(
                       style: TextButton.styleFrom(
@@ -192,7 +266,7 @@ class _MyAppState extends ConsumerState<HoohApp> with WidgetsBindingObserver, Ke
                         shape: CircleBorder(),
                       ),
                       onPressed: () {
-                        int darkMode = ref.watch(globalDarkModeProvider.state).state;
+                        int darkMode = ref.watch(globalDarkModeProvider);
                         darkMode = cycleDarkMode(darkMode);
                         ref.read(globalDarkModeProvider.state).state = darkMode;
                         preferences.putInt(Preferences.KEY_DARK_MODE, darkMode);

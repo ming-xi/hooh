@@ -1,4 +1,5 @@
 import 'package:app/global.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/pages/me/settings/edit_profile_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/toast.dart';
@@ -32,7 +33,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     User user = ref.watch(globalUserInfoProvider)!;
     return Scaffold(
-      appBar: AppBar(
+      appBar: HoohAppBar(
         title: Text(globalLocalizations.me_profile_edit),
       ),
       body: CustomScrollView(
@@ -122,9 +123,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   Widget buildTile(String title, {Function()? onPress}) {
     TextStyle? titleTextStyle = TextStyle(
-        fontSize: 14,
-        // fontWeight: FontWeight.bold,
-        color: designColors.light_06.auto(ref));
+        fontSize: 14, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref));
     var titleWidget = Text(
       title,
       style: titleTextStyle,
@@ -142,10 +141,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 children: [
                   titleWidget,
                   const Spacer(),
-                  Icon(
-                    Icons.chevron_right_rounded,
+                  HoohIcon(
+                    "assets/images/icon_arrow_next_ios.svg",
+                    width: 24,
+                    height: 24,
                     color: designColors.light_06.auto(ref),
-                    size: 28,
                   ),
                 ],
               ),
@@ -188,7 +188,7 @@ class _EditNameScreenState extends ConsumerState<EditNameScreen> {
     EditProfileScreenViewModel model = ref.read(widget.provider.notifier);
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: HoohAppBar(
         title: Text(globalLocalizations.edit_profile_edit_name_title),
         actions: [
           IconButton(
@@ -198,7 +198,12 @@ class _EditNameScreenState extends ConsumerState<EditNameScreen> {
                       hideKeyboard();
                       changeName(context, model);
                     },
-              icon: Icon(Icons.done_rounded)),
+              icon: HoohIcon(
+                "assets/images/icon_ok.svg",
+                width: 24,
+                height: 24,
+                color: designColors.dark_01.auto(ref),
+              )),
         ],
       ),
       body: Padding(
@@ -335,14 +340,14 @@ class _EditSignatureScreenState extends ConsumerState<EditSignatureScreen> {
     EditProfileScreenViewModel model = ref.read(widget.provider.notifier);
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: HoohAppBar(
         title: Text(globalLocalizations.edit_profile_edit_bio_title),
         actions: [
           IconButton(
               onPressed: modelState.error
                   ? null
                   : () {
-                hideKeyboard();
+                      hideKeyboard();
                       showDialog(
                           context: context,
                           barrierDismissible: false,
@@ -354,14 +359,19 @@ class _EditSignatureScreenState extends ConsumerState<EditSignatureScreen> {
                         if (user != null) {
                           ref.read(globalUserInfoProvider.state).state = user;
                           Toast.showSnackBar(context, globalLocalizations.edit_profile_edit_success);
-                    Navigator.of(context, rootNavigator: true).pop();
-                  } else {
-                    // Toast.showSnackBar(context, msg!);
-                    showCommonRequestErrorDialog(ref, context, error!);
-                  }
-                });
+                          Navigator.of(context, rootNavigator: true).pop();
+                        } else {
+                          // Toast.showSnackBar(context, msg!);
+                          showCommonRequestErrorDialog(ref, context, error!);
+                        }
+                      });
                     },
-              icon: Icon(Icons.done_rounded)),
+              icon: HoohIcon(
+                "assets/images/icon_ok.svg",
+                width: 24,
+                height: 24,
+                color: designColors.dark_01.auto(ref),
+              )),
         ],
       ),
       body: Padding(
@@ -382,7 +392,7 @@ class _EditSignatureScreenState extends ConsumerState<EditSignatureScreen> {
                 ref,
                 errorText: !modelState.error ? null : globalLocalizations.edit_profile_edit_bio_helper,
                 helperText: modelState.error ? null : globalLocalizations.edit_profile_edit_bio_helper,
-              ),
+              ).copyWith(contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10)),
               onChanged: (text) {
                 model.setErrorState(text.runes.length > 200);
               },
@@ -425,14 +435,14 @@ class _EditWebsiteScreenState extends ConsumerState<EditWebsiteScreen> {
     EditProfileScreenViewModel model = ref.read(widget.provider.notifier);
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: HoohAppBar(
         title: Text(globalLocalizations.edit_profile_edit_website_title),
         actions: [
           IconButton(
               onPressed: modelState.error
                   ? null
                   : () {
-                hideKeyboard();
+                      hideKeyboard();
                       showDialog(
                           context: context,
                           barrierDismissible: false,
@@ -444,14 +454,19 @@ class _EditWebsiteScreenState extends ConsumerState<EditWebsiteScreen> {
                         if (user != null) {
                           ref.read(globalUserInfoProvider.state).state = user;
                           Toast.showSnackBar(context, globalLocalizations.edit_profile_edit_success);
-                    Navigator.of(context, rootNavigator: true).pop();
-                  } else {
-                    // Toast.showSnackBar(context, msg!);
-                    showCommonRequestErrorDialog(ref, context, error!);
-                  }
-                });
+                          Navigator.of(context, rootNavigator: true).pop();
+                        } else {
+                          // Toast.showSnackBar(context, msg!);
+                          showCommonRequestErrorDialog(ref, context, error!);
+                        }
+                      });
                     },
-              icon: Icon(Icons.done_rounded)),
+              icon: HoohIcon(
+                "assets/images/icon_ok.svg",
+                width: 24,
+                height: 24,
+                color: designColors.dark_01.auto(ref),
+              )),
         ],
       ),
       body: Padding(

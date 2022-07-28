@@ -1,10 +1,11 @@
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:app/global.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/utils/design_colors.dart';
+import 'package:app/utils/ui_utils.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -53,24 +54,29 @@ class _AdjustTemplatePositionScreenState extends ConsumerState<AdjustTemplatePos
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: HoohAppBar(
         title: Text(globalLocalizations.template_adjustment_title),
         actions: [
           IconButton(
               onPressed: () async {
-                var file = await captureImage();
+                File file = await captureImage();
                 widget.onFileAdjusted(file);
               },
-              icon: Icon(Icons.arrow_forward))
+              icon: HoohIcon(
+                "assets/images/icon_arrow_next.svg",
+                width: 24,
+                height: 24,
+                color: designColors.dark_01.auto(ref),
+              ))
         ],
       ),
       body: Column(
         children: [
           Expanded(
+            flex: 1,
             child: Container(
               color: designColors.dark_01.light.withOpacity(0.75),
             ),
-            flex: 1,
           ),
           RepaintBoundary(
             key: genKey,
@@ -85,7 +91,7 @@ class _AdjustTemplatePositionScreenState extends ConsumerState<AdjustTemplatePos
                         height: screenWidth,
                         child: GestureDetector(
                           behavior: HitTestBehavior.translucent,
-                          onDoubleTap: () {
+                          onTap: () {
                             if (whiteBackground == null) {
                               return;
                             } else {
@@ -131,6 +137,7 @@ class _AdjustTemplatePositionScreenState extends ConsumerState<AdjustTemplatePos
             ),
           ),
           Expanded(
+            flex: 2,
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 56),
               color: designColors.dark_01.light.withOpacity(0.75),
@@ -145,7 +152,6 @@ class _AdjustTemplatePositionScreenState extends ConsumerState<AdjustTemplatePos
                 ),
               ),
             ),
-            flex: 2,
           ),
         ],
       ),
@@ -176,21 +182,14 @@ class _AdjustTemplatePositionScreenState extends ConsumerState<AdjustTemplatePos
   Future<File> captureImage() async {
     WidgetsBinding? binding = WidgetsBinding.instance;
     double devicePixelRatio = binding.window.devicePixelRatio;
-    // debugPrint("devicePixelRatio=$devicePixelRatio");
     int imageSize = 720;
     double screenWidth = MediaQuery.of(context).size.width * devicePixelRatio;
     double screenHeight = MediaQuery.of(context).size.height * devicePixelRatio;
     RenderRepaintBoundary boundary = genKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
     ui.Image image = await boundary.toImage(pixelRatio: devicePixelRatio);
     img.Image src = img.Image.fromBytes(image.width, image.height, (await image.toByteData())!.buffer.asUint8List());
-    // debugPrint("screenWidth=$screenWidth screenHeight=$screenHeight src.width=${src.width} src.height=${src.height}");
-    // double offsetX = x * devicePixelRatio;
-    // double offsetY = y * devicePixelRatio;
-    // debugPrint("offsetX=$offsetX offsetY=$offsetY ");
     img.Image result = img.Image.rgb(imageSize, imageSize);
     img.fill(result, Colors.white.value);
-    // double dstX = offsetX * imageSize / screenWidth;
-    // double dstY = offsetY * imageSize / screenWidth;
     double dstX = 0;
     double dstY = 0;
     double dstW = src.width * imageSize / screenWidth;
@@ -207,47 +206,11 @@ class _AdjustTemplatePositionScreenState extends ConsumerState<AdjustTemplatePos
       dstW: dstW.toInt(),
       dstH: dstH.toInt(),
     );
-    // debugPrint(""
-    //     "srcX=${0}\n"
-    //     "srcY=${0}\n"
-    //     "srcW=${src.width}\n"
-    //     "srcH=${src.height}\n"
-    //     "dstX=$dstX\n"
-    //     "dstY=$dstY\n"
-    //     "dstW=$dstW\n"
-    //     "dstH=$dstH\n");
-    final directory = (await getApplicationDocumentsDirectory()).path;
-    var bytes = img.encodeJpg(result, quality: 80);
-    var filename = md5.convert(bytes).toString();
-    // debugPrint("bytes=$filename");
+    String directory = (await getApplicationDocumentsDirectory()).path;
+    List<int> bytes = img.encodeJpg(result, quality: 80);
+    String filename = md5.convert(bytes).toString();
     File imgFile = File('$directory/$filename.jpg');
     imgFile.writeAsBytesSync(bytes, flush: true);
     return imgFile;
-  }
-
-  bool isImageDarkColor(Uint8List fileBytes) {
-    img.Image? image = img.decodePng(fileBytes);
-    Uint32List pixels = image!.data;
-    // check 1000 pixels
-    int count = 1000;
-    int gap = pixels.length ~/ count;
-    int lightCount = 0;
-    int darkCount = 0;
-    for (int i = 0; i < pixels.length; i += gap) {
-      int pixel = pixels[i];
-      Color color = Color(pixel);
-      int a = color.alpha;
-      int b = color.red;
-      int g = color.green;
-      int r = color.blue;
-      color = Color.fromARGB(a, r, g, b);
-      if ((r * 0.299 + g * 0.587 + b * 0.114) > 186) {
-        lightCount++;
-      } else {
-        darkCount++;
-      }
-    }
-    debugPrint("darkCount=$darkCount lightCount=$lightCount");
-    return darkCount >= lightCount;
   }
 }

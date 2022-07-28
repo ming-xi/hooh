@@ -1,4 +1,5 @@
 import 'package:app/global.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/pages/user/user_profile.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
@@ -45,105 +46,210 @@ class _CommentViewState extends ConsumerState<CommentView> {
     PostComment comment = widget.comment;
     User author = comment.author;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AvatarView.fromUser(comment.author, size: 32),
-          SizedBox(
-            width: 6,
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  author.name,
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref)),
-                ),
-                SizedBox(
-                  height: 6,
-                ),
-                // Text(
-                //   comment.content,
-                //   style: TextStyle(fontSize: 14, color: designColors.dark_01.auto(ref)),
-                // ),
-                buildContentWidget(comment),
-                SizedBox(
-                  height: 8,
-                ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+      padding: const EdgeInsets.only(left: 20, right: 20, top: 8, bottom: 0),
+      child: buildDataColumn(comment, author),
+    );
+  }
+
+  Widget buildDataColumn(PostComment comment, User author) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            AvatarView.fromUser(comment.author, size: 32),
+            SizedBox(
+              width: 6,
+            ),
+            Expanded(
+              child: Text(
+                author.name,
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref)),
+              ),
+            )
+          ],
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 38),
+          child: buildContentWidget(comment),
+        ),
+        // SizedBox(
+        //   height: 6,
+        // ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 38,
+            ),
+            Text(
+              DateUtil.getZonedDateString(comment.createdAt!),
+              style: TextStyle(fontSize: 8, color: designColors.light_06.auto(ref)),
+            ),
+            Spacer(),
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                if (widget.onLikeClick != null) {
+                  widget.onLikeClick!(comment, !comment.liked!);
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(right: 4, left: 16, top: 6, bottom: 6),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      DateUtil.getZonedDateString(comment.createdAt!),
-                      style: TextStyle(fontSize: 8, color: designColors.light_06.auto(ref)),
+                    HoohIcon(
+                      "assets/images/icon_post_like.svg",
+                      width: 24,
+                      height: 24,
+                      color: (comment.liked ?? false) ? designColors.feiyu_blue.auto(ref) : designColors.light_06.auto(ref),
                     ),
-                    Spacer(),
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () {
-                        if (widget.onLikeClick != null) {
-                          widget.onLikeClick!(comment, !comment.liked!);
-                        }
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 4, left: 16, top: 6, bottom: 6),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            HoohIcon(
-                              "assets/images/icon_post_like.svg",
-                              width: 16,
-                              height: 16,
-                              color: (comment.liked ?? false) ? designColors.feiyu_blue.auto(ref) : designColors.light_06.auto(ref),
-                            ),
-                            SizedBox(
-                              width: 2,
-                            ),
-                            SizedBox(
-                              width: 16,
-                              child: Text(
-                                comment.likeCount == 0 ? "" : formatAmount(comment.likeCount),
-                                textAlign: TextAlign.start,
-                                style: TextStyle(
-                                  fontSize: 6,
-                                  color: designColors.light_06.auto(ref),
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
+                    SizedBox(
+                      width: 2,
+                    ),
+                    SizedBox(
+                      width: 16,
+                      child: Text(
+                        comment.likeCount == 0 ? "" : formatAmount(comment.likeCount),
+                        textAlign: TextAlign.start,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: designColors.light_06.auto(ref),
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (widget.onReplyClick != null) {
-                          widget.onReplyClick!(comment);
-                        }
-                      },
-                      child: Text(
-                        globalLocalizations.post_detail_comment_reply,
-                        style: TextStyle(color: designColors.light_06.auto(ref)),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                          minimumSize: Size(40, 16),
-                          elevation: 0,
-                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          textStyle: TextStyle(fontSize: 10, fontFamily: 'Linotte'),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-                          primary: designColors.light_02.auto(ref),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-                    )
                   ],
-                )
-              ],
+                ),
+              ),
             ),
-          )
-        ],
-      ),
+            ElevatedButton(
+              onPressed: () {
+                if (widget.onReplyClick != null) {
+                  widget.onReplyClick!(comment);
+                }
+              },
+              child: Text(
+                globalLocalizations.post_detail_comment_reply,
+                style: TextStyle(color: designColors.light_06.auto(ref)),
+              ),
+              style: ElevatedButton.styleFrom(
+                  minimumSize: Size(40, 16),
+                  elevation: 0,
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  textStyle: TextStyle(fontSize: 10, fontFamily: 'Linotte'),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                  primary: designColors.light_02.auto(ref),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+            )
+          ],
+        )
+      ],
+    );
+  }
+
+  Widget buildDataRow(PostComment comment, User author) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AvatarView.fromUser(comment.author, size: 32),
+        SizedBox(
+          width: 6,
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                author.name,
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref)),
+              ),
+              SizedBox(
+                height: 6,
+              ),
+              // Text(
+              //   comment.content,
+              //   style: TextStyle(fontSize: 14, color: designColors.dark_01.auto(ref)),
+              // ),
+              buildContentWidget(comment),
+              SizedBox(
+                height: 0,
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    DateUtil.getZonedDateString(comment.createdAt!),
+                    style: TextStyle(fontSize: 8, color: designColors.light_06.auto(ref)),
+                  ),
+                  Spacer(),
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      if (widget.onLikeClick != null) {
+                        widget.onLikeClick!(comment, !comment.liked!);
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 4, left: 16, top: 6, bottom: 6),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          HoohIcon(
+                            "assets/images/icon_post_like.svg",
+                            width: 24,
+                            height: 24,
+                            color: (comment.liked ?? false) ? designColors.feiyu_blue.auto(ref) : designColors.light_06.auto(ref),
+                          ),
+                          SizedBox(
+                            width: 2,
+                          ),
+                          SizedBox(
+                            width: 16,
+                            child: Text(
+                              comment.likeCount == 0 ? "" : formatAmount(comment.likeCount),
+                              textAlign: TextAlign.start,
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: designColors.light_06.auto(ref),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (widget.onReplyClick != null) {
+                        widget.onReplyClick!(comment);
+                      }
+                    },
+                    child: Text(
+                      globalLocalizations.post_detail_comment_reply,
+                      style: TextStyle(color: designColors.light_06.auto(ref)),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                        minimumSize: Size(40, 16),
+                        elevation: 0,
+                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        textStyle: TextStyle(fontSize: 10, fontFamily: 'Linotte'),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                        primary: designColors.light_02.auto(ref),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                  )
+                ],
+              )
+            ],
+          ),
+        )
+      ],
     );
   }
 

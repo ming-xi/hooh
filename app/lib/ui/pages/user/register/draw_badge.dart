@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:app/global.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/pages/user/register/draw_badge_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/draw_badge_view.dart';
@@ -138,7 +139,7 @@ class _DrawBadgeScreenState extends ConsumerState<DrawBadgeScreen> {
       ),
     ];
     return Scaffold(
-      appBar: AppBar(
+      appBar: HoohAppBar(
         title: Text("Create social icon"),
       ),
       // body: ListView(children: children,),
@@ -147,7 +148,7 @@ class _DrawBadgeScreenState extends ConsumerState<DrawBadgeScreen> {
       ),
     );
     // return Scaffold(
-    //   // appBar: AppBar(
+    //   // appBar: HoohAppBar(
     //   //   title: Text("Create social icon"),
     //   // ),
     //   // body: CustomScrollView(
