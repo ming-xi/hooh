@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class CreationStrategy {
+  static const double DEFAULT_FONT_SIZE = 8;
+
   static const _FONT_LEN_STOP1 = 6 ~/ 2;
   static const _FONT_LEN_STOP2 = 16 ~/ 2;
   static const _FONT_LEN_STOP3 = 40 ~/ 2;
@@ -190,7 +192,7 @@ class CreationStrategy {
     map ??= _FONT_SIZE_MAP[null];
     List<int?> keys = map!.keys.toList();
     keys.sort(
-      (a, b) {
+          (a, b) {
         if (a == null && b == null) {
           return 0;
         } else if (a == null || b == null) {
@@ -223,7 +225,7 @@ class CreationStrategy {
     map ??= _FONT_LINE_HEIGHT_MAP[null];
     List<int?> keys = map!.keys.toList();
     keys.sort(
-      (a, b) {
+          (a, b) {
         if (a == null && b == null) {
           return 0;
         } else if (a == null || b == null) {

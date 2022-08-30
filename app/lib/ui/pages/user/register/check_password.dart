@@ -5,6 +5,7 @@ import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/pages/user/register/validate_code.dart';
 import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/utils/ui_utils.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -74,7 +75,7 @@ class _CheckPasswordScreenState extends ConsumerState<CheckPasswordScreen> {
               onPressed: !modelState.buttonEnabled
                   ? null
                   : () {
-                      showDialog(
+                showHoohDialog(
                           context: context,
                           barrierDismissible: false,
                           builder: (context) {

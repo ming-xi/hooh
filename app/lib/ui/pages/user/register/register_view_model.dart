@@ -73,7 +73,7 @@ class RegisterScreenViewModel extends StateNotifier<RegisterScreenModelState> {
           onFailed(error);
         }
       }
-      // showDialog(
+      // showHoohDialog(
       //     context: context,
       //     builder: (context) {
       //       return AlertDialog(

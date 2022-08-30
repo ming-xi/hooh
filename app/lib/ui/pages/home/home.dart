@@ -54,7 +54,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     globalHomeScreenIsInStack = true;
     pageContents = [
       InputPage(),
-      GalleryPage(),
+      GalleryPage(provider: galleryTemplatesProvider),
       FeedsPage(),
       MePage(),
     ];

@@ -14,6 +14,7 @@ import 'package:app/utils/creation_strategy.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/utils/date_util.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -139,7 +140,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
     return WillPopScope(
       onWillPop: () async {
         if (userChangedContent) {
-          bool? result = await showDialog<bool>(
+          bool? result = await showHoohDialog<bool>(
               context: context,
               barrierDismissible: false,
               builder: (popContext) {
@@ -246,10 +247,16 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
           translate(modelState.setting.frameH, height),
         );
         TemplateViewSetting viewSetting = TemplateView.generateViewSetting(TemplateView.SCENE_EDIT_POST_CANVAS);
+        debugPrint("modelState.setting.userChanged=${modelState.setting.userChanged}");
         var child = TemplateView(
           modelState.setting,
           viewSetting: viewSetting,
           radius: 0,
+          onFontSizeChanged: (fontSize) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              model.setFontSize(fontSize);
+            });
+          },
         );
         return Listener(
           onPointerDown: (details) {
@@ -294,7 +301,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
             }
             var loc = details.localPosition;
             if (scaling) {
-              userChangedContent = true;
+              // setUserChangedContent();
               var newWidth = (originalFrameSize.dx + loc.dx - panStartLocation.dx) / width * 100;
               var newHeight = (originalFrameSize.dy + loc.dy - panStartLocation.dy) / height * 100;
               if (newWidth < TemplateTextSettingView.MIN_SIZE_PERCENT) {
@@ -314,7 +321,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
                 newHeight,
               );
             } else if (panning) {
-              userChangedContent = true;
+              // setUserChangedContent();
               var newX = (originalFrameLocation.dx + loc.dx - panStartLocation.dx) / width * 100;
               var newY = (originalFrameLocation.dy + loc.dy - panStartLocation.dy) / height * 100;
               if (newX < TemplateTextSettingView.MIN_MARGIN_PERCENT) {
@@ -424,6 +431,16 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
     );
   }
 
+  void setUserChangedContent() {
+    // var lastStatus = userChangedContent;
+    userChangedContent = true;
+    // if (lastStatus != userChangedContent) {
+    debugPrint("setUserChangedContent");
+    EditPostScreenViewModel model = ref.read(widget.provider.notifier);
+    model.setUserChanged(userChangedContent);
+    // }
+  }
+
   Widget buildFloatingInputPanel() {
     return Container(
       color: designColors.dark_01.auto(ref).withOpacity(0.5),
@@ -443,7 +460,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
                 expands: true,
                 maxLines: null,
                 onChanged: (text) {
-                  userChangedContent = true;
+                  // setUserChangedContent();
                   EditPostScreenViewModel model = ref.read(widget.provider.notifier);
                   model.setText(text);
                 },
@@ -542,65 +559,65 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
         SizedBox(
           width: spacingLarge,
         ),
-        MainStyles.outlinedIconButton(ref, "assets/images/icon_font_style_shadow.svg", itemSize, modelState.setting.shadow, () {
+        MainStyles.outlinedIconButton(ref, "assets/images/icon_font_style_shadow.png", itemSize, modelState.setting.shadow, () {
           model.toggleDrawShadow();
-          userChangedContent = true;
+          // setUserChangedContent();
         }),
         SizedBox(
           width: spacing,
         ),
         MainStyles.outlinedIconButton(ref, "assets/images/icon_font_style_stroke.svg", itemSize, modelState.setting.stroke, () {
           model.toggleDrawStroke();
-          userChangedContent = true;
+          // setUserChangedContent();
         }),
         SizedBox(
           width: spacing,
         ),
         MainStyles.outlinedIconButton(ref, "assets/images/icon_font_style_mask.svg", itemSize, modelState.setting.mask, () {
           model.toggleDrawMask();
-          userChangedContent = true;
+          // setUserChangedContent();
         }),
         SizedBox(
           width: spacing,
         ),
         MainStyles.outlinedIconButton(ref, "assets/images/icon_font_style_bold.svg", itemSize, modelState.setting.bold, () {
           model.toggleBold();
-          userChangedContent = true;
+          // setUserChangedContent();
         }),
         SizedBox(
           width: spacing,
         ),
         MainStyles.outlinedIconButton(ref, "assets/images/icon_font_style_blur.svg", itemSize, modelState.setting.blur, () {
           model.toggleBlur();
-          userChangedContent = true;
+          // setUserChangedContent();
         }),
         SizedBox(
           width: spacingLarge,
         ),
         MainStyles.outlinedIconButton(ref, "assets/images/icon_font_style_size_plus.svg", itemSize, false, () {
           model.increaseFontSize();
-          userChangedContent = true;
+          setUserChangedContent();
         }),
         SizedBox(
           width: spacing,
         ),
         MainStyles.outlinedIconButton(ref, "assets/images/icon_font_style_size_minus.svg", itemSize, false, () {
           model.decreaseFontSize();
-          userChangedContent = true;
+          setUserChangedContent();
         }),
         SizedBox(
           width: spacingLarge,
         ),
         MainStyles.outlinedIconButton(ref, "assets/images/icon_font_style_spacing_plus.svg", itemSize, false, () {
           model.increaseLineHeight();
-          userChangedContent = true;
+          setUserChangedContent();
         }),
         SizedBox(
           width: spacing,
         ),
         MainStyles.outlinedIconButton(ref, "assets/images/icon_font_style_spacing_minus.svg", itemSize, false, () {
           model.decreaseLineHeight();
-          userChangedContent = true;
+          setUserChangedContent();
         }),
       ]),
     );
@@ -631,7 +648,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
               ),
               child: InkWell(
                 onTap: () {
-                  userChangedContent = true;
+                  // setUserChangedContent();
                   model.setSelectedFont(index);
                 },
                 borderRadius: BorderRadius.circular(borderRadius),
@@ -677,7 +694,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
                     ),
                     child: InkWell(
                       onTap: () {
-                        userChangedContent = true;
+                        // setUserChangedContent();
                         model.setSelectedColor(index);
                       },
                       borderRadius: BorderRadius.circular(borderRadius),
@@ -695,7 +712,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> with TickerProv
                     ),
                     child: InkWell(
                       onTap: () {
-                        userChangedContent = true;
+                        // setUserChangedContent();
                         model.setSelectedColor(index);
                       },
                       borderRadius: BorderRadius.circular(borderRadius),

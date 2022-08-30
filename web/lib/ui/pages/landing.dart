@@ -49,7 +49,7 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
               Expanded(
                 child: Text(
                   globalLocalizations.landing_bar_title,
-                  style: TextStyle(fontSize: 16, fontFamily: 'Baloo', color: designColors.light_01.auto(ref)),
+                  style: TextStyle(fontSize: 16, fontFamily: 'Baloo', color: designColors.light_01.auto(ref), height: 0.9),
                 ),
               ),
               buildOpenInAppButton(
@@ -72,6 +72,28 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
+              SizedBox(
+                height: 8,
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    HoohIcon(
+                      "assets/images/figure_open_in_browser_curve.svg",
+                      color: designColors.dark_01.auto(ref),
+                      width: 30,
+                      height: 34,
+                    ),
+                    Text(
+                      globalLocalizations.landing_open_in_browser,
+                      style: TextStyle(color: designColors.dark_01.auto(ref), fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Linotte'),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
               Spacer(),
               SizedBox(
                 height: 24,
@@ -84,18 +106,18 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
               SizedBox(
                 height: 20,
               ),
-              Text(
-                globalLocalizations.landing_title,
-                style: TextStyle(
-                  color: designColors.orange.auto(ref),
-                  fontFamily: 'Baloo',
-                  fontSize: 24,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(
-                height: 70,
-              ),
+              // Text(
+              //   globalLocalizations.landing_title,
+              //   style: TextStyle(
+              //     color: designColors.orange.auto(ref),
+              //     fontFamily: 'Baloo',
+              //     fontSize: 24,
+              //   ),
+              //   textAlign: TextAlign.center,
+              // ),
+              // SizedBox(
+              //   height: 70,
+              // ),
               buildStoreDownloadButton(
                   assetName: "assets/images/icon_apple.svg",
                   iconColor: designColors.light_01.auto(ref),
@@ -115,7 +137,7 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
               ),
               buildCommonButton(title: globalLocalizations.landing_apk, onClick: () {}),
               SizedBox(
-                height: 56,
+                height: 96,
               ),
               Spacer(),
             ],

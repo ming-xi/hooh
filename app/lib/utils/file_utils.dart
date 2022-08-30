@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'dart:io';
+import 'package:common/utils/ui_utils.dart';
+import 'package:universal_io/io.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -19,7 +20,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 class FileUtil {
   static Future<void> saveNetworkImageToGallery(BuildContext context, String url) async {
-    showDialog(
+    showHoohDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) {
@@ -32,9 +33,9 @@ class FileUtil {
     _downloadImage(url).then((success) {
       Navigator.of(context, rootNavigator: true).pop();
       if (success) {
-        Toast.showSnackBar(context, globalLocalizations.post_detail_download_success);
+        showSnackBar(context, globalLocalizations.post_detail_download_success);
       } else {
-        Toast.showSnackBar(context, globalLocalizations.post_detail_download_failed);
+        showSnackBar(context, globalLocalizations.post_detail_download_failed);
       }
     });
   }

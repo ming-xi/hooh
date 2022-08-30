@@ -1,12 +1,17 @@
+import 'package:common/utils/ui_utils.dart';
+import 'package:universal_io/io.dart';
+
 import 'package:app/global.dart';
-import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/pages/user/user_profile.dart';
 import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
+import 'package:app/utils/file_utils.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/post_comment.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/date_util.dart';
+import 'package:common/utils/network.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -19,11 +24,13 @@ class CommentView extends ConsumerStatefulWidget {
 
   final PostComment comment;
   final void Function(PostComment comment)? onReplyClick;
+  final void Function(PostComment comment)? onDeleted;
   final void Function(PostComment comment, bool newState)? onLikeClick;
 
   const CommentView({
     required this.comment,
     this.onReplyClick,
+    this.onDeleted,
     this.onLikeClick,
     Key? key,
   }) : super(key: key);
@@ -45,10 +52,136 @@ class _CommentViewState extends ConsumerState<CommentView> {
   Widget build(BuildContext context) {
     PostComment comment = widget.comment;
     User author = comment.author;
-    return Padding(
-      padding: const EdgeInsets.only(left: 20, right: 20, top: 8, bottom: 0),
-      child: buildDataColumn(comment, author),
+    return Material(
+      type: MaterialType.transparency,
+      child: Ink(
+        child: InkWell(
+          onTap: () {
+            if (widget.onReplyClick != null) {
+              widget.onReplyClick!(comment);
+            }
+          },
+          onLongPress: () {
+            showCommentMenu(
+              context: context,
+              ref: ref,
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.only(left: 20, right: 20, top: 8, bottom: 0),
+            child: buildDataColumn(comment, author),
+          ),
+        ),
+      ),
     );
+  }
+
+  void showCommentMenu({
+    required BuildContext context,
+    required WidgetRef ref,
+  }) {
+    debugPrint("sheet context=$context");
+    if (Platform.isIOS || Platform.isMacOS) {
+      /// To display an actionSheet
+      showCupertinoModalPopup(
+          context: context,
+          builder: (popContext) {
+            List<CupertinoActionSheetAction> actions = [
+              CupertinoActionSheetAction(
+                child: Text(globalLocalizations.post_detail_comment_copy),
+                onPressed: () {
+                  FileUtil.copyToClipboard(widget.comment.plainContent);
+                  Navigator.of(popContext).pop();
+                },
+              ),
+            ];
+            if (ref.read(globalUserInfoProvider)?.id == widget.comment.author.id) {
+              actions.add(CupertinoActionSheetAction(
+                child: Text(globalLocalizations.post_detail_comment_delete),
+                onPressed: () {
+                  Navigator.of(popContext).pop();
+                  showDeleteConfirmDialog();
+                },
+              ));
+            }
+            return CupertinoActionSheet(
+              actions: actions,
+              cancelButton: CupertinoActionSheetAction(
+                child: Text(globalLocalizations.common_cancel),
+                onPressed: () {
+                  Navigator.of(popContext).pop();
+                },
+              ),
+            );
+          });
+    } else {
+      showHoohDialog(
+          context: context,
+          builder: (popContext) {
+            var actions = [
+              ListTile(
+                title: Text(globalLocalizations.post_detail_comment_copy),
+                onTap: () {
+                  FileUtil.copyToClipboard(widget.comment.plainContent);
+                  Navigator.of(popContext).pop();
+                },
+              ),
+            ];
+            if (ref.read(globalUserInfoProvider)?.id == widget.comment.author.id) {
+              actions.add(
+                ListTile(
+                  title: Text(globalLocalizations.post_detail_comment_delete),
+                  onTap: () {
+                    Navigator.of(popContext).pop();
+                    showDeleteConfirmDialog();
+                  },
+                ),
+              );
+            }
+            return AlertDialog(
+              contentPadding: EdgeInsets.symmetric(vertical: 16),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: actions,
+              ),
+            );
+          });
+    }
+  }
+
+  void showDeleteConfirmDialog() {
+    showHoohDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (popContext) {
+          return AlertDialog(
+            title: Text(globalLocalizations.common_confirm),
+            content: Text(globalLocalizations.post_detail_comment_delete_dialog_content),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(popContext).pop();
+                    deleteComment(widget.comment);
+                  },
+                  child: Text(globalLocalizations.common_delete)),
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(popContext).pop();
+                  },
+                  child: Text(globalLocalizations.common_cancel))
+            ],
+          );
+        });
+  }
+
+  void deleteComment(PostComment comment) {
+    network.requestAsync<void>(network.deletePostComment(comment.id), (data) {
+      if (widget.onDeleted != null) {
+        widget.onDeleted!(comment);
+      }
+    }, (error) {
+      showCommonRequestErrorDialog(ref, context, error);
+    });
   }
 
   Widget buildDataColumn(PostComment comment, User author) {
@@ -296,7 +429,7 @@ class _CommentViewState extends ConsumerState<CommentView> {
             text = e.text;
             style = highLightTextStyle;
             onTap = () {
-              Toast.showSnackBar(context, "not supported yet");
+              showSnackBar(context, "not supported yet");
             };
           }
           return HoohLocalizedTextKey(key: key, text: text, style: style, onTap: onTap);

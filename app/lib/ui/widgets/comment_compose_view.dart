@@ -80,7 +80,7 @@ class _CommentComposeViewState extends ConsumerState<CommentComposeView> {
                       onChanged: (text) {
                         model.setCanSendComment(controller.text.trim().isNotEmpty);
                       },
-                      textInputAction: TextInputAction.send,
+                      // textInputAction: TextInputAction.send,
                       onEditingComplete: () {
                         sendComment(modelState, model, context);
                       },

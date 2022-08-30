@@ -37,6 +37,7 @@ class TemplateView extends ConsumerStatefulWidget {
   final double? radius;
   final void Function()? onPressBody;
   final TemplateViewSetting viewSetting;
+  final Function(double)? onFontSizeChanged;
 
   TemplateView(
     this.setting, {
@@ -45,6 +46,7 @@ class TemplateView extends ConsumerStatefulWidget {
     this.onPressBody,
     this.scale = 1,
     this.radius = 20,
+    this.onFontSizeChanged,
     Key? key,
   }) : super(key: key) {}
 
@@ -90,8 +92,6 @@ class TemplateView extends ConsumerStatefulWidget {
 }
 
 class _TemplateViewState extends ConsumerState<TemplateView> {
-  bool fontSizeCalculated = false;
-  double? properFontSize;
   StateProvider<bool> visibleProvider = StateProvider(
     (ref) => false,
   );
@@ -207,8 +207,8 @@ class _TemplateViewState extends ConsumerState<TemplateView> {
   Widget buildMaskView() {
     return Positioned.fill(
         child: Container(
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(widget.radius ?? 0), color: Color(TemplateView.MASK_COLOR)),
-        ));
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(widget.radius ?? 0), color: Color(TemplateView.MASK_COLOR)),
+    ));
   }
 
   Widget buildTextView() {
@@ -220,15 +220,17 @@ class _TemplateViewState extends ConsumerState<TemplateView> {
             frameY: widget.setting.frameY,
             frameW: widget.setting.frameW,
             frameH: widget.setting.frameH,
-            fontSize: properFontSize,
             fontFamily: widget.setting.fontFamily,
+            fontSize: widget.setting.fontSize,
             alignment: widget.setting.alignment,
             bold: widget.setting.bold,
             drawShadow: widget.setting.shadow,
             drawStroke: widget.setting.stroke,
             lineHeight: widget.setting.lineHeight,
             showFrame: widget.viewSetting.showFrame,
-            scale: widget.scale),
+            scale: widget.scale,
+            userChanged: widget.setting.userChanged,
+            onFontSizeChanged: widget.onFontSizeChanged),
       ),
     );
   }
@@ -329,7 +331,8 @@ class PostTextPainter extends CustomPainter {
   final TextPainter tp = TextPainter(
     textDirection: TextDirection.ltr,
   );
-  bool userChanged = false;
+  final Function(double)? onFontSizeChanged;
+  bool userChanged;
 
   PostTextPainter(
     this.text,
@@ -339,9 +342,11 @@ class PostTextPainter extends CustomPainter {
     required this.frameW,
     required this.frameH,
     required this.fontFamily,
+    required this.onFontSizeChanged,
     this.alignment = TextAlignment.left,
     this.drawShadow = false,
     this.drawStroke = false,
+    this.userChanged = false,
     this.bold = false,
     this.fontSize,
     this.showFrame = true,
@@ -376,9 +381,9 @@ class PostTextPainter extends CustomPainter {
   }
 
   void drawFrame(Canvas canvas, Size size) {
-    // if (!showFrame) {
-    //   return;
-    // }
+    if (!showFrame) {
+      return;
+    }
     p.style = PaintingStyle.stroke;
     p.color = textColor.withOpacity(0.5);
     canvas.drawRect(
@@ -441,11 +446,17 @@ class PostTextPainter extends CustomPainter {
     };
     tp.text = textSpan;
     tp.textAlign = alignMap[alignment]!;
-    if (fontSize == null) {
+    if (!userChanged) {
+      // if (fontSize == null) {
+      debugPrint("_calculateProperFontSize");
+      var lastSize = fontSize;
       fontSize = _calculateProperFontSize(textStyle, size);
-      // final offset = Offset(translate(frameX, size.width) + textPadding, translate(frameY, size.height) + textPadding);
-      // tp.paint(canvas, offset);
+      if (lastSize != fontSize && onFontSizeChanged != null) {
+        onFontSizeChanged!(fontSize!);
+      }
+      // }
     }
+    debugPrint("userChanged=$userChanged fontSize=$fontSize");
     final span = TextSpan(
       text: text,
       style: textStyle.copyWith(fontSize: fontSize),
@@ -456,11 +467,19 @@ class PostTextPainter extends CustomPainter {
       minWidth: translate(frameW, size.width) - textPadding * 2,
       maxWidth: translate(frameW, size.width) - textPadding * 2,
     );
-    final offset = Offset(translate(frameX, size.width) + textPadding, translate(frameY, size.height) + (translate(frameH, size.height) - tp.height) / 2);
+    ui.Offset offset;
+    if (!userChanged) {
+      offset = Offset(translate(frameX, size.width) + textPadding, translate(frameY, size.height) + (translate(frameH, size.height) - tp.height) / 2);
+    } else {
+      offset = Offset(translate(frameX, size.width) + textPadding, translate(frameY, size.height) + textPadding);
+    }
     tp.paint(canvas, offset);
   }
 
   double _calculateProperFontSize(TextStyle textStyle, Size size) {
+    if (text.isEmpty) {
+      return 24;
+    }
     var currentUtcDate = DateUtil.getCurrentUtcDate();
     double properFontSize = 8;
     double tempFontSize = 8;

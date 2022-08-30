@@ -1,5 +1,4 @@
 import 'package:app/global.dart';
-import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/pages/feeds/waiting_list_view_model.dart';
 import 'package:app/ui/pages/home/feeds.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
@@ -9,6 +8,7 @@ import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/page_state.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -185,11 +185,25 @@ class _WaitingListPageState extends ConsumerState<WaitingListPage> {
       displayAsVotingPost: true,
       onVote: (post, error) {
         if (error != null) {
-          showCommonRequestErrorDialog(ref, context, error);
+          // showCommonRequestErrorDialog(ref, context, error);
           return;
         }
-        Toast.showSnackBar(context, globalLocalizations.waiting_list_vote_success);
-        model.updatePostData(post, index);
+        showSnackBar(context, globalLocalizations.waiting_list_vote_success);
+        model.updatePostData(post, index, onPostIntoMainList: () {
+          showHoohDialog(
+              context: context,
+              builder: (popContext) => AlertDialog(
+                    title: Text(globalLocalizations.waiting_list_vote_into_main_list_dialog_title),
+                    content: Text(globalLocalizations.waiting_list_vote_into_main_list_dialog_content),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            Navigator.of(popContext).pop(false);
+                          },
+                          child: Text(globalLocalizations.common_ok))
+                    ],
+                  ));
+        });
       },
     );
   }

@@ -49,6 +49,7 @@ class _StartScreenState extends ConsumerState<StartScreen> {
         : HoohAppBar(
             actions: actions,
             hoohLeading: null,
+            automaticallyImplyLeading: widget.scene != StartScreen.SCENE_ME,
           );
     return Scaffold(
       appBar: appBar,

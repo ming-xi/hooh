@@ -56,7 +56,7 @@ class _RecommendedTemplatesScreenState extends ConsumerState<RecommendedTemplate
           model.getRecommendedTemplates(onComplete: () {
             _refreshController.refreshCompleted();
           }, onError: (error) {
-            // Toast.showSnackBar(context, error.message);
+            // showSnackBar(context, error.message);
             showCommonRequestErrorDialog(ref, context, error);
             _refreshController.refreshCompleted();
           });
@@ -127,7 +127,12 @@ class _RecommendedTemplatesScreenState extends ConsumerState<RecommendedTemplate
 
   Widget buildSeeMoreWidget() {
     return buildSpecialItemWidget(() {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => GalleryScreen()));
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => GalleryScreen(
+                    contents: widget.contents,
+                  )));
     }, "assets/images/to_gallery.svg", globalLocalizations.recommended_templates_see_more);
   }
 

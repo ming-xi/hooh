@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:app/global.dart';
 import 'package:app/ui/pages/splash.dart';
@@ -6,9 +7,9 @@ import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/file_utils.dart';
 import 'package:app/utils/push.dart';
-import 'package:app/utils/ui_utils.dart';
 import 'package:common/utils/device_info.dart';
 import 'package:common/utils/preferences.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:file_local_storage_inspector/file_local_storage_inspector.dart';
 import 'package:flutter/foundation.dart';
 
@@ -126,6 +127,8 @@ class HoohApp extends ConsumerStatefulWidget {
 }
 
 class _HoohAppState extends ConsumerState<HoohApp> with WidgetsBindingObserver, KeyboardLogic {
+  late Brightness brightness;
+
   @override
   void onKeyboardChanged(bool visible) {
     // globalIsKeyboardVisible = visible;
@@ -135,24 +138,33 @@ class _HoohAppState extends ConsumerState<HoohApp> with WidgetsBindingObserver, 
   @override
   void initState() {
     super.initState();
+    SingletonFlutterWindow window = WidgetsBinding.instance.window;
+    window.onPlatformBrightnessChanged = () {
+      WidgetsBinding.instance.handlePlatformBrightnessChanged();
+      // This callback is called every time the brightness changes.
+      setState(() {
+        // 强制build
+        brightness = window.platformBrightness;
+      });
+    };
   }
 
   @override
   Widget build(BuildContext context) {
-    var oldThemeData = ThemeData(
-        primarySwatch: Colors.blue,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          titleTextStyle: TextStyle(color: Colors.black, fontSize: 16),
-          actionsIconTheme: IconThemeData(color: Colors.black),
-          iconTheme: IconThemeData(color: Colors.black),
-          // shadowColor: Colors.transparent,
-        ));
+    // var oldThemeData = ThemeData(
+    //     primarySwatch: Colors.blue,
+    //     appBarTheme: const AppBarTheme(
+    //       backgroundColor: Colors.white,
+    //       titleTextStyle: TextStyle(color: Colors.black, fontSize: 16),
+    //       actionsIconTheme: IconThemeData(color: Colors.black),
+    //       iconTheme: IconThemeData(color: Colors.black),
+    //       // shadowColor: Colors.transparent,
+    //     ));
     int darkMode = ref.watch(globalDarkModeProvider);
     Locale? appLocale = ref.watch(globalLocaleProvider);
     debugPrint("appLocale=${appLocale?.languageCode}");
-    Brightness brightness = SchedulerBinding.instance.window.platformBrightness;
-    // debugPrint("DesignColor brightness=$brightness");
+    brightness = SchedulerBinding.instance.window.platformBrightness;
+    debugPrint("DesignColor brightness=$brightness");
     var themeData = ThemeData(
         primaryColor: designColors.bar90_1.auto(ref),
         backgroundColor: designColors.light_00.auto(ref),
@@ -170,6 +182,15 @@ class _HoohAppState extends ConsumerState<HoohApp> with WidgetsBindingObserver, 
           foregroundColor: designColors.feiyu_blue.generic,
           toolbarTextStyle: TextStyle(color: designColors.feiyu_blue.generic, fontFamily: 'Linotte', fontWeight: FontWeight.bold, fontSize: 16),
           // shadowColor: Colors.transparent,
+        ),
+        // scrollbarTheme: ScrollbarThemeData().copyWith(
+        //   // thumbVisibility: MaterialStateProperty.all(true)
+        //
+        //   // thumbColor: MaterialStateProperty.all(Colors.grey[500]),
+        // ),
+        listTileTheme: ListTileThemeData(textColor: designColors.dark_01.auto(ref)),
+        bottomSheetTheme: BottomSheetThemeData(
+          backgroundColor: designColors.light_00.auto(ref),
         ),
         pageTransitionsTheme: const PageTransitionsTheme(builders: {
           TargetPlatform.android: CupertinoPageTransitionsBuilder(),
@@ -248,38 +269,47 @@ class _HoohAppState extends ConsumerState<HoohApp> with WidgetsBindingObserver, 
       title: 'HooH',
       // home: HomeScreen(),
       home: const SplashScreen(),
+      debugShowCheckedModeBanner: false,
       builder: (context, child) {
-        debugPrint("app builder build");
         globalLocalizations = AppLocalizations.of(context)!;
         return Scaffold(
-          body: Stack(
-            children: [
-              child!,
-              Positioned(
-                top: 0,
-                left: 48,
-                // left: MediaQuery.of(context).size.width * 0.3,
-                child: SafeArea(
-                  child: ElevatedButton(
-                      style: TextButton.styleFrom(
-                        backgroundColor: designColors.light_01.auto(ref),
-                        shape: CircleBorder(),
-                      ),
-                      onPressed: () {
-                        int darkMode = ref.watch(globalDarkModeProvider);
-                        darkMode = cycleDarkMode(darkMode);
-                        ref.read(globalDarkModeProvider.state).state = darkMode;
-                        preferences.putInt(Preferences.KEY_DARK_MODE, darkMode);
-                      },
-                      child: Icon(
-                        getIcon(darkMode),
-                        color: designColors.dark_01.auto(ref),
-                      )),
-                ),
-              ),
-            ],
-          ),
+          body: child!,
         );
+        if (kReleaseMode) {
+          return Scaffold(
+            body: child!,
+          );
+        } else {
+          return Scaffold(
+            body: Stack(
+              children: [
+                child!,
+                Positioned(
+                  top: 0,
+                  left: 48,
+                  // left: MediaQuery.of(context).size.width * 0.3,
+                  child: SafeArea(
+                    child: ElevatedButton(
+                        style: TextButton.styleFrom(
+                          backgroundColor: designColors.light_01.auto(ref),
+                          shape: CircleBorder(),
+                        ),
+                        onPressed: () {
+                          int darkMode = ref.watch(globalDarkModeProvider);
+                          darkMode = cycleDarkMode(darkMode);
+                          ref.read(globalDarkModeProvider.state).state = darkMode;
+                          preferences.putInt(Preferences.KEY_DARK_MODE, darkMode);
+                        },
+                        child: Icon(
+                          getIcon(darkMode),
+                          color: designColors.dark_01.auto(ref),
+                        )),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
       },
     );
   }

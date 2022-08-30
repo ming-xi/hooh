@@ -12,11 +12,13 @@ import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/widgets/template_compose_view.dart';
 import 'package:app/ui/widgets/toast.dart';
+import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sprintf/sprintf.dart';
@@ -38,6 +40,20 @@ class PublishPostScreen extends ConsumerStatefulWidget {
 }
 
 class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
+  String? joinWaitingListFee;
+
+  @override
+  void initState() {
+    super.initState();
+    network.getFeeInfo().then((response) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          joinWaitingListFee = formatCurrency(response.joinWaitingList);
+        });
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     PublishPostScreenViewModel model = ref.read(widget.provider.notifier);
@@ -65,7 +81,7 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
                         child: SizedBox.square(
                           dimension: 128,
                           child: TemplateView(modelState.setting, viewSetting: viewSetting, scale: 128 / screenWidth, radius: 20, onPressBody: () {
-                            showDialog(
+                            showHoohDialog(
                                 context: context,
                                 builder: (context) {
                                   return Dialog(
@@ -94,16 +110,16 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
                           onChanged: (newState) {
                             model.setAllowDownload(newState);
                           }), onPress: () {
-                    model.setAllowDownload(!modelState.allowDownload);
-                  }),
+                        model.setAllowDownload(!modelState.allowDownload);
+                      }),
                   MainStyles.buildListTile(ref, globalLocalizations.publish_post_private,
                       tailWidget: Switch(
                           value: modelState.isPrivate,
                           onChanged: (newState) {
                             model.setIsPrivate(newState);
                           }), onPress: () {
-                    model.setIsPrivate(!modelState.isPrivate);
-                  }),
+                        model.setIsPrivate(!modelState.isPrivate);
+                      }),
                   Spacer(),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 48.0),
@@ -116,62 +132,71 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 48.0),
-                    child: MainStyles.gradientButton(ref, globalLocalizations.publish_post_publish_to_waiting_list, () {
-                      if (!(preferences.getBool(Preferences.KEY_ADD_TO_VOTE_LIST_DIALOG_CHECKED) ?? false)) {
-                        showWaitingListHintDialog();
-                        // return;
-                      } else {
-                        publishPost(true);
-                      }
-                    }),
+                    child: MainStyles.gradientButton(
+                        ref,
+                        globalLocalizations.publish_post_publish_to_waiting_list,
+                        modelState.isPrivate
+                            ? null
+                            : () {
+                                if (!(preferences.getBool(Preferences.KEY_ADD_TO_VOTE_LIST_DIALOG_CHECKED) ?? false)) {
+                                  showWaitingListHintDialog();
+                                  // return;
+                                } else {
+                                  publishPost(true);
+                                }
+                              }),
                   ),
                   SizedBox(
                     height: 4,
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 24,
-                      ),
-                      HoohLocalizedRichText(
-                          text: globalLocalizations.publish_post_spends_ore,
-                          keys: [
-                            HoohLocalizedWidgetKey(
-                              key: globalLocalizations.publish_post_spends_ore_placeholder,
-                              widget: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4),
-                                child: HoohIcon(
-                                  "assets/images/common_ore.svg",
-                                  width: 18,
-                                  height: 18,
-                                ),
-                              ),
-                            )
+                  joinWaitingListFee == null
+                      ? SizedBox(
+                          height: 24,
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 24,
+                            ),
+                            HoohLocalizedRichText(
+                                text: sprintf(globalLocalizations.publish_post_spends_ore, [joinWaitingListFee]),
+                                keys: [
+                                  HoohLocalizedWidgetKey(
+                                    key: globalLocalizations.publish_post_spends_ore_placeholder,
+                                    widget: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                                      child: HoohIcon(
+                                        "assets/images/common_ore.svg",
+                                        width: 18,
+                                        height: 18,
+                                      ),
+                                    ),
+                                  )
+                                ],
+                                defaultTextStyle: bottomTextStyle),
+                            IconButton(
+                                padding: EdgeInsets.zero,
+                                constraints: BoxConstraints(minHeight: 24, minWidth: 24),
+                                splashRadius: 24,
+                                onPressed: () {
+                                  showHoohDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          title: Text(globalLocalizations.publish_post_spends_ore_dialog_title),
+                                          content: Text(globalLocalizations.publish_post_spends_ore_dialog_content),
+                                        );
+                                      });
+                                },
+                                icon: Icon(
+                                  Icons.info_rounded,
+                                  size: 18,
+                                  color: designColors.dark_03.auto(ref),
+                                )),
                           ],
-                          defaultTextStyle: bottomTextStyle),
-                      IconButton(
-                          padding: EdgeInsets.zero,
-                          constraints: BoxConstraints(minHeight: 24, minWidth: 24),
-                          splashRadius: 24,
-                          onPressed: () {
-                            showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return AlertDialog(
-                                    title: Text(globalLocalizations.publish_post_spends_ore_dialog_title),
-                                    content: Text(globalLocalizations.publish_post_spends_ore_dialog_content),
-                                  );
-                                });
-                          },
-                          icon: Icon(
-                            Icons.info_rounded,
-                            size: 18,
-                            color: designColors.dark_03.auto(ref),
-                          )),
-                    ],
-                  ),
+                        ),
                   SizedBox(
                     height: 24,
                   ),
@@ -184,7 +209,7 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
     );
   }
 
-  void _showDialogWithCheckBox({
+  void _showHoohDialogWithCheckBox({
     required String title,
     required String content,
     required bool Function(WidgetRef ref) checked,
@@ -193,7 +218,7 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
     required Function(bool?) onCheckBoxChanged,
     required Function() onOkClick,
   }) {
-    showDialog(
+    showHoohDialog(
         context: context,
         barrierDismissible: false,
         builder: (popContext) {
@@ -218,16 +243,18 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: SizedBox(
                         height: screenHeight / 4,
-                        child: CustomScrollView(
-                          slivers: [
-                            SliverFillRemaining(
-                              hasScrollBody: false,
-                              child: Text(
-                                content,
-                                style: TextStyle(fontSize: 16, color: designColors.light_06.auto(ref)),
-                              ),
-                            )
-                          ],
+                        child: Scrollbar(
+                          child: CustomScrollView(
+                            slivers: [
+                              SliverFillRemaining(
+                                hasScrollBody: false,
+                                child: Text(
+                                  content,
+                                  style: TextStyle(fontSize: 16, color: designColors.light_06.auto(ref)),
+                                ),
+                              )
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -284,12 +311,12 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
   }
 
   void showWaitingListHintDialog() {
-    PublishPostScreenViewModel model = ref.read(widget.provider.notifier);
     PublishPostScreenModelState modelState = ref.watch(widget.provider);
-    network.getFeeInfo().then((response) {
-      _showDialogWithCheckBox(
+    PublishPostScreenViewModel model = ref.read(widget.provider.notifier);
+    if (joinWaitingListFee != null) {
+      _showHoohDialogWithCheckBox(
           title: globalLocalizations.publish_post_hint_dialog_title,
-          content: sprintf(globalLocalizations.publish_post_hint_dialog_content, [formatCurrency(response.joinWaitingList)]),
+          content: sprintf(globalLocalizations.publish_post_hint_dialog_content, [joinWaitingListFee]),
           checked: (ref) {
             PublishPostScreenModelState modelState = ref.watch(widget.provider);
             return modelState.hintChecked;
@@ -301,7 +328,8 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
             model.setHintChecked(value!);
           },
           onOkClick: () {
-            preferences.putBool(Preferences.KEY_ADD_TO_VOTE_LIST_DIALOG_CHECKED, modelState.hintChecked);
+            debugPrint("put modelState.hintChecked=${modelState.hintChecked}");
+            preferences.putBool(Preferences.KEY_ADD_TO_VOTE_LIST_DIALOG_CHECKED, ref.read(widget.provider).hintChecked);
             Navigator.pop(context);
             User? user = ref.read(globalUserInfoProvider);
             if (user == null) {
@@ -310,14 +338,14 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
             }
             publishPost(true);
           });
-    });
+    }
   }
 
   void publishPost(bool publishToWaitingList) {
     PublishPostScreenModelState modelState = ref.read(widget.provider);
     PublishPostScreenViewModel model = ref.read(widget.provider.notifier);
     User user = ref.read(globalUserInfoProvider)!;
-    showDialog(
+    showHoohDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) {
@@ -332,7 +360,7 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
           clearDraft();
           Future.delayed(Duration(seconds: 3), () {
             Navigator.of(context).pop();
-            Toast.showSnackBar(context, globalLocalizations.publish_post_success);
+            showSnackBar(context, globalLocalizations.publish_post_success);
             HomePageViewModel model = ref.read(homePageProvider.notifier);
             model.updateTabIndex(HomeScreen.PAGE_INDEX_FEEDS);
             if (publishToWaitingList) {
@@ -349,8 +377,14 @@ class _PublishPostScreenState extends ConsumerState<PublishPostScreen> {
           //
           // } else {
           // }
-          //   Toast.showSnackBar(context, sprintf(globalLocalizations.publish_post_failed, [globalLocalizations.error_network_error]));
-          showCommonRequestErrorDialog(ref, context, error);
+          //   showSnackBar(context, sprintf(globalLocalizations.publish_post_failed, [globalLocalizations.error_network_error]));
+          // showCommonRequestErrorDialog(ref, context, error);
+          if (error.errorCode == Constants.INSUFFICIENT_FUNDS) {
+            List<String> split = error.message.split("\n");
+            showNotEnoughOreDialog(ref: ref, context: context, isPublishingPost: true, needed: int.tryParse(split[0])!, current: int.tryParse(split[1])!);
+          } else {
+            showCommonRequestErrorDialog(ref, context, error);
+          }
         });
   }
 

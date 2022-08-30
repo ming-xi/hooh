@@ -1,6 +1,7 @@
 import 'package:app/global.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -436,7 +437,7 @@ class RegisterStyles {
     String? cancelText,
     Function()? onCancel,
   }) {
-    showDialog(
+    showHoohDialog(
         context: context,
         barrierDismissible: barrierDismissible,
         builder: (context) {

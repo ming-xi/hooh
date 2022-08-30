@@ -9,6 +9,8 @@ import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/network/responses.dart';
 import 'package:common/models/user.dart';
+import 'package:common/utils/ui_utils.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -106,9 +108,15 @@ class _BindEmailScreenState extends ConsumerState<BindEmailScreen> {
               controller: emailController,
               focusNode: emailNode,
               enabled: inputEnabled,
-              style: RegisterStyles.inputTextStyle(ref),
+              style: RegisterStyles.inputTextStyle(ref).copyWith(color: inputEnabled ? null : designColors.light_06.auto(ref)),
               decoration: RegisterStyles.commonInputDecoration(globalLocalizations.bind_email_hint, ref, errorText: modelState.errorText).copyWith(
-                  disabledBorder: OutlineInputBorder(borderSide: borderSide, borderRadius: radius),
+                  disabledBorder: OutlineInputBorder(borderSide: borderSide.copyWith(color: designColors.dark_03.auto(ref)), borderRadius: radius),
+                  border: OutlineInputBorder(
+                    borderSide: borderSide,
+                    borderRadius: radius,
+                  ),
+                  filled: !inputEnabled,
+                  fillColor: designColors.light_02.auto(ref),
                   prefixIcon: SizedBox(
                     width: 36,
                     child: Center(
@@ -124,12 +132,26 @@ class _BindEmailScreenState extends ConsumerState<BindEmailScreen> {
               },
             ),
             Spacer(),
+            Visibility(
+                visible: kDebugMode,
+                child: TextButton(
+                  style: RegisterStyles.blackButtonStyle(ref),
+                  onPressed: () {
+                    if (kDebugMode) {
+                      Navigator.of(context).pop(true);
+                    }
+                  },
+                  child: Text("Fake verify"),
+                )),
+            SizedBox(
+              height: 16,
+            ),
             TextButton(
               style: RegisterStyles.blackButtonStyle(ref),
               onPressed: !modelState.buttonEnabled
                   ? null
                   : () {
-                      showDialog(
+                      showHoohDialog(
                           context: context,
                           barrierDismissible: false,
                           builder: (context) {
@@ -157,16 +179,16 @@ class _BindEmailScreenState extends ConsumerState<BindEmailScreen> {
                     },
               child: Text(buttonText),
             ),
-            // Visibility(
-            //   visible: smallTextVisible,
-            //   child: MainStyles.smallTextButton(
-            //       ref: ref,
-            //       context: context,
-            //       text: globalLocalizations.bind_email_change,
-            //       onClick: () {
-            //         goToChangeEmailScreen();
-            //       }),
-            // ),
+            Visibility(
+              visible: smallTextVisible,
+              child: MainStyles.smallTextButton(
+                  ref: ref,
+                  context: context,
+                  text: globalLocalizations.bind_email_change,
+                  onClick: () {
+                    goToChangeEmailScreen();
+                  }),
+            ),
             Spacer()
           ],
         ),
@@ -194,7 +216,7 @@ class _BindEmailScreenState extends ConsumerState<BindEmailScreen> {
         title: globalLocalizations.bind_email_dialog_title,
         content: globalLocalizations.bind_email_dialog_content,
         cancelText: globalLocalizations.common_cancel,
-        okText: globalLocalizations.bind_email_dialog_button,
+        okText: globalLocalizations.common_ok,
         onOk: () {
           goToChangeEmailScreen();
         });

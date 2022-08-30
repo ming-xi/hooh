@@ -6,6 +6,7 @@ import 'package:app/ui/pages/user/register/set_badge.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/utils/ui_utils.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -107,19 +108,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     onPressed: !modelState.loginButtonEnabled
                         ? null
                         : () {
-                            showDialog(
+                      showHoohDialog(
                                 context: context,
                                 barrierDismissible: false,
                                 builder: (context) {
                                   return LoadingDialog(LoadingDialogController());
                                 });
                             model.login(context, usernameController.text, passwordController.text, onSuccess: (response) {
-                              handleUserLogin(ref, response.user, response.jwtResponse.accessToken);
+                              handleUserLogin(ref, response.user, response.jwtResponse.accessToken, passwordController.text);
                               // ref.read(globalUserInfoProvider.state).state = user;
                               // preferences.putString(Preferences.KEY_USER_INFO, json.encode(user.toJson()));
                               // pushUtil.updateUserToken(ref);
                               Navigator.of(context).pop();
-                              // Toast.showSnackBar(context, "登录成功");
+                              // showSnackBar(context, "登录成功");
                               if (response.user.hasFinishedRegisterSteps()) {
                                 // Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeScreen()), (route) => false);
                                 // popToHomeScreen(context);

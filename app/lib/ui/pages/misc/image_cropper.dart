@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'package:common/utils/ui_utils.dart';
+import 'package:universal_io/io.dart';
 import 'dart:typed_data';
 
 import 'package:app/global.dart';
@@ -46,7 +47,7 @@ class _ImageCropperScreenState extends ConsumerState<ImageCropperScreen> {
               onPressed: !ready
                   ? null
                   : () {
-                      showDialog(
+                showHoohDialog(
                           context: context,
                           barrierDismissible: false,
                           builder: (context) {
@@ -71,7 +72,7 @@ class _ImageCropperScreenState extends ConsumerState<ImageCropperScreen> {
             Navigator.of(context).pop();
             File file = await FileUtil.saveTempFile(image, "jpg");
             Navigator.of(context).pop(file);
-            // showDialog(
+            // showHoohDialog(
             //     context: context,
             //     builder: (context) {
             //       return AlertDialog(

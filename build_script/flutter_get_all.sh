@@ -1,9 +1,9 @@
 #!/bin/bash
 cd ..
-modules=('common' 'app')
+modules=('common' 'app' 'web' 'crm')
 for module in "${modules[@]}" ; do
     echo "dir = $module"
     cd "$module" || exit
-    flutter pub run build_runner build --delete-conflicting-outputs
+    flutter pub get
     cd ..
 done

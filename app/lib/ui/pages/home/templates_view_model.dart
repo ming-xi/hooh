@@ -1,5 +1,6 @@
-import 'package:common/extensions/extensions.dart';
+import 'package:app/ui/pages/creation/edit_post_view_model.dart';
 import 'package:collection/collection.dart';
+import 'package:common/extensions/extensions.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/network/responses.dart';
 import 'package:common/models/page_state.dart';
@@ -15,6 +16,8 @@ part 'templates_view_model.g.dart';
 @CopyWith()
 class TemplatesPageModelState {
   final List<Template> templates;
+  final List<String> contents;
+  final List<PostImageSetting> postImageSettings;
   final int page;
   final PageState templatesPageState;
   final PageState tagsPageState;
@@ -26,6 +29,8 @@ class TemplatesPageModelState {
 
   TemplatesPageModelState({
     required this.templates,
+    required this.postImageSettings,
+    required this.contents,
     required this.templatesPageState,
     required this.tagsPageState,
     required this.error,
@@ -38,8 +43,10 @@ class TemplatesPageModelState {
 
   TemplateTagItem? selectedTag() => tags.singleWhereOrNull((element) => element.selected);
 
-  factory TemplatesPageModelState.init() => TemplatesPageModelState(
+  factory TemplatesPageModelState.init({List<String> contents = const []}) => TemplatesPageModelState(
       templates: [],
+      postImageSettings: [],
+      contents: contents,
       templatesPageState: PageState.inited,
       tagsPageState: PageState.inited,
       error: null,
@@ -129,7 +136,7 @@ class TemplatesPageViewModel extends StateNotifier<TemplatesPageModelState> {
       if (newData.isEmpty) {
         //no data
         if (isRefresh) {
-          updateState(state.copyWith(templatesPageState: isRefresh ? PageState.empty : PageState.noMore, templates: []));
+          updateState(state.copyWith(templatesPageState: isRefresh ? PageState.empty : PageState.noMore, templates: [], postImageSettings: []));
         } else {
           updateState(state.copyWith(templatesPageState: isRefresh ? PageState.empty : PageState.noMore));
         }
@@ -137,12 +144,20 @@ class TemplatesPageViewModel extends StateNotifier<TemplatesPageModelState> {
       } else {
         //has data
         if (isRefresh) {
-          updateState(state.copyWith(templatesPageState: PageState.dataLoaded, lastTimestamp: newData.last.featuredAt, templates: newData, page: 1));
+          updateState(state.copyWith(
+              templatesPageState: PageState.dataLoaded,
+              lastTimestamp: newData.last.featuredAt,
+              templates: newData,
+              postImageSettings: state.contents.isEmpty ? [] : newData.map((e) => PostImageSetting.withTemplate(e, text: state.contents[0])).toList(),
+              page: state.page + 1));
         } else {
           updateState(state.copyWith(
               templatesPageState: PageState.dataLoaded,
               lastTimestamp: newData.last.featuredAt,
               templates: [...state.templates, ...newData],
+              postImageSettings: state.contents.isEmpty
+                  ? []
+                  : [...state.postImageSettings, ...newData.map((e) => PostImageSetting.withTemplate(e, text: state.contents[0])).toList()],
               page: state.page + 1));
         }
       }
@@ -162,6 +177,10 @@ class TemplatesPageViewModel extends StateNotifier<TemplatesPageModelState> {
 
   void setAgreementChecked(bool checked) {
     updateState(state.copyWith(agreementChecked: checked));
+  }
+
+  void setContents(List<String> contents) {
+    updateState(state.copyWith(contents: contents));
   }
 
   void setNoRewardsChecked(bool checked) {
@@ -227,6 +246,10 @@ class TemplatesPageViewModel extends StateNotifier<TemplatesPageModelState> {
 }
 
 class TemplateTagItem {
+  static const SEARCH_TYPE_RECENT = 0;
+  static const SEARCH_TYPE_TRENDING = 1;
+  static const SEARCH_TYPE_FAVORITES = 2;
+
   final String tag;
   final int? type;
   bool selected;

@@ -5,7 +5,6 @@ import 'package:app/ui/pages/creation/edit_post_view_model.dart';
 import 'package:app/ui/pages/feeds/comment_page.dart';
 import 'package:app/ui/pages/feeds/likes_page.dart';
 import 'package:app/ui/pages/feeds/post_detail_view_model.dart';
-import 'package:app/ui/pages/feeds/tagged_list.dart';
 import 'package:app/ui/pages/misc/share.dart';
 import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
@@ -13,7 +12,7 @@ import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/widgets/comment_compose_view.dart';
 import 'package:app/ui/widgets/comment_compose_view_model.dart';
 import 'package:app/ui/widgets/empty_views.dart';
-import 'package:app/ui/widgets/toast.dart';
+import 'package:app/ui/widgets/post_view.dart';
 import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/file_utils.dart';
@@ -25,6 +24,7 @@ import 'package:common/models/template.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/date_util.dart';
 import 'package:common/utils/network.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/material/refresh_indicator.dart' as refresh;
@@ -49,7 +49,9 @@ class PostDetailScreen extends ConsumerStatefulWidget {
 
     composerProvider = StateNotifierProvider((ref) {
       PostDetailScreenModelState modelState = ref.watch(provider);
-      return CommentComposeWidgetViewModel(CommentComposeWidgetModelState.init(post: modelState.post!));
+      return CommentComposeWidgetViewModel(CommentComposeWidgetModelState.init(
+        post: modelState.post!,
+      ));
     });
   }
 
@@ -124,29 +126,16 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
           height: 16,
         ),
         child: Padding(
-          padding: const EdgeInsets.only(left: 20, right: 20, top: 12, bottom: 20),
+          padding: const EdgeInsets.only(left: 12, right: 20, top: 12, bottom: 20),
           child: Row(
             children: [
               Expanded(
                 child: Wrap(
-                  spacing: 8,
+                  spacing: 2,
                   runSpacing: 4,
                   children: (modelState.post?.tags ?? [])
-                  // .expand((e) => [e,e,e])
-                      .map((e) => TextButton(
-                            onPressed: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => TaggedListScreen(tagName: e)));
-                            },
-                            style: TextButton.styleFrom(
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                                minimumSize: const Size(48, 16),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                            child: Text(
-                              "# $e",
-                              style: TextStyle(fontSize: 14, color: designColors.blue_dark.auto(ref), fontWeight: FontWeight.normal),
-                            ),
-                          ))
+                      // .expand((e) => [e,e,e])
+                      .map((e) => TagView(tagName: e))
                       .toList(),
                 ),
               ),
@@ -224,31 +213,36 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
 
     TabBarView tabBarView = TabBarView(controller: tabController, children: [
       CommentPage(
-          scrollable: scrollable,
-          comments: modelState.comments,
-          onLikeClick: (comment, newState) {
-            User? user = ref.read(globalUserInfoProvider);
-            if (user == null) {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
-              return;
-            }
-            model.onCommentLikePress(comment, newState, (error) {
-              // Toast.showSnackBar(context, msg);
-              showCommonRequestErrorDialog(ref, context, error);
-            });
-          },
-          onLoadMore: () {
-            model.getComments((state) {
-              // debugPrint("refresh state=$state");
-              _refreshController.refreshCompleted();
-            }, isRefresh: false);
-          },
-          noMore: modelState.commentState == PageState.noMore,
-          onReplyClick: (comment) {
-            CommentComposeWidgetViewModel composerModel = ref.read(widget.composerProvider.notifier);
-            composerModel.setRepliedComment(comment);
-            showKeyboard(ref, widget.textFieldNode);
-          }),
+        scrollable: scrollable,
+        comments: modelState.comments,
+        onLikeClick: (comment, newState) {
+          User? user = ref.read(globalUserInfoProvider);
+          if (user == null) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+            return;
+          }
+          model.onCommentLikePress(comment, newState, (error) {
+            // showSnackBar(context, msg);
+            showCommonRequestErrorDialog(ref, context, error);
+          });
+        },
+        onLoadMore: () {
+          model.getComments((state) {
+            // debugPrint("refresh state=$state");
+            _refreshController.refreshCompleted();
+          }, isRefresh: false);
+        },
+        noMore: modelState.commentState == PageState.noMore,
+        onReplyClick: (comment) {
+          CommentComposeWidgetViewModel composerModel = ref.read(widget.composerProvider.notifier);
+          composerModel.setRepliedComment(comment);
+          showKeyboard(ref, widget.textFieldNode);
+        },
+        onDeleteComment: (comment) {
+          PostDetailScreenViewModel model = ref.read(widget.provider.notifier);
+          model.onCommentDeleted(comment);
+        },
+      ),
       LikesPage(users: modelState.likedUsers)
     ]);
     SliverAppBar sliverAppBar = HooHSliverAppBar(
@@ -383,7 +377,27 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
                                       opaque: false));
                             },
                             onSendPress: (comment, text, onComplete, onError) {
-                              model.createComment(comment, text, onComplete, onError);
+                              showHoohDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (context) {
+                                    return LoadingDialog(LoadingDialogController());
+                                  });
+                              model.createComment(comment, text, () {
+                                Navigator.of(
+                                  context,
+                                ).pop();
+                                if (onComplete != null) {
+                                  onComplete();
+                                }
+                              }, (error) {
+                                Navigator.of(
+                                  context,
+                                ).pop();
+                                if (onError != null) {
+                                  onError(error);
+                                }
+                              });
                               hideKeyboard();
                             },
                           )),
@@ -463,7 +477,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
                 Navigator.push(context, MaterialPageRoute(builder: (context) => EditPostScreen(setting: PostImageSetting.withTemplate(template))));
               }, (error) {
                 if (error.errorCode == Constants.RESOURCE_NOT_FOUND) {
-                  showDialog(
+                  showHoohDialog(
                       context: context,
                       builder: (popContext) => AlertDialog(
                             title: Text(globalLocalizations.error_view_template_not_found),
@@ -491,14 +505,33 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
               }
               network.requestAsync<void>(request, (_) {
                 model.setTemplateFavorited(newFavorited);
-                Toast.showSnackBar(
+                showSnackBar(
                     context, newFavorited ? globalLocalizations.post_detail_favorite_success : globalLocalizations.post_detail_cancel_favorite_success);
               }, (e) {
                 if (kDebugMode) {
-                  // Toast.showSnackBar(context, e.devMessage);
+                  // showSnackBar(context, e.devMessage);
                   showCommonRequestErrorDialog(ref, context, e);
                 } else {
-                  Toast.showSnackBar(context, globalLocalizations.post_detail_favorite_failed);
+                  if (e.errorCode == Constants.RESOURCE_NOT_FOUND) {
+                    showHoohDialog(
+                      context: context,
+                      barrierDismissible: true,
+                      builder: (popContext) => AlertDialog(
+                        content: Text(newFavorited
+                            ? globalLocalizations.post_detail_menu_favorite_template_failed_dialog_content
+                            : globalLocalizations.post_detail_menu_cancel_favorite_template_failed_dialog_content),
+                        actions: [
+                          TextButton(
+                              onPressed: () {
+                                Navigator.of(popContext).pop(true);
+                              },
+                              child: Text(globalLocalizations.common_ok)),
+                        ],
+                      ),
+                    );
+                  } else {
+                    showSnackBar(context, globalLocalizations.post_detail_favorite_failed);
+                  }
                 }
               });
             });
@@ -511,16 +544,62 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
         PopupMenuItem itemIntoWaitingList = PopupMenuItem(
           onTap: () {
             Future.delayed(const Duration(milliseconds: 250), () {
-              network.requestAsync<void>(network.editPost(modelState.postId, EditPostRequest(joinWaitingList: true)), (_) {
-                model.setPublishState(Post.PUBLISH_STATE_WAITING_LIST);
-                Toast.showSnackBar(context, globalLocalizations.post_detail_join_waiting_list_success);
-              }, (e) {
-                if (kDebugMode) {
-                  // Toast.showSnackBar(context, e.devMessage);
-                  showCommonRequestErrorDialog(ref, context, e);
-                } else {
-                  Toast.showSnackBar(context, globalLocalizations.post_detail_join_waiting_list_failed);
-                }
+              if (!modelState.post!.visible) {
+                showHoohDialog<bool>(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (popContext) {
+                      return AlertDialog(
+                        title: Text(globalLocalizations.post_detail_menu_join_private_post_dialog_title),
+                        content: Text(globalLocalizations.post_detail_menu_join_private_post_dialog_content),
+                        actions: [
+                          TextButton(
+                              onPressed: () {
+                                Navigator.of(popContext).pop(false);
+                              },
+                              child: Text(globalLocalizations.common_ok))
+                        ],
+                      );
+                    });
+                return;
+              }
+              network.getFeeInfo().then((response) {
+                showHoohDialog(
+                  context: context,
+                  builder: (popContext) => AlertDialog(
+                    title: Text(globalLocalizations.post_detail_join_waiting_list_dialog_title),
+                    content: Text(sprintf(globalLocalizations.post_detail_join_waiting_list_dialog_content, [formatCurrency(response.joinWaitingList)])),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            Navigator.of(popContext).pop();
+                            network.requestAsync<void>(network.editPost(modelState.postId, EditPostRequest(joinWaitingList: true)), (_) {
+                              model.setPublishState(Post.PUBLISH_STATE_WAITING_LIST);
+                              showSnackBar(context, globalLocalizations.post_detail_join_waiting_list_success);
+                            }, (error) {
+                              // if (kDebugMode) {
+                              //   // showSnackBar(context, e.devMessage);
+                              //   showCommonRequestErrorDialog(ref, context, e);
+                              // } else {
+                              //   showSnackBar(context, globalLocalizations.post_detail_join_waiting_list_failed);
+                              // }
+                              if (error.errorCode == Constants.INSUFFICIENT_FUNDS) {
+                                List<String> split = error.message.split("\n");
+                                showNotEnoughOreDialog(ref: ref, context: context, needed: int.tryParse(split[0])!, current: int.tryParse(split[1])!);
+                              } else {
+                                showCommonRequestErrorDialog(ref, context, error);
+                              }
+                            });
+                          },
+                          child: Text(globalLocalizations.common_confirm)),
+                      TextButton(
+                          onPressed: () {
+                            Navigator.of(popContext).pop();
+                          },
+                          child: Text(globalLocalizations.common_cancel)),
+                    ],
+                  ),
+                );
               });
             });
           },
@@ -539,7 +618,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
         PopupMenuItem itemDelete = PopupMenuItem(
           onTap: () {
             Future.delayed(const Duration(milliseconds: 250), () {
-              showDialog(
+              showHoohDialog(
                   context: context,
                   barrierDismissible: false,
                   builder: (popContext) {
@@ -550,14 +629,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
                             onPressed: () {
                               Navigator.of(popContext).pop();
                               network.requestAsync<void>(network.deletePost(modelState.postId), (_) {
-                                Toast.showSnackBar(context, globalLocalizations.post_detail_delete_post_success);
+                                showSnackBar(context, globalLocalizations.post_detail_delete_post_success);
                                 Navigator.of(context, rootNavigator: true).pop();
                               }, (e) {
                                 if (kDebugMode) {
-                                  // Toast.showSnackBar(context, e.devMessage);
+                                  // showSnackBar(context, e.devMessage);
                                   showCommonRequestErrorDialog(ref, context, e);
                                 } else {
-                                  Toast.showSnackBar(context, globalLocalizations.post_detail_delete_post_failed);
+                                  showSnackBar(context, globalLocalizations.post_detail_delete_post_failed);
                                 }
                               });
                             },
@@ -580,19 +659,42 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
         bool newVisibility = !modelState.post!.visible;
         PopupMenuItem itemChangeVisibility = PopupMenuItem(
           onTap: () {
-            Future.delayed(const Duration(milliseconds: 250), () {
-              network.requestAsync<void>(network.editPost(modelState.postId, EditPostRequest(visible: newVisibility)), (_) {
-                Toast.showSnackBar(
-                    context, newVisibility ? globalLocalizations.post_detail_set_visible_success : globalLocalizations.post_detail_set_invisible_success);
-                model.setPostVisible(newVisibility);
-              }, (e) {
-                if (kDebugMode) {
-                  // Toast.showSnackBar(context, e.devMessage);
-                  showCommonRequestErrorDialog(ref, context, e);
-                } else {
-                  Toast.showSnackBar(context, globalLocalizations.post_detail_set_visible_failed);
-                }
-              });
+            Future.delayed(const Duration(milliseconds: 250), () async {
+              bool? result = await showHoohDialog<bool>(
+                  context: context,
+                  barrierDismissible: true,
+                  builder: (popContext) {
+                    return AlertDialog(
+                      title: Text(globalLocalizations.post_detail_make_public_dialog_title),
+                      content: Text(globalLocalizations.post_detail_make_public_dialog_content),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(popContext).pop(true);
+                            },
+                            child: Text(globalLocalizations.common_confirm)),
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(popContext).pop(false);
+                            },
+                            child: Text(globalLocalizations.common_cancel))
+                      ],
+                    );
+                  });
+              if (result ?? false) {
+                network.requestAsync<void>(network.editPost(modelState.postId, EditPostRequest(visible: newVisibility)), (_) {
+                  showSnackBar(
+                      context, newVisibility ? globalLocalizations.post_detail_set_visible_success : globalLocalizations.post_detail_set_invisible_success);
+                  model.setPostVisible(newVisibility);
+                }, (e) {
+                  if (kDebugMode) {
+                    // showSnackBar(context, e.devMessage);
+                    showCommonRequestErrorDialog(ref, context, e);
+                  } else {
+                    showSnackBar(context, globalLocalizations.post_detail_set_visible_failed);
+                  }
+                });
+              }
             });
           },
           child: Text(
@@ -604,7 +706,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
         PopupMenuItem itemCopyId = PopupMenuItem(
           onTap: () {
             FileUtil.copyToClipboard(modelState.postId);
-            Toast.showSnackBar(context, "copied!");
+            showSnackBar(context, "copied!");
           },
           child: Text(
             "Copy ID",
@@ -624,6 +726,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
             ];
             if (modelState.post!.publishState == Post.PUBLISH_STATE_NORMAL) {
               items.add(itemIntoWaitingList);
+            }
+            if (modelState.post!.visible) {
+              items.remove(itemChangeVisibility);
             }
           } else {
             items = [
@@ -721,8 +826,21 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> with Ticker
             return;
           }
           PostDetailScreenViewModel model = ref.read(widget.provider.notifier);
-          model.onFollowPress(context, !author.followed!, (error) {
-            // Toast.showSnackBar(context, msg);
+          showHoohDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) {
+                return LoadingDialog(LoadingDialogController());
+              });
+          model.onFollowPress(context, !author.followed!, onSuccess: () {
+            Navigator.of(
+              context,
+            ).pop();
+          }, onError: (error) {
+            Navigator.of(
+              context,
+            ).pop();
+            // showSnackBar(context, msg);
             showCommonRequestErrorDialog(ref, context, error);
           });
         });

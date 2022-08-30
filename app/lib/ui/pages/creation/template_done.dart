@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:universal_io/io.dart';
 
 import 'package:app/global.dart';
 import 'package:app/ui/widgets/appbar.dart';

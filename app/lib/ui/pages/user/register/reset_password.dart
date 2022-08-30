@@ -3,6 +3,7 @@ import 'package:app/ui/pages/user/register/reset_password_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/utils/ui_utils.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -96,7 +97,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               onPressed: !modelState.buttonEnabled
                   ? null
                   : () {
-                      showDialog(
+                showHoohDialog(
                           context: context,
                           barrierDismissible: false,
                           builder: (context) {
@@ -106,7 +107,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                         ref.read(globalUserInfoProvider.state).state = user;
                         //dialog
                         Navigator.of(context).pop();
-                        showDialog(
+                        showHoohDialog(
                             context: context,
                             barrierDismissible: false,
                             builder: (popContext) {

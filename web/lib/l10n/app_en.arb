@@ -6,5 +6,6 @@
   "landing_android_title": "Google Play",
   "landing_android_label": "GET IT ON",
   "landing_apk": "Download APK",
-  "landing_open_app": "Open in APP"
+  "landing_open_app": "Open in APP",
+  "landing_open_in_browser": "⚠️ If it doesn't open in app, please press upper right '…' to open it in browser"
 }

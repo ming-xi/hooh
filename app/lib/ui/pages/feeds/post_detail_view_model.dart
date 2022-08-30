@@ -232,7 +232,10 @@ class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState
         }
       }
       // to create a new object
-      Post newPost = Post.fromJson((state.post!..liked = newState).toJson());
+      Post newPost = Post.fromJson((state.post!
+            ..liked = newState
+            ..likeCount += newState ? 1 : -1)
+          .toJson());
       updateState(state.copyWith(post: newPost, likedUsers: [...state.likedUsers]));
     }, (error) {
       if (onError != null) {
@@ -258,6 +261,11 @@ class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState
     });
   }
 
+  void onCommentDeleted(PostComment comment) {
+    state.comments.remove(comment);
+    updateState(state.copyWith(comments: [...state.comments], post: Post.fromJson((state.post!..commentCount -= 1).toJson())));
+  }
+
   void onPostFavoritePress(bool newState, void Function(HoohApiErrorResponse error)? onError) {
     if (state.post == null) {
       return;
@@ -273,12 +281,15 @@ class PostDetailScreenViewModel extends StateNotifier<PostDetailScreenModelState
     });
   }
 
-  void onFollowPress(BuildContext context, bool newState, void Function(HoohApiErrorResponse error)? onError) {
+  void onFollowPress(BuildContext context, bool newState, {Function()? onSuccess, void Function(HoohApiErrorResponse error)? onError}) {
     if (state.post == null) {
       return;
     }
     Future request = state.post!.author.followed ?? false ? network.cancelFollowUser(state.post!.author.id) : network.followUser(state.post!.author.id);
     network.requestAsync(request, (data) {
+      if (onSuccess != null) {
+        onSuccess();
+      }
       if (data is FollowUserResponse && data.receivedBadge != null) {
         showReceiveBadgeDialog(context, data.receivedBadge!);
       }

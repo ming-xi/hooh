@@ -1,21 +1,44 @@
 import 'dart:convert';
 
+import 'package:app/launcher.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/user/web_view.dart';
-import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/push.dart';
 import 'package:common/models/user.dart';
+import 'package:common/utils/date_util.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-void handleUserLogin(WidgetRef ref, User user, String token) {
+void handleUserLogin(WidgetRef ref, User user, String token, String? password) {
   ref.read(globalUserInfoProvider.state).state = user;
   network.setUserToken(token);
   preferences.putString(Preferences.KEY_USER_INFO, json.encode(user.toJson()));
+  _saveLoginHistory(password, user);
   pushUtil.updateUserToken(ref);
+}
+
+void _saveLoginHistory(String? password, User user) {
+  if (!FlavorConfig.instance.variables[Launcher.KEY_ADMIN_MODE]) {
+    return;
+  }
+  List<dynamic> list = json.decode(preferences.getString(Preferences.KEY_HISTORY_USER_LOGIN_INFO) ?? "[]");
+  List<UserLoginHistory> history = list.map((e) => UserLoginHistory.fromJson(e)).toList();
+  DateTime currentUtcDate = DateUtil.getCurrentUtcDate();
+  if (history.map((e) => e.username).contains(user.username)) {
+    history.firstWhere((element) => element.username == user.username).lastLoginAt = currentUtcDate;
+  } else if (password != null) {
+    String encryptedPassword = sha512.convert(utf8.encode(password)).toString();
+    history.add(UserLoginHistory(network.serverType, user.username!, encryptedPassword, user.name, user.avatarUrl!, currentUtcDate));
+  }
+  history.sort(
+    (a, b) => b.lastLoginAt.compareTo(a.lastLoginAt),
+  );
+  preferences.putString(Preferences.KEY_HISTORY_USER_LOGIN_INFO, json.encode(history));
 }
 
 void handleUserLogout(WidgetRef ref) {
@@ -57,6 +80,7 @@ void popToHomeScreen(BuildContext context) {
 final StateProvider<bool> globalKeyboardVisibilityProvider = StateProvider<bool>((ref) => false);
 final StateProvider<User?> globalUserInfoProvider = StateProvider<User?>((ref) => null);
 final StateProvider<Locale?> globalLocaleProvider = StateProvider<Locale?>((ref) => null);
+// final StateProvider<Locale?> globalLocaleProvider = StateProvider<Locale?>((ref) => const Locale("en"));
 const DARK_MODE_SYSTEM = 0;
 const DARK_MODE_LIGHT = 1;
 const DARK_MODE_DARK = 2;

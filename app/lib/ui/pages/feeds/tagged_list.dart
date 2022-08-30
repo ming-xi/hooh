@@ -222,11 +222,11 @@ class _TaggedListScreenState extends ConsumerState<TaggedListScreen> {
     return PostView(
       post: modelState.posts[index],
       // onShare: (post, error) {
-      //   Toast.showSnackBar(context, "share...");
+      //   showSnackBar(context, "share...");
       // },
       onLike: (post, error) {
         if (error != null) {
-          // Toast.showSnackBar(context, error.message);
+          // showSnackBar(context, error.message);
           showCommonRequestErrorDialog(ref, context, error);
           return;
         }
@@ -240,7 +240,7 @@ class _TaggedListScreenState extends ConsumerState<TaggedListScreen> {
       },
       onFollow: (post, error) {
         if (error != null) {
-          // Toast.showSnackBar(context, error.message);
+          // showSnackBar(context, error.message);
           showCommonRequestErrorDialog(ref, context, error);
           return;
         }

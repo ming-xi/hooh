@@ -1,14 +1,14 @@
 import 'package:app/global.dart';
-import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/pages/me/followers_view_model.dart';
 import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
-import 'package:app/ui/widgets/toast.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/page_state.dart';
 import 'package:common/models/user.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -185,13 +185,13 @@ class _FollowerPageState extends ConsumerState<FollowerPage> {
           ),
           Expanded(
               child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
                   Expanded(
                       child: Text(
                     user.name,
@@ -209,8 +209,21 @@ class _FollowerPageState extends ConsumerState<FollowerPage> {
                             return;
                           }
                           FollowerScreenViewModel model = ref.read(widget.provider.notifier);
-                          model.setFollowState(context, user.id, !(user.followed ?? false), callback: (error) {
-                            // Toast.showSnackBar(context, msg);
+                          showHoohDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (context) {
+                                return LoadingDialog(LoadingDialogController());
+                              });
+                          model.setFollowState(context, user.id, !(user.followed ?? false), onSuccess: () {
+                            Navigator.of(
+                              context,
+                            ).pop();
+                          }, onFailure: (error) {
+                            Navigator.of(
+                              context,
+                            ).pop();
+                            // showSnackBar(context, msg);
                             showCommonRequestErrorDialog(ref, context, error);
                           });
                         },
@@ -231,20 +244,20 @@ class _FollowerPageState extends ConsumerState<FollowerPage> {
                             textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal))),
                   )
                 ],
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                          child: Text(
-                            user.username == null ? "" : "@${user.username}",
-                            style: TextStyle(fontSize: 14, color: designColors.dark_01.auto(ref), overflow: TextOverflow.ellipsis),
-                          )),
-                    ],
-                  ),
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                      child: Text(
+                    user.username == null ? "" : "@${user.username}",
+                    style: TextStyle(fontSize: 14, color: designColors.dark_01.auto(ref), overflow: TextOverflow.ellipsis),
+                  )),
                 ],
-              ))
+              ),
+            ],
+          ))
         ],
       ),
     );

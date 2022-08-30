@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -14,6 +13,7 @@ import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/date_util.dart';
 import 'package:common/utils/network.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +25,7 @@ import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:sprintf/sprintf.dart';
+import 'package:universal_io/io.dart';
 
 const GENERAL_CURVE = Curves.easeOutCubic;
 
@@ -69,29 +70,31 @@ void showSelectLocalImageActionSheet(
   } else {
     showModalBottomSheet(
         context: context,
-        builder: (popContext) => Wrap(
-              children: [
-                ListTile(
-                  leading: Icon(Icons.camera),
-                  title: Text(globalLocalizations.templates_choose_from_camera),
-                  onTap: () {
-                    // Navigator.pop(context);
-                    Navigator.of(popContext).pop();
-                    _openImagePicker(
-                        context: context, ref: ref, adjustTemplateImage: adjustTemplateImage, cropRatio: cropRatio, useCamera: true, onSelected: onSelected);
-                  },
-                ),
-                ListTile(
-                  leading: Icon(Icons.image),
-                  title: Text(globalLocalizations.templates_choose_from_gallery),
-                  onTap: () {
-                    // Navigator.pop(context);
-                    Navigator.of(popContext).pop();
-                    _openImagePicker(
-                        context: context, ref: ref, adjustTemplateImage: adjustTemplateImage, cropRatio: cropRatio, useCamera: false, onSelected: onSelected);
-                  },
-                ),
-              ],
+        builder: (popContext) => SafeArea(
+              child: Wrap(
+                children: [
+                  ListTile(
+                    // leading: Icon(Icons.camera),
+                    title: Text(globalLocalizations.templates_choose_from_camera),
+                    onTap: () {
+                      // Navigator.pop(context);
+                      Navigator.of(popContext).pop();
+                      _openImagePicker(
+                          context: context, ref: ref, adjustTemplateImage: adjustTemplateImage, cropRatio: cropRatio, useCamera: true, onSelected: onSelected);
+                    },
+                  ),
+                  ListTile(
+                    // leading: Icon(Icons.image),
+                    title: Text(globalLocalizations.templates_choose_from_gallery),
+                    onTap: () {
+                      // Navigator.pop(context);
+                      Navigator.of(popContext).pop();
+                      _openImagePicker(
+                          context: context, ref: ref, adjustTemplateImage: adjustTemplateImage, cropRatio: cropRatio, useCamera: false, onSelected: onSelected);
+                    },
+                  ),
+                ],
+              ),
             ));
   }
 }
@@ -156,7 +159,7 @@ void showKeyboard(WidgetRef ref, FocusNode node) {
 }
 
 Future showReceiveBadgeDialog(BuildContext context, UserBadge badge) {
-  return showDialog(
+  return showHoohDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
@@ -167,8 +170,39 @@ Future showReceiveBadgeDialog(BuildContext context, UserBadge badge) {
       });
 }
 
+Future showNotEnoughOreDialog(
+    {required WidgetRef ref, required BuildContext context, required int needed, required int current, bool isPublishingPost = false}) {
+  return showHoohDialog(
+      context: context,
+      builder: (context) {
+        String title = globalLocalizations.error_not_enough_ore_dialog_title;
+        String content = sprintf(
+            isPublishingPost ? globalLocalizations.error_not_enough_ore_dialog_content_post : globalLocalizations.error_not_enough_ore_dialog_content_common, [
+          formatCurrency(
+            needed,
+          ),
+          formatCurrency(
+            current,
+          ),
+        ]);
+        return AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: [
+            TextButton(
+                onPressed: () {
+                  Navigator.of(
+                    context,
+                  ).pop();
+                },
+                child: Text(globalLocalizations.common_ok))
+          ],
+        );
+      });
+}
+
 Future showCommonRequestErrorDialog(WidgetRef ref, BuildContext context, dynamic error) {
-  return showDialog(
+  return showHoohDialog(
       context: context,
       builder: (context) {
         String title = globalLocalizations.error_network_error;
@@ -256,7 +290,9 @@ String formatAmount(int? number) {
 
 String formatDate(BuildContext context, DateTime date, {String? absoluteDateFormat}) {
   DateTime now = DateTime.now();
+  // now=now.add(Duration(days: 90) );
   Duration diff = now.difference(DateUtil.getZonedDate(date));
+
   String templateAgo = AppLocalizations.of(context)!.datetime_ago;
   if (diff.inSeconds <= 60) {
     // within 60 seconds
@@ -272,7 +308,7 @@ String formatDate(BuildContext context, DateTime date, {String? absoluteDateForm
     return sprintf(templateAgo, [AppLocalizations.of(context)!.day(diff.inDays)]);
   } else if (diff.inDays <= 365) {
     // within 365 days
-    return sprintf(templateAgo, [AppLocalizations.of(context)!.month(diff.inDays / 30)]);
+    return sprintf(templateAgo, [AppLocalizations.of(context)!.month(diff.inDays ~/ 30)]);
   } else {
     return DateUtil.getZonedDateString(date, format: absoluteDateFormat);
   }
@@ -303,41 +339,6 @@ bool isImageDarkColor(Uint8List fileBytes) {
   }
   debugPrint("darkCount=$darkCount lightCount=$lightCount");
   return darkCount >= lightCount;
-}
-
-mixin KeyboardLogic<T extends StatefulWidget> on State<T>, WidgetsBindingObserver {
-  bool _keyboardVisible = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeMetrics() {
-    super.didChangeMetrics();
-    if (!mounted) return;
-    final temp = keyboardVisible;
-    if (_keyboardVisible == temp) return;
-    _keyboardVisible = temp;
-    onKeyboardChanged(keyboardVisible);
-  }
-
-  void onKeyboardChanged(bool visible);
-
-  bool get keyboardVisible =>
-      EdgeInsets.fromWindowPadding(
-        WidgetsBinding.instance.window.viewInsets,
-        WidgetsBinding.instance.window.devicePixelRatio,
-      ).bottom >
-      100;
 }
 
 class HoohLocalizedRichText extends ConsumerStatefulWidget {
@@ -559,7 +560,7 @@ class AvatarView extends ConsumerWidget {
       onPress: !clickable
           ? null
           : () {
-              // Toast.showSnackBar(context, "show user ${user.id}");
+        // showSnackBar(context, "show user ${user.id}");
               Navigator.push(context, MaterialPageRoute(builder: (context) => UserProfileScreen(userId: userId)));
             },
     );
@@ -593,13 +594,18 @@ class HoohImage extends ConsumerWidget {
     Widget result = CachedNetworkImage(
       filterQuality: (isBadge ?? false) ? FilterQuality.none : FilterQuality.low,
       width: width,
+      fadeInCurve: Curves.easeOut,
+      fadeOutCurve: Curves.easeOut,
+      fadeInDuration: Duration(milliseconds: 250),
+      fadeOutDuration: Duration(milliseconds: 250),
+      placeholderFadeInDuration: Duration(milliseconds: 250),
       fit: BoxFit.cover,
       height: height,
       useOldImageOnUrlChange: true,
       cacheKey: network.getS3ImageKey(imageUrl),
       imageUrl: imageUrl,
       errorWidget: errorWidget ??
-              (context, url, error) {
+          (context, url, error) {
             // var color = designColors.light_06.auto(ref);
             // return Container(
             //   color: Colors.white.withOpacity(0.5),
@@ -624,10 +630,12 @@ class HoohImage extends ConsumerWidget {
             // );
             return buildPlaceHolder();
           },
-      placeholder: (context, url) {
-        return buildPlaceHolder();
-        // return Container(color: Colors.red,);
-      },
+      placeholder: placeholderWidget != null
+          ? placeholderWidget
+          : (context, url) {
+              return buildPlaceHolder();
+              // return Container(color: Colors.red,);
+            },
     );
     if (MainStyles.isDarkMode(ref)) {
       result = Opacity(
@@ -673,6 +681,7 @@ class HoohImage extends ConsumerWidget {
       "assets/images/image_placeholder.png",
       width: width,
       height: height,
+      fit: BoxFit.cover,
     );
     if (cornerRadius != 0) {
       return ClipRRect(
@@ -702,8 +711,9 @@ class HoohIcon extends ConsumerWidget {
   final double? width;
   final double? height;
   final Color? color;
+  final BoxFit? fit;
 
-  const HoohIcon(this.assetName, {this.width, this.height, this.color, Key? key}) : super(key: key);
+  const HoohIcon(this.assetName, {this.width, this.height, this.color, this.fit, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -713,6 +723,7 @@ class HoohIcon extends ConsumerWidget {
         width: width,
         height: height,
         color: color,
+        fit: fit ?? BoxFit.contain,
       );
     } else {
       Widget result = Image.asset(
@@ -720,6 +731,7 @@ class HoohIcon extends ConsumerWidget {
         width: width,
         height: height,
         color: color,
+        fit: fit,
       );
       if (MainStyles.isDarkMode(ref)) {
         result = Opacity(
@@ -808,46 +820,46 @@ class _ReceivedBadgeViewState extends ConsumerState<ReceivedBadgeView> {
     );
   }
 }
-
-class LoadingDialog extends ConsumerStatefulWidget {
-  final LoadingDialogController _controller;
-
-  const LoadingDialog(
-    this._controller, {
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  ConsumerState createState() => _LoadingDialogState();
-}
-
-class _LoadingDialogState extends ConsumerState<LoadingDialog> {
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      content: SizedBox(
-        height: 80,
-        child: Center(
-          child: CircularProgressIndicator(
-            value: widget._controller.progress(),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class LoadingDialogController {
-  bool hasProgress;
-  double value = 0;
-  double max = 100;
-
-  LoadingDialogController({this.hasProgress = false});
-
-  double? progress() {
-    return hasProgress ? (value / max) : null;
-  }
-}
+//
+// class LoadingDialog extends ConsumerStatefulWidget {
+//   final LoadingDialogController _controller;
+//
+//   const LoadingDialog(
+//     this._controller, {
+//     Key? key,
+//   }) : super(key: key);
+//
+//   @override
+//   ConsumerState createState() => _LoadingDialogState();
+// }
+//
+// class _LoadingDialogState extends ConsumerState<LoadingDialog> {
+//   @override
+//   Widget build(BuildContext context) {
+//     return AlertDialog(
+//       content: SizedBox(
+//         height: 80,
+//         child: Center(
+//           child: CircularProgressIndicator(
+//             value: widget._controller.progress(),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
+//
+// class LoadingDialogController {
+//   bool hasProgress;
+//   double value = 0;
+//   double max = 100;
+//
+//   LoadingDialogController({this.hasProgress = false});
+//
+//   double? progress() {
+//     return hasProgress ? (value / max) : null;
+//   }
+// }
 
 class MaterialTransparentRoute<T> extends PageRoute<T> with MaterialRouteTransitionMixin<T> {
   MaterialTransparentRoute({

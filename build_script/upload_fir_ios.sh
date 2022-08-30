@@ -1,5 +1,5 @@
 #!/bin/bash
-if ! ./flutter_build_ipa_fir.sh; then
+if ! ./flutter_build_ipa_staging.sh; then
     echo "build ios error"
     exit 1
 fi

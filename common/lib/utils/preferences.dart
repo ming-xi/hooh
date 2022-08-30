@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:universal_io/io.dart';
 
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,10 +20,16 @@ class Preferences {
   static const KEY_CHANGE_BADGE_DIALOG_CHECKED = "KEY_CHANGE_BADGE_DIALOG_CHECKED";
   static const KEY_VOTE_POST_DIALOG_CHECKED = "KEY_VOTE_POST_DIALOG_CHECKED";
   static const KEY_ADD_TO_VOTE_LIST_DIALOG_CHECKED = "KEY_ADD_TO_VOTE_LIST_DIALOG_CHECKED";
+  static const KEY_PUBLISH_POST_DOWNLOAD_TO_DEVICE = "KEY_PUBLISH_POST_DOWNLOAD_TO_DEVICE";
   static const KEY_USER_DRAFT = "KEY_USER_DRAFT";
+  @deprecated
   static const KEY_LAST_SYSTEM_NOTIFICATIONS_READ = "KEY_LAST_SYSTEM_NOTIFICATIONS_READ";
+  static const KEY_LAST_SYSTEM_NOTIFICATIONS_READ_STRING = "KEY_LAST_SYSTEM_NOTIFICATIONS_READ_STRING";
   static const KEY_FCM_TOKEN = "KEY_FCM_TOKEN";
   static const KEY_SEND_VALIDATION_CODE_RECORD_JSON = "KEY_SEND_VALIDATION_CODE_RECORD_JSON";
+  static const KEY_HISTORY_USER_LOGIN_INFO = "KEY_HISTORY_USER_LOGIN_INFO";
+  static const KEY_INTRO_PAGES_READ = "KEY_INTRO_PAGES_READ";
+  static const KEY_HOMEPAGE_BACKGROUND_URL = "KEY_HOMEPAGE_BACKGROUND_URL";
 
   Future<void> init() async {
     // SharedPreferences.getInstance().then((value) {

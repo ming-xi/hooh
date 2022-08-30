@@ -4,6 +4,7 @@ import 'package:app/utils/constants.dart';
 import 'package:common/models/network/responses.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/network.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -40,7 +41,7 @@ class LoginScreenViewModel extends StateNotifier<LoginScreenModelState> {
       if (error.errorCode == Constants.INVALID_USERNAME_AND_PASSWORD) {
         msg = globalLocalizations.login_wrong_password;
       }
-      showDialog(
+      showHoohDialog(
           context: context,
           builder: (context) {
             return AlertDialog(

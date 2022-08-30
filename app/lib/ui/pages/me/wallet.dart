@@ -143,16 +143,26 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
                         SizedBox(
                           height: 12,
                         ),
-                        GridView(
-                          physics: NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                              childAspectRatio: gridItemWidth / gridItemHeight,
-                              crossAxisCount: gridColumnCount,
-                              mainAxisSpacing: gridVerticalSpacing,
-                              crossAxisSpacing: gridHorizontalSpacing),
-                          children: getGridItems(response),
-                        )
+
+                        ...getGridItems(response)
+                        // ListView.separated(
+                        //
+                        //     physics: NeverScrollableScrollPhysics(),
+                        //     itemBuilder: (context, index) => items[index],
+                        //     separatorBuilder: (context, index) => SizedBox(
+                        //           height: 8,
+                        //         ),
+                        //     itemCount: items.length),
+                        // GridView(
+                        //   physics: NeverScrollableScrollPhysics(),
+                        //   shrinkWrap: true,
+                        //   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        //       childAspectRatio: gridItemWidth / gridItemHeight,
+                        //       crossAxisCount: gridColumnCount,
+                        //       mainAxisSpacing: gridVerticalSpacing,
+                        //       crossAxisSpacing: gridHorizontalSpacing),
+                        //   children: getGridItems(response),
+                        // )
                       ],
                     ))),
                   ],
@@ -177,27 +187,37 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
 
   List<Widget> getGridItems(UserWalletOverviewResponse response) {
     Map<int, int> costs = response.costByCategory;
-    return costs
+    var list = costs
         .map((key, value) => MapEntry(widget.costMap[key] ?? globalLocalizations.wallet_cost_type_other, value))
         .entries
-        .map((e) => Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.ideographic,
-              children: [
-                Text(
-                  e.key,
-                  style: TextStyle(color: designColors.dark_01.auto(ref)),
-                ),
-                Expanded(
-                    child: Text(
-                  formatCurrency(e.value),
-                  style: TextStyle(fontWeight: FontWeight.bold, color: designColors.dark_01.auto(ref)),
-                  textAlign: TextAlign.right,
-                ))
-              ],
-            ))
+        .map((e) => [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.ideographic,
+                children: [
+                  Text(
+                    e.key,
+                    style: TextStyle(color: designColors.dark_01.auto(ref)),
+                  ),
+                  Expanded(
+                      child: Text(
+                    formatCurrency(e.value),
+                    style: TextStyle(fontWeight: FontWeight.bold, color: designColors.dark_01.auto(ref)),
+                    textAlign: TextAlign.right,
+                  ))
+                ],
+              ),
+              SizedBox(
+                height: 6,
+              )
+            ])
+        .expand((element) => element)
         .toList();
+    if (list.isNotEmpty) {
+      list.removeLast();
+    }
+    return list;
   }
 
   Widget buildDataRow(UserWalletOverviewResponse response, String title, int amount, Function() callback) {

@@ -21,8 +21,10 @@ class CommentComposeWidgetModelState {
     this.replyingComment,
   });
 
-  factory CommentComposeWidgetModelState.init({required Post post, PostComment? replyingComment}) =>
-      CommentComposeWidgetModelState(liked: post.liked, favorited: post.favorited ?? false, replyingComment: replyingComment);
+  factory CommentComposeWidgetModelState.init({required Post post, PostComment? replyingComment, bool canSend = false}) {
+    debugPrint("CommentComposeWidgetModelState init");
+    return CommentComposeWidgetModelState(liked: post.liked, favorited: post.favorited ?? false, replyingComment: replyingComment, canSend: canSend);
+  }
 }
 
 class CommentComposeWidgetViewModel extends StateNotifier<CommentComposeWidgetModelState> {

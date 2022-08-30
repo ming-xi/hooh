@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:universal_io/io.dart';
 import 'dart:ui';
 
 import 'package:app/ui/pages/user/register/draw_badge_view_model.dart';
@@ -89,12 +89,20 @@ class EditPostScreenViewModel extends StateNotifier<EditPostScreenModelState> {
     updateState(state.copyWith(setting: state.setting.copyWith(blur: !state.setting.blur)));
   }
 
+  void setFontSize(double fontSize) {
+    updateState(state.copyWith(setting: state.setting.copyWith(fontSize: fontSize)));
+  }
+
+  void setUserChanged(bool changed) {
+    updateState(state.copyWith(setting: state.setting.copyWith(userChanged: changed)));
+  }
+
   void increaseFontSize() {
-    updateState(state.copyWith(setting: state.setting.copyWith(fontSize: state.setting.fontSize + 1)));
+    updateState(state.copyWith(setting: state.setting.copyWith(fontSize: state.setting.fontSize == null ? null : state.setting.fontSize! + 1)));
   }
 
   void decreaseFontSize() {
-    updateState(state.copyWith(setting: state.setting.copyWith(fontSize: state.setting.fontSize - 1)));
+    updateState(state.copyWith(setting: state.setting.copyWith(fontSize: state.setting.fontSize == null ? null : state.setting.fontSize! - 1)));
   }
 
   void increaseLineHeight() {
@@ -171,7 +179,7 @@ class PostImageSetting {
   final double frameW;
   final double frameH;
   final String fontFamily;
-  final double fontSize;
+  final double? fontSize;
   final TextAlignment alignment;
   final bool shadow;
   final bool stroke;
@@ -179,6 +187,7 @@ class PostImageSetting {
   final bool bold;
   final bool blur;
   final double lineHeight;
+  final bool userChanged;
 
   PostImageSetting(
       {this.imageFile,
@@ -191,13 +200,14 @@ class PostImageSetting {
       required this.frameW,
       required this.frameH,
       required this.fontFamily,
-      required this.fontSize,
+      this.fontSize,
       this.alignment = TextAlignment.left,
       this.shadow = false,
       this.stroke = false,
       this.mask = false,
       this.bold = false,
       this.blur = false,
+      this.userChanged = false,
       this.lineHeight = 1.0});
 
   factory PostImageSetting.withLocalFile(File imageFile, Color textColor, {String? text}) {
@@ -206,9 +216,9 @@ class PostImageSetting {
         imageFile: imageFile,
         text: text,
         textColor: textColor,
-        fontSize: CreationStrategy.calculateFontSize(fontFamily, text ?? ""),
+        // fontSize: CreationStrategy.calculateFontSize(fontFamily, text ?? ""),
         fontFamily: fontFamily,
-        lineHeight: CreationStrategy.calculateLineHeight(fontFamily, text ?? ""),
+        // lineHeight: CreationStrategy.calculateLineHeight(fontFamily, text ?? ""),
         frameX: TemplateTextSettingView.MIN_MARGIN_PERCENT,
         frameY: TemplateTextSettingView.MIN_MARGIN_PERCENT,
         frameW: 100 - 2 * TemplateTextSettingView.MIN_MARGIN_PERCENT,
@@ -222,9 +232,9 @@ class PostImageSetting {
         text: text,
         templateId: template.id,
         textColor: HexColor.fromHex(template.textColor),
-        fontSize: CreationStrategy.calculateFontSize(fontFamily, text ?? ""),
+        // fontSize: CreationStrategy.calculateFontSize(fontFamily, text ?? ""),
         fontFamily: fontFamily,
-        lineHeight: CreationStrategy.calculateLineHeight(fontFamily, text ?? ""),
+        // lineHeight: CreationStrategy.calculateLineHeight(fontFamily, text ?? ""),
         frameX: double.tryParse(template.frameX)!,
         frameY: double.tryParse(template.frameY)!,
         frameW: double.tryParse(template.frameWidth)!,

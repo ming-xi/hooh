@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:sprintf/sprintf.dart';
 import 'package:tuple/tuple.dart';
 
@@ -311,7 +312,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                     )));
       }),
       Tuple4(globalLocalizations.me_tile_nfts, "assets/images/icon_user_center_nft.svg", false, () {
-        Toast.showSnackBar(context, globalLocalizations.me_tile_nfts_coming_soon);
+        showSnackBar(context, globalLocalizations.me_tile_nfts_coming_soon);
       }),
     ];
     List<Color> colors = [
@@ -442,8 +443,21 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           return;
         }
         UserProfileScreenViewModel model = ref.read(widget.provider.notifier);
-        model.setFollowState(context, !followed, callback: (error) {
-          // Toast.showSnackBar(context, msg);
+        showHoohDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) {
+              return LoadingDialog(LoadingDialogController());
+            });
+        model.setFollowState(context, !followed, onSuccess: () {
+          Navigator.of(
+            context,
+          ).pop();
+        }, onFailure: (error) {
+          Navigator.of(
+            context,
+          ).pop();
+          // showSnackBar(context, msg);
           showCommonRequestErrorDialog(ref, context, error);
         });
       },
@@ -604,54 +618,77 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     const double badgeWidth = 32;
     double screenWidth = MediaQuery.of(context).size.width;
     int maxBadgeCount = (screenWidth - (paddingLeft + outerSpacing * 2 + buttonSize + paddingRight) + middleSpacing) ~/ (badgeWidth + middleSpacing);
-    // debugPrint("maxBadgeCount=${maxBadgeCount}");
-    // var temp = user.receivedBadges!;
-    // user.receivedBadges = [
-    //   ...temp,
-    //   ...temp,
-    //   ...temp,
-    // ];
-    List<Widget>? badges = user.receivedBadges
-        ?.take(maxBadgeCount)
-        .map((e) => [
-              HoohImage(
-                imageUrl: e,
-                width: badgeWidth,
-                isBadge: true,
-              ),
-              const SizedBox(
-                width: middleSpacing,
-              )
-            ])
-        .expand((element) => element)
-        .toList();
-    if (badges != null && badges.isNotEmpty) {
-      badges.removeLast();
+
+    List<Widget> list;
+    if (user.receivedBadges == null || user.receivedBadges!.isEmpty) {
+      list = [
+        // buildMyBadge(user, height),
+        const SizedBox(
+          width: outerSpacing,
+        ),
+        Expanded(
+          child: Text(
+            globalLocalizations.me_no_badges,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: designColors.dark_03.auto(ref)),
+          ),
+        ),
+        IconButton(
+            onPressed: () {
+              goToBadgeScreen(user);
+            },
+            icon: HoohIcon(
+              "assets/images/icon_more.svg",
+              width: 32,
+              height: 32,
+              color: designColors.dark_03.auto(ref),
+            )),
+        const SizedBox(
+          width: paddingRight,
+        ),
+      ];
+    } else {
+      List<Widget>? badges = user.receivedBadges
+          ?.take(maxBadgeCount)
+          .map((e) => [
+                HoohImage(
+                  imageUrl: e,
+                  width: badgeWidth,
+                  isBadge: true,
+                ),
+                const SizedBox(
+                  width: middleSpacing,
+                )
+              ])
+          .expand((element) => element)
+          .toList();
+      if (badges != null && badges.isNotEmpty) {
+        badges.removeLast();
+      }
+      list = [
+        // buildMyBadge(user, height),
+        const SizedBox(
+          width: outerSpacing,
+        ),
+        ...?badges,
+        // SizedBox(
+        //   width: outerSpacing,
+        // ),
+        const Spacer(),
+        IconButton(
+            onPressed: () {
+              goToBadgeScreen(user);
+            },
+            icon: HoohIcon(
+              "assets/images/icon_more.svg",
+              width: 32,
+              height: 32,
+              color: designColors.dark_03.auto(ref),
+            )),
+        const SizedBox(
+          width: paddingRight,
+        ),
+      ];
     }
-    var list = [
-      // buildMyBadge(user, height),
-      const SizedBox(
-        width: outerSpacing,
-      ),
-      ...?badges,
-      // SizedBox(
-      //   width: outerSpacing,
-      // ),
-      const Spacer(),
-      IconButton(
-          onPressed: () {
-            goToBadgeScreen(user);
-          },
-          icon: HoohIcon(
-            "assets/images/icon_more.svg",
-            width: 32,
-            height: 32,
-            color: designColors.dark_03.auto(ref),
-          )),
-      const SizedBox(
-        width: paddingRight,
-      ),
-    ];
 
     return Padding(
       padding: const EdgeInsets.only(left: paddingLeft),

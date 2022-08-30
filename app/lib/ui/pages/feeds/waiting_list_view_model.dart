@@ -56,9 +56,16 @@ class WaitingListPageViewModel extends StateNotifier<WaitingListPageModelState> 
         return;
       }
     } else {
-      if (![
-        PageState.dataLoaded,
-      ].contains(state.pageState)) {
+      if (!state.isTrending) {
+        if (![
+          PageState.dataLoaded,
+        ].contains(state.pageState)) {
+          if (callback != null) {
+            callback(state.pageState);
+          }
+          return;
+        }
+      } else {
         if (callback != null) {
           callback(state.pageState);
         }
@@ -89,7 +96,7 @@ class WaitingListPageViewModel extends StateNotifier<WaitingListPageModelState> 
         if (isRefresh) {
           updateState(state.copyWith(
             pageState: PageState.dataLoaded,
-            lastTimestamp: newData.last.createdAt,
+            lastTimestamp: newData.last.enabledVotingAt,
             page: state.page + 1,
             posts: newData,
           ));
@@ -97,7 +104,7 @@ class WaitingListPageViewModel extends StateNotifier<WaitingListPageModelState> 
           updateState(state.copyWith(
             pageState: PageState.dataLoaded,
             page: state.page + 1,
-            lastTimestamp: newData.last.createdAt,
+            lastTimestamp: newData.last.enabledVotingAt,
             posts: [...state.posts, ...newData],
           ));
         }
@@ -128,13 +135,16 @@ class WaitingListPageViewModel extends StateNotifier<WaitingListPageModelState> 
     updateState(state.copyWith(infoDialogChecked: checked));
   }
 
-  void updatePostData(Post post, int index) {
+  void updatePostData(Post post, int index, {Function()? onPostIntoMainList}) {
     // debugPrint("updatePostData vote_count=${post.voteCount}(${post.myVoteCount}) index=$index");
     List<Post> list = [...state.posts];
     if (post.publishState == Post.PUBLISH_STATE_WAITING_LIST) {
       list[index] = post;
     } else {
       list.removeAt(index);
+      if (onPostIntoMainList != null) {
+        onPostIntoMainList();
+      }
     }
     updateState(state.copyWith(posts: list));
   }

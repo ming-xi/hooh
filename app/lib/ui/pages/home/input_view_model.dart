@@ -41,6 +41,7 @@ class InputPageViewModel extends StateNotifier<InputPageModelState> {
   void getBackgroundImage() {
     network.requestAsync<HomepageBackgroundImageResponse>(network.getHomepageRandomBackground(), (obj) {
       updateState(state.copyWith(backgroundImageUrl: obj.imageUrl));
+      preferences.putString(Preferences.KEY_HOMEPAGE_BACKGROUND_URL, obj.imageUrl);
     }, (error) {});
   }
 

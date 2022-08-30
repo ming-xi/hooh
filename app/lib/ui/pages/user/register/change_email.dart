@@ -67,7 +67,9 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
                 globalLocalizations.bind_email_hint,
                 ref,
               ).copyWith(
-                  disabledBorder: OutlineInputBorder(borderSide: borderSide, borderRadius: radius),
+                  disabledBorder: OutlineInputBorder(borderSide: borderSide.copyWith(color: designColors.dark_03.auto(ref)), borderRadius: radius),
+                  filled: true,
+                  fillColor: designColors.light_02.auto(ref),
                   prefixIcon: SizedBox(
                     width: 36,
                     child: Center(
@@ -83,20 +85,30 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
             TextButton(
               style: RegisterStyles.blackButtonStyle(ref),
               onPressed: () {
-                Navigator.push<bool>(context, MaterialPageRoute(builder: (context) => CheckPasswordScreen())).then((result) {
+                Navigator.push<bool>(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => BindEmailScreen(
+                              scene: BindEmailScreen.SCENE_CHANGE,
+                            ))).then((result) {
                   if (result != null && result) {
-                    Navigator.push<bool>(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => BindEmailScreen(
-                                  scene: BindEmailScreen.SCENE_CHANGE,
-                                ))).then((result) {
-                      if (result != null && result) {
-                        Navigator.of(context, rootNavigator: true).pop(true);
-                      }
-                    });
+                    Navigator.of(context, rootNavigator: true).pop(true);
                   }
                 });
+                // Navigator.push<bool>(context, MaterialPageRoute(builder: (context) => CheckPasswordScreen())).then((result) {
+                //   if (result != null && result) {
+                //     Navigator.push<bool>(
+                //         context,
+                //         MaterialPageRoute(
+                //             builder: (context) => BindEmailScreen(
+                //                   scene: BindEmailScreen.SCENE_CHANGE,
+                //                 ))).then((result) {
+                //       if (result != null && result) {
+                //         Navigator.of(context, rootNavigator: true).pop(true);
+                //       }
+                //     });
+                //   }
+                // });
               },
               child: Text(globalLocalizations.change_email_button),
             ),

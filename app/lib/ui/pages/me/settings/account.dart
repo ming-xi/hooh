@@ -1,6 +1,7 @@
 import 'package:app/global.dart';
 import 'package:app/ui/pages/user/register/bind_email.dart';
 import 'package:app/ui/pages/user/register/change_email.dart';
+import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
@@ -38,8 +39,25 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                 color: designColors.light_02.auto(ref),
               ),
               buildTile(globalLocalizations.account_password, tailText: globalLocalizations.account_change, showArrow: true, onPress: () {
-                // Navigator.push(context,
-                // MaterialPageRoute(builder: (context) => AccountScreen()));
+                if (user.emailValidated ?? false) {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => BindEmailScreen(scene: BindEmailScreen.SCENE_FORGET_PASSWORD)));
+                } else {
+                  RegisterStyles.showRegisterStyleDialog(
+                      ref: ref,
+                      context: context,
+                      title: globalLocalizations.setting_account_email_not_verified_dialog_title,
+                      content: globalLocalizations.setting_account_email_not_verified_dialog_content,
+                      cancelText: globalLocalizations.common_cancel,
+                      okText: globalLocalizations.account_verify,
+                      onOk: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => BindEmailScreen(
+                                      scene: BindEmailScreen.SCENE_VERIFY,
+                                    )));
+                      });
+                }
               }),
               buildTile(globalLocalizations.account_email, tailText: accountTailText, showArrow: true, showDot: !(user.emailValidated ?? false), onPress: () {
                 if (user.emailValidated ?? false) {

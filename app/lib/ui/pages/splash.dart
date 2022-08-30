@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:app/global.dart';
-import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/pages/home/home.dart';
+import 'package:app/ui/pages/misc/intro.dart';
 import 'package:app/ui/pages/user/register/set_badge.dart';
 import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/utils/push.dart';
@@ -33,9 +33,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           String? jsonString = preferences.getString(Preferences.KEY_USER_INFO);
           int darkMode = preferences.getInt(Preferences.KEY_DARK_MODE) ?? DARK_MODE_SYSTEM;
           ref.read(globalDarkModeProvider.state).state = darkMode;
-          String? languageCode = preferences.getString(Preferences.KEY_LANGUAGE);
+          String languageCode = preferences.getString(Preferences.KEY_LANGUAGE) ?? "en";
           debugPrint("languageCode=$languageCode");
-          ref.read(globalLocaleProvider.state).state = languageCode == null ? null : Locale(languageCode);
+          ref.read(globalLocaleProvider.state).state = languageCode == "system" ? null : Locale(languageCode);
+          // ref.read(globalLocaleProvider.state).state = Locale(languageCode);
           User? user;
           if (jsonString != null) {
             user = User.fromJson(json.decode(jsonString));
@@ -46,11 +47,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             if (preferences.getBool(Preferences.KEY_USER_HAS_SKIPPED_LOGIN) ?? false) {
               Navigator.pushReplacement(context, pageRouteBuilder(HomeScreen(), isHome: true));
             } else {
-              Navigator.pushReplacement(
-                  context,
-                  pageRouteBuilder(StartScreen(
-                    scene: StartScreen.SCENE_START,
-                  )));
+              if (preferences.getBool(Preferences.KEY_INTRO_PAGES_READ) ?? false) {
+                Navigator.pushReplacement(
+                    context,
+                    pageRouteBuilder(StartScreen(
+                      scene: StartScreen.SCENE_START,
+                    )));
+              } else {
+                Navigator.pushReplacement(context, pageRouteBuilder(IntroScreen()));
+              }
             }
           } else {
             debugPrint("user=${user.toJson()}");

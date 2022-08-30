@@ -12,6 +12,7 @@ import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/push.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/utils/preferences.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -161,16 +162,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     onPressed: !modelState.registerButtonEnabled
                         ? null
                         : () {
-                      showDialog(
+                      showHoohDialog(
                                 context: context,
                                 barrierDismissible: false,
                                 builder: (context) {
                                   return LoadingDialog(LoadingDialogController());
                                 });
                             model.register(context, usernameController.text, passwordController.text, emailController.text, onSuccess: (response) {
-                              handleUserLogin(ref, response.user, response.jwtResponse.accessToken);
+                              handleUserLogin(ref, response.user, response.jwtResponse.accessToken, passwordController.text);
                               Navigator.of(context).pop();
-                              // Toast.showSnackBar(context, "注册成功");
+                              // showSnackBar(context, "注册成功");
                               // Navigator.pushAndRemoveUntil(
                               //   context,
                               //   MaterialPageRoute(builder: (context) => SetBadgeScreen()),
@@ -178,7 +179,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               Navigator.push(context, MaterialPageRoute(builder: (context) => SetBadgeScreen(scene: SetBadgeScreen.SCENE_REGISTER)))
                                   .then((result) {
                                 if (result != null && result is bool && result) {
-                                  Navigator.of(context).pop();
+                                  Navigator.of(context).pop(true);
                                 }
                               });
                             }, onFailed: (error) {

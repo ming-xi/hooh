@@ -198,3 +198,14 @@ class CreatePostCommentRequest {
 
   Map<String, dynamic> toJson() => _$CreatePostCommentRequestToJson(this);
 }
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
+class ModifyTemplateRequest {
+  List<String>? tags;
+
+  ModifyTemplateRequest({this.tags});
+
+  factory ModifyTemplateRequest.fromJson(Map<String, dynamic> json) => _$ModifyTemplateRequestFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ModifyTemplateRequestToJson(this);
+}

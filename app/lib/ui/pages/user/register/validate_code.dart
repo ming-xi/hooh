@@ -7,6 +7,7 @@ import 'package:app/ui/widgets/verification_code_input.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/network/responses.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sprintf/sprintf.dart';
@@ -86,7 +87,7 @@ class _ValidateCodeScreenState extends ConsumerState<ValidateCodeScreen> {
                         model.validationCode(context, code, onSuccess: (data) {
                           if (widget.scene == ValidateCodeScreen.SCENE_BIND_EMAIL) {
                             ref.read(globalUserInfoProvider.state).state = data;
-                            showDialog(
+                            showHoohDialog(
                                 context: context,
                                 barrierDismissible: false,
                                 builder: (popContext) {
@@ -128,7 +129,7 @@ class _ValidateCodeScreenState extends ConsumerState<ValidateCodeScreen> {
                   //       model.validationCode(context, code, onSuccess: (data) {
                   //         if (widget.scene == ValidateCodeScreen.SCENE_BIND_EMAIL) {
                   //           ref.read(globalUserInfoProvider.state).state = data;
-                  //           showDialog(
+                  //           showHoohDialog(
                   //               context: context,
                   //               barrierDismissible: false,
                   //               builder: (popContext) {
@@ -175,7 +176,7 @@ class _ValidateCodeScreenState extends ConsumerState<ValidateCodeScreen> {
                               fontWeight: FontWeight.normal,
                               fontSize: 14),
                           onClick: () {
-                            showDialog(
+                            showHoohDialog(
                                 context: context,
                                 barrierDismissible: false,
                                 builder: (context) {

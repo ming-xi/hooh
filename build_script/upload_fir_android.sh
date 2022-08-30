@@ -1,5 +1,5 @@
 #!/bin/bash
-if ! ./flutter_build_staging_apk.sh; then
+if ! ./flutter_build_apk_staging.sh; then
     echo "build android error"
     exit 1
 fi

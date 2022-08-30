@@ -1,20 +1,17 @@
-import 'dart:io';
-
 import 'package:app/global.dart';
 import 'package:app/ui/pages/me/settings/about.dart';
 import 'package:app/ui/pages/me/settings/account.dart';
 import 'package:app/ui/pages/me/settings/dark_mode.dart';
 import 'package:app/ui/pages/me/settings/language.dart';
-import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:badges/badges.dart';
 import 'package:common/models/user.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:universal_io/io.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({
@@ -37,6 +34,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     debugPrint("setting build");
+    // important! make it change text when locale changes
+    ref.watch(globalLocaleProvider);
     User? user = ref.watch(globalUserInfoProvider);
     TextStyle? titleTextStyle = TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref));
     TextStyle? subTitleTextStyle = TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref));
@@ -57,7 +56,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       });
     });
     var help = buildTile(globalLocalizations.setting_help, showArrow: true, onPress: () {
-      openLink(context, "https://www.hooh.zone/help-support/");
+      openLink(context, "https://www.hooh.zone/help-support/", title: globalLocalizations.setting_help);
     });
     var about = buildTile(globalLocalizations.setting_about, showArrow: true, onPress: () {
       Navigator.push(context, MaterialPageRoute(builder: (context) => AboutScreen()));
@@ -100,8 +99,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget buildTile(String title, {bool showDot = false, bool showArrow = false, String? tailText, Function()? onPress}) {
-    TextStyle? titleTextStyle = TextStyle(
-        fontSize: 14, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref));
+    TextStyle? titleTextStyle = TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref));
     TextStyle? subTitleTextStyle = TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: designColors.light_06.auto(ref));
     TextStyle? cacheTextStyle = TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: designColors.dark_01.auto(ref));
 
@@ -121,13 +119,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 !showDot
                     ? titleWidget
                     : Badge(
-                  child: titleWidget,
-                  position: BadgePosition.topEnd(end: -8, top: -4),
-                  badgeColor: designColors.orange.auto(ref),
-                  elevation: 0,
-                  shape: BadgeShape.circle,
-                  padding: EdgeInsets.all(4),
-                ),
+                        child: titleWidget,
+                        position: BadgePosition.topEnd(end: -8, top: -4),
+                        badgeColor: designColors.orange.auto(ref),
+                        elevation: 0,
+                        shape: BadgeShape.circle,
+                        padding: EdgeInsets.all(4),
+                      ),
                 const Spacer(),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),

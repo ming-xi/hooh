@@ -38,20 +38,23 @@ class UserProfileScreenViewModel extends StateNotifier<UserProfileScreenModelSta
     });
   }
 
-  void setFollowState(BuildContext context, bool newState, {Function(HoohApiErrorResponse error)? callback}) {
+  void setFollowState(BuildContext context, bool newState, {Function()? onSuccess, Function(HoohApiErrorResponse error)? onFailure}) {
     if (state.user == null) {
       return;
     }
     Future request = newState ? network.followUser(state.userId) : network.cancelFollowUser(state.userId);
     network.requestAsync(request, (data) {
+      if (onSuccess != null) {
+        onSuccess();
+      }
       if (data is FollowUserResponse && data.receivedBadge != null) {
         showReceiveBadgeDialog(context, data.receivedBadge!);
       }
       state.user!.followed = newState;
       updateState(state.copyWith(user: User.fromJson(state.user!.toJson())));
     }, (error) {
-      if (callback != null) {
-        callback(error);
+      if (onFailure != null) {
+        onFailure(error);
       }
     });
   }

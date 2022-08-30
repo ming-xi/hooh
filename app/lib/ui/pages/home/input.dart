@@ -9,6 +9,7 @@ import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:blur/blur.dart';
 import 'package:common/models/user.dart';
+import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -113,13 +114,13 @@ class _InputPageState extends ConsumerState<InputPage> with WidgetsBindingObserv
                                           : () {
                                               User? user = ref.read(globalUserInfoProvider);
                                               if (user == null) {
-                                          Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
-                                          return;
-                                        }
-                                        FocusManager.instance.primaryFocus?.unfocus();
-                                        List<String> texts = updateModelText();
-                                        Navigator.push(context, MaterialPageRoute(builder: (context) => RecommendedTemplatesScreen(contents: texts)));
-                                      },
+                                                Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+                                                return;
+                                              }
+                                              FocusManager.instance.primaryFocus?.unfocus();
+                                              List<String> texts = updateModelText();
+                                              Navigator.push(context, MaterialPageRoute(builder: (context) => RecommendedTemplatesScreen(contents: texts)));
+                                            },
                                       cornerRadius: 22))),
                         ),
                       ],
@@ -180,7 +181,9 @@ class _InputPageState extends ConsumerState<InputPage> with WidgetsBindingObserv
       color: designColors.light_02.auto(ref),
     );
     Size size = MediaQuery.of(context).size;
-    String? url = modelState.backgroundImageUrl;
+    String? url = modelState.backgroundImageUrl ?? preferences.getString(Preferences.KEY_HOMEPAGE_BACKGROUND_URL);
+    // String? url = preferences.getString(Preferences.KEY_HOMEPAGE_BACKGROUND_URL);
+    // debugPrint("url state:${modelState.backgroundImageUrl!=null} pref:${preferences.getString(Preferences.KEY_HOMEPAGE_BACKGROUND_URL)!=null}");
     if (url == null) {
       return placeholder;
     } else {

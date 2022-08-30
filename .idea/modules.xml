@@ -4,8 +4,9 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/android/app_android.iml" filepath="$PROJECT_DIR$/app/android/app_android.iml" />
-      <module fileurl="file://$PROJECT_DIR$/build_scripts/build_scripts.iml" filepath="$PROJECT_DIR$/build_scripts/build_scripts.iml" />
+      <module fileurl="file://$PROJECT_DIR$/build_script/build_scripts.iml" filepath="$PROJECT_DIR$/build_script/build_scripts.iml" />
       <module fileurl="file://$PROJECT_DIR$/common/common.iml" filepath="$PROJECT_DIR$/common/common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/crm/crm.iml" filepath="$PROJECT_DIR$/crm/crm.iml" />
       <module fileurl="file://$PROJECT_DIR$/ipfs_web/ipfs_web.iml" filepath="$PROJECT_DIR$/ipfs_web/ipfs_web.iml" />
       <module fileurl="file://$PROJECT_DIR$/nft_storage_web/nft_storage_web.iml" filepath="$PROJECT_DIR$/nft_storage_web/nft_storage_web.iml" />
       <module fileurl="file://$PROJECT_DIR$/web/web.iml" filepath="$PROJECT_DIR$/web/web.iml" />

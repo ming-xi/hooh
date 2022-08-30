@@ -17,7 +17,8 @@ class LanguageScreen extends ConsumerStatefulWidget {
 
 class _LanguageScreenState extends ConsumerState<LanguageScreen> {
   Map<String, String?> languageCodes = {
-    globalLocalizations.languages_auto: null,
+    // globalLocalizations.languages_auto: null,
+    globalLocalizations.languages_auto: "system",
     globalLocalizations.languages_en: "en",
     globalLocalizations.languages_zh: "zh",
   };
@@ -81,7 +82,7 @@ class _LanguageScreenState extends ConsumerState<LanguageScreen> {
   }
 
   void _onChange(String? code) {
-    ref.read(globalLocaleProvider.state).state = code == null ? null : Locale(code);
-    preferences.putString(Preferences.KEY_LANGUAGE, code);
+    preferences.putString(Preferences.KEY_LANGUAGE, code ?? "en");
+    ref.read(globalLocaleProvider.state).state = (code == null || code == "system") ? null : Locale(code);
   }
 }

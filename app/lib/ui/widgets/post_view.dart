@@ -4,15 +4,17 @@ import 'package:app/ui/pages/feeds/tagged_list.dart';
 import 'package:app/ui/pages/misc/share.dart';
 import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
-import 'package:app/ui/widgets/toast.dart';
+import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
+import 'package:blur/blur.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/network/responses.dart';
 import 'package:common/models/post.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/date_util.dart';
 import 'package:common/utils/network.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -46,9 +48,25 @@ class _PostViewState extends ConsumerState<PostView> {
   Widget build(BuildContext context) {
     Post post = widget.post;
     User author = post.author;
-    double tagsPaddingTop = 12;
-    double tagsPaddingBottom = 20;
-    double tagsRunSpacing = 4;
+    Widget postImage = HoohImage(imageUrl: post.images[0].imageUrl);
+    User? currentUser = ref.read(globalUserInfoProvider);
+    Widget postWidget;
+    if (currentUser != null && currentUser.id == author.id && !post.visible) {
+      //private post
+      postWidget = Stack(
+        children: [
+          Positioned.fill(child: postImage),
+          Positioned(
+            right: 12,
+            top: 12,
+            child: buildVisibleButton(post),
+          )
+        ],
+      );
+    } else {
+      //public post
+      postWidget = postImage;
+    }
     return Container(
       decoration: BoxDecoration(boxShadow: [BoxShadow(color: Color(0x0C000000), offset: Offset(0, 8), blurRadius: 24)]),
       child: ClipRRect(
@@ -71,7 +89,7 @@ class _PostViewState extends ConsumerState<PostView> {
                   },
                   child: AspectRatio(
                     aspectRatio: 1,
-                    child: HoohImage(imageUrl: post.images[0].imageUrl),
+                    child: postWidget,
                   ),
                 ),
               ),
@@ -81,29 +99,16 @@ class _PostViewState extends ConsumerState<PostView> {
               child: Material(
                 color: designColors.light_01.auto(ref),
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 16, right: 16, top: 32, bottom: 0),
+                  padding: const EdgeInsets.only(left: 16, right: 16, top: 24, bottom: 0),
                   child: Row(
                     children: [
                       Expanded(
                         child: Wrap(
-                          spacing: 8,
+                          spacing: 2,
                           runSpacing: 4,
                           children: (post.tags ?? [])
                               // .expand((e) => [e,e,e])
-                              .map((e) => TextButton(
-                                    onPressed: () {
-                                      Navigator.push(context, MaterialPageRoute(builder: (context) => TaggedListScreen(tagName: e)));
-                                    },
-                                    style: TextButton.styleFrom(
-                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                                        minimumSize: Size(48, 16),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                                    child: Text(
-                                      "# $e",
-                                      style: TextStyle(fontSize: 14, color: designColors.blue_dark.auto(ref), fontWeight: FontWeight.normal),
-                                    ),
-                                  ))
+                              .map((e) => TagView(tagName: e))
                               .toList(),
                         ),
                       ),
@@ -140,7 +145,7 @@ class _PostViewState extends ConsumerState<PostView> {
                 //   widgets.add(buildButtons(post));
                 // } else {}
                 return Padding(
-                  padding: const EdgeInsets.only(top: 16, bottom: 8),
+                  padding: const EdgeInsets.only(top: 12, bottom: 8),
                   // padding: EdgeInsets.zero,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -153,6 +158,44 @@ class _PostViewState extends ConsumerState<PostView> {
         ),
       ),
     );
+  }
+
+  Widget buildButtonBackground(Widget child, {double? width, Function(Post post)? onClick}) {
+    return Material(
+      type: MaterialType.transparency,
+      child: Ink(
+        width: width,
+        height: 36,
+        // decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: designColors.light_01.auto(ref).withOpacity(0.5)),
+        child: InkWell(
+          onTap: () {
+            if (onClick != null) {
+              onClick(widget.post);
+            }
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: child,
+        ),
+      ),
+    ).frosted(
+      blur: 4,
+      borderRadius: BorderRadius.circular(12),
+      frostColor: designColors.light_01.auto(ref).withOpacity(0.5),
+    );
+  }
+
+  Widget buildVisibleButton(Post post, {Function(Post post)? onClick}) {
+    return buildButtonBackground(
+        width: 36,
+        onClick: onClick,
+        Center(
+          child: HoohIcon(
+            "assets/images/icon_password_invisible.svg",
+            width: 36,
+            // color: template.favorited ? null : designColors.dark_01.auto(ref),
+            color: designColors.dark_01.auto(ref),
+          ),
+        ));
   }
 
   void showProfitDialog() {
@@ -218,11 +261,41 @@ class _PostViewState extends ConsumerState<PostView> {
   }
 
   void onVotePress(Post post) {
+    showHoohDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return LoadingDialog(LoadingDialogController());
+        });
     network.requestAsync<Post>(network.votePost(post.id), (data) {
+      Navigator.of(context).pop();
       if (widget.onVote != null) {
         widget.onVote!(data, null);
       }
     }, (error) {
+      Navigator.of(context).pop();
+      if (error.errorCode == Constants.POST_NOT_IN_WAITING_LIST) {
+        showHoohDialog(
+          context: context,
+          barrierDismissible: true,
+          builder: (popContext) => AlertDialog(
+            content: Text(globalLocalizations.waiting_list_vote_failed_already_in_main_list),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(popContext).pop(true);
+                  },
+                  child: Text(globalLocalizations.common_ok)),
+            ],
+          ),
+        );
+        return;
+      } else if (error.errorCode == Constants.INSUFFICIENT_FUNDS) {
+        List<String> split = error.message.split("\n");
+        showNotEnoughOreDialog(ref: ref, context: context, needed: int.tryParse(split[0])!, current: int.tryParse(split[1])!);
+      } else {
+        showCommonRequestErrorDialog(ref, context, error);
+      }
       if (widget.onVote != null) {
         widget.onVote!(post, error);
       }
@@ -233,7 +306,16 @@ class _PostViewState extends ConsumerState<PostView> {
     if (post.author.followed ?? false) {
       return;
     }
+    showHoohDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return LoadingDialog(LoadingDialogController());
+        });
     network.requestAsync(network.followUser(post.author.id), (data) {
+      Navigator.of(
+        context,
+      ).pop();
       if (data is FollowUserResponse && data.receivedBadge != null) {
         showReceiveBadgeDialog(context, data.receivedBadge!);
       }
@@ -241,6 +323,9 @@ class _PostViewState extends ConsumerState<PostView> {
         widget.onFollow!(post, null);
       }
     }, (error) {
+      Navigator.of(
+        context,
+      ).pop();
       if (widget.onFollow != null) {
         widget.onFollow!(post, error);
       }
@@ -378,6 +463,9 @@ class _PostViewState extends ConsumerState<PostView> {
               author.name,
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: designColors.dark_00.auto(ref)),
             ),
+            SizedBox(
+              height: 4,
+            ),
             Text(
               DateUtil.getZonedDateString(post.createdAt),
               style: TextStyle(fontSize: 10, color: designColors.light_06.auto(ref)),
@@ -428,7 +516,7 @@ class _PostViewState extends ConsumerState<PostView> {
             return;
           }
           if (post.author.id == user.id) {
-            Toast.showSnackBar(context, globalLocalizations.waiting_list_vote_my_post_failed);
+            showSnackBar(context, globalLocalizations.waiting_list_vote_my_post_failed);
             return;
           }
           onVotePress(post);
@@ -447,8 +535,35 @@ class _PostViewState extends ConsumerState<PostView> {
     }
     return TextButton(
       onPressed: onPress,
-      child: text,
       style: style,
+      child: text,
+    );
+  }
+}
+
+class TagView extends ConsumerWidget {
+  final String tagName;
+
+  const TagView({
+    required this.tagName,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return TextButton(
+      onPressed: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => TaggedListScreen(tagName: tagName)));
+      },
+      style: TextButton.styleFrom(
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          padding: EdgeInsets.symmetric(horizontal: 8),
+          minimumSize: Size(48, 32),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+      child: Text(
+        "# $tagName",
+        style: TextStyle(fontSize: 14, color: designColors.blue_dark.auto(ref), fontWeight: FontWeight.normal),
+      ),
     );
   }
 }

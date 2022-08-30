@@ -1,10 +1,8 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:app/global.dart';
 import 'package:app/ui/pages/creation/publish_post_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
-import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/app_link.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/file_utils.dart';
@@ -12,6 +10,8 @@ import 'package:app/utils/ui_utils.dart';
 import 'package:blur/blur.dart';
 import 'package:common/models/post.dart';
 import 'package:common/models/user.dart';
+import 'package:common/utils/network.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -20,11 +20,16 @@ import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:universal_io/io.dart';
 
 class ShareScreen extends ConsumerStatefulWidget {
-  static const LANDING_PAGE_HOST = "www.hooh.zone";
-  static const LANDING_PAGE_PATH = "/site";
-  static const LANDING_PAGE_REAL_PATH = "$LANDING_PAGE_PATH/#/landing";
+  // static const LANDING_PAGE_HOST = "www.hooh.zone";
+  static const LANDING_PAGE_HOST = "app.hooh.zone";
+  static const LANDING_PAGE_HOST_STAGING = "stg-app.hooh.zone";
+
+  // static const LANDING_PAGE_PATH = "/site";
+  static const LANDING_PAGE_PATH = "placeholder";
+  static const LANDING_PAGE_REAL_PATH = "/#/landing";
   static const LANDING_PAGE_URL_PARAM_NAME = "app_link";
 
   static const SCENE_USER_CARD = 0;
@@ -82,7 +87,8 @@ class _ShareScreenState extends ConsumerState<ShareScreen> with TickerProviderSt
       if (widget.scene == ShareScreen.SCENE_USER_CARD) {
         User user = ref.read(globalUserInfoProvider)!;
         // Uri uri = Uri(scheme: "https",host: ShareScreen.LANDING_PAGE_HOST,fragment: ShareScreen.LANDING_PAGE_SLASH_PATH,queryParameters: {ShareScreen.LANDING_PAGE_URL_PARAM_NAME: getUserAppLink(user.id)});
-        Uri uri = Uri.https(ShareScreen.LANDING_PAGE_HOST, ShareScreen.LANDING_PAGE_PATH, {ShareScreen.LANDING_PAGE_URL_PARAM_NAME: getUserAppLink(user.id)});
+        String authority = network.serverType == Network.TYPE_PRODUCTION ? ShareScreen.LANDING_PAGE_HOST : ShareScreen.LANDING_PAGE_HOST_STAGING;
+        Uri uri = Uri.https(authority, ShareScreen.LANDING_PAGE_PATH, {ShareScreen.LANDING_PAGE_URL_PARAM_NAME: getUserAppLink(user.id)});
         String urlString = uri.toString();
         urlString = urlString.replaceAll(ShareScreen.LANDING_PAGE_PATH, ShareScreen.LANDING_PAGE_REAL_PATH);
         debugPrint("share url=$urlString");
@@ -201,15 +207,11 @@ class _ShareScreenState extends ConsumerState<ShareScreen> with TickerProviderSt
         SizedBox(
           height: headerHeight,
         ),
-        SizedBox(
-          width: contentSize.width,
-          height: contentSize.height,
-          child: Container(
-            decoration: BoxDecoration(boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), offset: Offset(0, 8), blurRadius: 24)]),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: content,
-            ),
+        Container(
+          decoration: BoxDecoration(boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), offset: Offset(0, 8), blurRadius: 24)]),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: content,
           ),
         ),
         SizedBox(
@@ -276,7 +278,7 @@ class _ShareScreenState extends ConsumerState<ShareScreen> with TickerProviderSt
                                   ),
                                   IconButton(
                                       onPressed: () async {
-                                        showDialog(
+                                        showHoohDialog(
                                             context: context,
                                             barrierDismissible: false,
                                             builder: (context) {
@@ -284,7 +286,7 @@ class _ShareScreenState extends ConsumerState<ShareScreen> with TickerProviderSt
                                             });
                                         _saveImage(await _saveScreenshot(context, contentSize.width, contentSize.height));
                                         Navigator.of(context).pop();
-                                        Toast.showSnackBar(context, globalLocalizations.share_card_success);
+                                        showSnackBar(context, globalLocalizations.save_share_card_success);
                                       },
                                       icon: HoohIcon(
                                         "assets/images/icon_download.svg",
@@ -294,7 +296,7 @@ class _ShareScreenState extends ConsumerState<ShareScreen> with TickerProviderSt
                                       )),
                                   IconButton(
                                       onPressed: () async {
-                                        showDialog(
+                                        showHoohDialog(
                                             context: context,
                                             barrierDismissible: false,
                                             builder: (context) {
@@ -348,100 +350,103 @@ class _ShareScreenState extends ConsumerState<ShareScreen> with TickerProviderSt
   Widget buildPostImage() {
     return HoohImage(
       imageUrl: widget.post!.images[0].imageUrl,
-      width: 335,
-      height: 335,
+      // width: 335,
+      // height: 335,
     );
   }
 
   Widget buildUserCard() {
     User user = ref.read(globalUserInfoProvider)!;
-    var stack = Stack(
-      children: [
-        Positioned.fill(
-          child: Image.asset(
-            "assets/images/figure_share_card.png",
-            fit: BoxFit.fill,
+    return SizedBox(
+      width: 335,
+      height: 460,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset(
+              "assets/images/figure_share_card.png",
+              fit: BoxFit.fill,
+            ),
           ),
-        ),
-        Positioned(
-            left: 0,
-            right: 0,
-            top: 20,
-            child: Center(
-              child: HoohImage(
-                imageUrl: user.badgeImageUrl!,
-                isBadge: true,
-                width: 120,
-                height: 135,
-              ),
-            )),
-        Positioned(
-            right: 98,
-            top: 111,
-            child: Center(
-              child: Container(
-                decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                padding: EdgeInsets.all(1),
-                child: ClipOval(
-                  child: HoohImage(
-                    imageUrl: user.avatarUrl!,
-                    width: 48,
-                    height: 48,
+          Positioned(
+              left: 0,
+              right: 0,
+              top: 20,
+              child: Center(
+                child: HoohImage(
+                  imageUrl: user.badgeImageUrl!,
+                  isBadge: true,
+                  width: 120,
+                  height: 135,
+                ),
+              )),
+          Positioned(
+              right: 98,
+              top: 111,
+              child: Center(
+                child: Container(
+                  decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                  padding: EdgeInsets.all(1),
+                  child: ClipOval(
+                    child: HoohImage(
+                      imageUrl: user.avatarUrl!,
+                      width: 48,
+                      height: 48,
+                    ),
                   ),
                 ),
-              ),
-            )),
-        Positioned(
-            left: 0,
-            right: 0,
-            top: 170,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  user.name,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: designColors.dark_01.light),
-                ),
-                SizedBox(
-                  height: 4,
-                ),
-                Text(
-                  "@${user.username!}",
-                  style: TextStyle(fontSize: 12, color: designColors.light_06.light),
-                ),
-              ],
-            )),
-        Positioned(
-            left: 0,
-            right: 0,
-            bottom: 54,
-            child: Center(
-              child: SizedBox(
-                width: 110,
-                height: 110,
-                child: Container(
-                  decoration: BoxDecoration(
-                      color: designColors.light_01.light,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: designColors.light_06.light, width: 1)),
-                  child: userQrcodeFile == null
-                      ? Container()
-                      : Center(
-                          child: SizedBox(
-                            width: 90,
-                            height: 90,
-                            child: SvgPicture.file(
-                              userQrcodeFile!,
+              )),
+          Positioned(
+              left: 0,
+              right: 0,
+              top: 170,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    user.name,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: designColors.dark_01.light),
+                  ),
+                  SizedBox(
+                    height: 4,
+                  ),
+                  Text(
+                    "@${user.username!}",
+                    style: TextStyle(fontSize: 12, color: designColors.light_06.light),
+                  ),
+                ],
+              )),
+          Positioned(
+              left: 0,
+              right: 0,
+              bottom: 54,
+              child: Center(
+                child: SizedBox(
+                  width: 110,
+                  height: 110,
+                  child: Container(
+                    decoration: BoxDecoration(
+                        color: designColors.light_01.light,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: designColors.light_06.light, width: 1)),
+                    child: userQrcodeFile == null
+                        ? Container()
+                        : Center(
+                            child: SizedBox(
+                              width: 90,
+                              height: 90,
+                              child: SvgPicture.file(
+                                userQrcodeFile!,
+                              ),
                             ),
                           ),
-                        ),
+                  ),
                 ),
-              ),
-            )),
-      ],
+              )),
+        ],
+      ),
     );
-    return stack;
     // return Container(
     //   decoration: BoxDecoration(boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), offset: Offset(0, 8), blurRadius: 24)]),
     //   child: ClipRRect(

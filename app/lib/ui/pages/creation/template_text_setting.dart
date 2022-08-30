@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:universal_io/io.dart';
 
 import 'package:app/global.dart';
 import 'package:app/ui/widgets/appbar.dart';
@@ -161,14 +161,26 @@ class _TemplateTextSettingScreenState extends ConsumerState<TemplateTextSettingS
                 child: Center(
                   child: Builder(builder: (context) {
                     return HoohLocalizedRichText(
+                        textAlign: TextAlign.center,
                         text: globalLocalizations.template_text_setting_description,
                         keys: [
                           HoohLocalizedWidgetKey(
-                            key: globalLocalizations.template_text_setting_description_button,
+                            key: globalLocalizations.template_text_setting_description_button1,
                             widget: Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 4),
                               child: HoohIcon(
                                 "assets/images/icon_template_text_frame_scale.png",
+                                width: 18,
+                                height: 18,
+                              ),
+                            ),
+                          ),
+                          HoohLocalizedWidgetKey(
+                            key: globalLocalizations.template_text_setting_description_button2,
+                            widget: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              child: HoohIcon(
+                                "assets/images/icon_text_color_selected_small.png",
                                 width: 18,
                                 height: 18,
                               ),

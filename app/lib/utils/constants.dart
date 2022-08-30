@@ -7,7 +7,10 @@ class Constants {
 
   // static const PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*d)(?=.*[@\$!%*?&])[A-Za-zd@\$!%*?&]{8,16}\$";
   static const PASSWORD_REGEX = r"^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&,.])[A-Za-z\d@$!%*#?&,.]{8,16}$";
-  static const URL_REGEX = r"((https?|http):\/\/)?(www.)?[a-z0-9]+\.[a-z]+(\/[a-zA-Z0-9#]+\/?)*";
+  static const URL_REGEX = r"[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\-\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)";
+
+  // static const URL_REGEX = r"((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[.\!\/\\w]*))?)g";
+  // static const URL_REGEX =  r"((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[.\!\/\\w]*))?)";
 
   static const RESOURCE_NOT_FOUND = 10003;
   static const INVALID_USERNAME_AND_PASSWORD = 20001;
@@ -15,6 +18,7 @@ class Constants {
   static const USERNAME_ALREADY_REGISTERED = 20008;
   static const EMAIL_ALREADY_VALIDATED = 20009;
   static const EDIT_NAME_TOO_OFTEN = 20016;
+  static const POST_NOT_IN_WAITING_LIST = 30001;
   static const INSUFFICIENT_FUNDS = 40000;
   static const double SECTION_BUTTON_WIDTH = 80;
   static const double SECTION_BUTTON_HEIGHT = 32;

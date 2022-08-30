@@ -7,6 +7,7 @@ import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/draw_badge_view.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -271,7 +272,7 @@ class _DrawBadgeScreenState extends ConsumerState<DrawBadgeScreen> {
   }
 
   Future<Color?> showColorPicker({Color? pickedColor}) {
-    return showDialog<Color>(
+    return showHoohDialog<Color>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(

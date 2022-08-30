@@ -24,10 +24,11 @@ class _DarkModeScreenState extends ConsumerState<DarkModeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint("dark mode build");
     int darkMode = ref.watch(globalDarkModeProvider);
     return Scaffold(
       appBar: HoohAppBar(
-        title: Text(AppLocalizations.of(context)!.setting_languages),
+        title: Text(AppLocalizations.of(context)!.setting_dark_mode),
       ),
       body: CustomScrollView(slivers: [
         SliverFillRemaining(

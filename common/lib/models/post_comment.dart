@@ -9,6 +9,7 @@ class PostComment {
   User author;
   User? repliedUser;
   String content;
+  String plainContent;
   List<Substitute> substitutes;
 
   // List<PostComment>? subComments;
@@ -18,7 +19,8 @@ class PostComment {
 
   DateTime? createdAt;
 
-  PostComment(this.id, this.author, this.repliedUser, this.content, this.substitutes, this.likeCount, this.commentCount, this.liked, this.createdAt);
+  PostComment(
+      this.id, this.author, this.repliedUser, this.content, this.plainContent, this.substitutes, this.likeCount, this.commentCount, this.liked, this.createdAt);
 
   factory PostComment.fromJson(Map<String, dynamic> json) => _$PostCommentFromJson(json);
 

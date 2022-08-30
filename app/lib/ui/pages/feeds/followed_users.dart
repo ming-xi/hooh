@@ -309,15 +309,15 @@ class _FollowedUserPostsPageState extends ConsumerState<FollowedUserPostsPage> {
       // onShare: (post, error) {
       //   if (error != null) {
       //     showCommonRequestErrorDialog(ref, context, error);
-      //     // Toast.showSnackBar(context, error.message);
+      //     // showSnackBar(context, error.message);
       //     return;
       //   }
-      //   Toast.showSnackBar(context, "share...");
+      //   showSnackBar(context, "share...");
       // },
       onLike: (post, error) {
         if (error != null) {
           showCommonRequestErrorDialog(ref, context, error);
-          // Toast.showSnackBar(context, error.message);
+          // showSnackBar(context, error.message);
           return;
         }
         if (post.liked) {
@@ -330,7 +330,7 @@ class _FollowedUserPostsPageState extends ConsumerState<FollowedUserPostsPage> {
       },
       onFollow: (post, error) {
         if (error != null) {
-          // Toast.showSnackBar(context, error.message);
+          // showSnackBar(context, error.message);
           showCommonRequestErrorDialog(ref, context, error);
           return;
         }

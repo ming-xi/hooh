@@ -1,11 +1,12 @@
 import 'package:app/global.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
-import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/app_link.dart';
+import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/network.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sprintf/sprintf.dart';
@@ -194,7 +195,7 @@ class UserActivityView extends ConsumerWidget {
     }
     return ElevatedButton(
       onPressed: () {
-        openAppLink(context, activity.universalLink);
+        openAppLink(context, activity.universalLink, ref: ref);
       },
       style: ElevatedButton.styleFrom(
           padding: EdgeInsets.zero,
@@ -354,7 +355,7 @@ class UserActivityView extends ConsumerWidget {
                   Future.delayed(Duration(milliseconds: 250), () {
                     network.getFeeInfo().then((response) {
                       int deleteActivityFee = response.deleteActivity;
-                      showDialog(
+                      showHoohDialog(
                           context: ctx,
                           barrierDismissible: false,
                           builder: (popContext) {
@@ -365,10 +366,15 @@ class UserActivityView extends ConsumerWidget {
                                     onPressed: () {
                                       Navigator.of(popContext).pop();
                                       network.requestAsync<void>(network.deleteUserActivity(user.id, activity.id), (_) {
-                                        Toast.showSnackBar(context, globalLocalizations.user_activity_delete_success);
+                                        showSnackBar(context, globalLocalizations.user_activity_delete_success);
                                         onDelete(activity);
                                       }, (e) {
-                                        showCommonRequestErrorDialog(ref, context, e);
+                                        if (e.errorCode == Constants.INSUFFICIENT_FUNDS) {
+                                          List<String> split = e.message.split("\n");
+                                          showNotEnoughOreDialog(ref: ref, context: context, needed: int.tryParse(split[0])!, current: int.tryParse(split[1])!);
+                                        } else {
+                                          showCommonRequestErrorDialog(ref, context, e);
+                                        }
                                       });
                                     },
                                     child: Text(globalLocalizations.common_delete)),

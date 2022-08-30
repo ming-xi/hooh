@@ -29,12 +29,13 @@ class Post {
   bool visible;
   int publishState;
   DateTime? likedAt;
+  DateTime? enabledVotingAt;
   DateTime? favoritedAt;
   DateTime? featuredAt;
   DateTime createdAt;
 
   Post(this.id, this.author, this.commentCount, this.likeCount, this.voteCount, this.myVoteCount, this.profitInt, this.images, this.tags, this.liked,
-      this.favorited, this.visible, this.publishState, this.likedAt, this.favoritedAt, this.featuredAt, this.createdAt);
+      this.favorited, this.visible, this.publishState, this.likedAt, this.favoritedAt, this.enabledVotingAt, this.featuredAt, this.createdAt);
 
   factory Post.fromJson(Map<String, dynamic> json) => _$PostFromJson(json);
 

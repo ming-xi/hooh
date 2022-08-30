@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui;
 
@@ -12,6 +11,7 @@ import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
+import 'package:universal_io/io.dart';
 
 class AdjustTemplatePositionScreen extends ConsumerStatefulWidget {
   final File file;
@@ -144,6 +144,7 @@ class _AdjustTemplatePositionScreenState extends ConsumerState<AdjustTemplatePos
               child: Center(
                 child: Text(
                   globalLocalizations.template_adjustment_description,
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     color: designColors.dark_03.auto(ref),
                     fontSize: 16,

@@ -58,11 +58,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyDcodNJvmGApLEY0-vlH73Fgc3adk9pa4k',
-    appId: '1:130363947190:ios:d2defac046a877ab4d4e17',
+    appId: '1:130363947190:ios:331d92d3508419714d4e17',
     messagingSenderId: '130363947190',
     projectId: 'hooh-flutter',
     storageBucket: 'hooh-flutter.appspot.com',
-    iosClientId: '130363947190-k40hvk0k352flcd6ijdgt7k9vlld3res.apps.googleusercontent.com',
-    iosBundleId: 'cn.logicdesign.test',
+    iosClientId: '130363947190-c795gqmgv7cqkf3frhned255g1d76hof.apps.googleusercontent.com',
+    iosBundleId: 'xyz.hooh.app',
   );
 }

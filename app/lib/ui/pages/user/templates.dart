@@ -91,16 +91,16 @@ class _UserTemplateScreenState extends ConsumerState<UserTemplateScreen> {
                     onDelete: model.onDeleteTemplate,
                     onFavorite: (template, error) {
                       if (error != null) {
-                  // Toast.showSnackBar(context, error.message);
-                  showCommonRequestErrorDialog(ref, context, error);
+                  // showSnackBar(context, error.message);
+                        showCommonRequestErrorDialog(ref, context, error);
                   return;
                 }
                 model.updateTemplateData(template, index);
               },
               onFollow: (template, error) {
                 if (error != null) {
-                  // Toast.showSnackBar(context, error.message);
-                  showCommonRequestErrorDialog(ref, context, error);
+                  // showSnackBar(context, error.message);
+                        showCommonRequestErrorDialog(ref, context, error);
                   return;
                 }
                 template.author!.followed = true;

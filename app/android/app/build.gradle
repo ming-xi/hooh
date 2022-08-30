@@ -60,19 +60,6 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
-        //jiguang
-//        ndk {
-//            //选择要添加的对应 cpu 类型的 .so 库。
-//            abiFilters 'armeabi', 'armeabi-v7a','arm64-v8a','x86','x86_64'
-//        }
-//        manifestPlaceholders += [
-//                JSHARE_PKGNAME : applicationId,
-//                JPUSH_APPKEY : "23634b1ad52aa4d992edb3db", // NOTE: JPush 上注册的包名对应的 Appkey.
-//                JPUSH_CHANNEL : "developer-default", //暂时填写默认值即可.
-//                FACEBOOK_APPID: "1200223860750258",//facebook注册应用得到的appId
-//                TENCENT_APPID: "wxc40e16f3ba6ebabc",//facebook注册应用得到的appId
-//
-//        ]
     }
 
     signingConfigs {
@@ -101,9 +88,4 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-//    implementation 'cn.jiguang.sdk:jshare:2.0.0'  // 此处以JShare 1.6.0 版本为例，具体版本请参考压缩包libs的jar包版本。
-//    implementation 'cn.jiguang.sdk:jshare-facebookmodel:2.0.0'  // 此处以jshare-facebookmodel 1.6.0  版本为例，具体版本请参考压缩包libs的jar包版本。
-//    implementation 'cn.jiguang.sdk:jshare-twittermodel:2.0.0'  // 此处以jshare-twittermodel 1.6.0  版本为例，具体版本请参考压缩包libs的jar包版本。
-//    implementation 'cn.jiguang.sdk:jbasic:3.3.0'  // 此处以 jbasic 3.1.0 版本为例，若同时集成推送/认证，可不需要添加 jbasic 依赖，直接使用 jcore。
-
 }

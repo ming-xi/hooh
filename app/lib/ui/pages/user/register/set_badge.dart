@@ -7,15 +7,20 @@ import 'package:app/ui/pages/user/register/bind_email.dart';
 import 'package:app/ui/pages/user/register/set_badge_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/appbar.dart';
+import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/hooh_api_error_response.dart';
+import 'package:common/models/network/responses.dart';
 import 'package:common/models/user.dart';
+import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sprintf/sprintf.dart';
 
 class SetBadgeScreen extends ConsumerStatefulWidget {
   static const SCENE_REGISTER = 0;
@@ -54,8 +59,35 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
 
     List<TextButton> actions = [
       TextButton(
-          onPressed: () {
-            showDialog(
+          onPressed: () async {
+            if (widget.scene == SetBadgeScreen.SCENE_CHANGE) {
+              FeeInfoResponse response = await network.getFeeInfo();
+              bool? result = await showHoohDialog<bool>(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (popContext) {
+                    return AlertDialog(
+                      title: Text(globalLocalizations.common_confirm),
+                      content: Text(sprintf(globalLocalizations.publish_post_cost_dialog_content, [formatCurrency(response.createBadge)])),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(popContext).pop(false);
+                            },
+                            child: Text(globalLocalizations.common_cancel)),
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(popContext).pop(true);
+                            },
+                            child: Text(globalLocalizations.common_ok)),
+                      ],
+                    );
+                  });
+              if (!result!) {
+                return;
+              }
+            }
+            showHoohDialog(
                 context: context,
                 barrierDismissible: false,
                 builder: (context) {
@@ -64,9 +96,14 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
             model.changeUserBadge().then((result) {
               Navigator.pop(context);
               if (result is HoohApiErrorResponse) {
-                showCommonRequestErrorDialog(ref, context, result);
+                if (result.errorCode == Constants.INSUFFICIENT_FUNDS) {
+                  List<String> split = result.message.split("\n");
+                  showNotEnoughOreDialog(ref: ref, context: context, needed: int.tryParse(split[0])!, current: int.tryParse(split[1])!);
+                } else {
+                  showCommonRequestErrorDialog(ref, context, result);
+                }
               } else if (result is bool && !result) {
-                showDialog(
+                showHoohDialog(
                     context: context,
                     builder: (context) {
                       return AlertDialog(
@@ -335,7 +372,7 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
         onOk: () {
           Navigator.push<bool>(context, MaterialPageRoute(builder: (context) => BindEmailScreen(scene: BindEmailScreen.SCENE_VERIFY))).then((result) {
             if (result != null && result) {
-              Navigator.of(context, rootNavigator: true).pop();
+              Navigator.of(context, rootNavigator: true).pop(true);
             } else {
               showVerifyEmailDialog();
             }
@@ -347,7 +384,7 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
   }
 
   void showChangeBadgeDialog() {
-    showDialog(
+    showHoohDialog(
         context: context,
         barrierDismissible: false,
         builder: (popContext) {
@@ -435,7 +472,7 @@ class _SetBadgeScreenState extends ConsumerState<SetBadgeScreen> {
   void getRandomBadge() {
     SetBadgeScreenModelState modelState = ref.watch(widget.provider);
     SetBadgeScreenViewModel model = ref.read(widget.provider.notifier);
-    showDialog(
+    showHoohDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) {

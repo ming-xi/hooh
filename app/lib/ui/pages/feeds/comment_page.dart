@@ -11,6 +11,7 @@ class CommentPage extends ConsumerStatefulWidget {
   final List<PostComment> comments;
   final void Function(PostComment comment, bool newState) onLikeClick;
   final void Function(PostComment comment) onReplyClick;
+  final void Function(PostComment comment) onDeleteComment;
   final void Function() onLoadMore;
   final bool noMore;
   final bool scrollable;
@@ -19,6 +20,7 @@ class CommentPage extends ConsumerStatefulWidget {
     required this.comments,
     required this.onLikeClick,
     required this.onReplyClick,
+    required this.onDeleteComment,
     required this.scrollable,
     required this.onLoadMore,
     this.noMore = false,
@@ -60,6 +62,7 @@ class _CommentPageState extends ConsumerState<CommentPage> {
               comment: widget.comments[index],
               onLikeClick: widget.onLikeClick,
               onReplyClick: widget.onReplyClick,
+              onDeleted: widget.onDeleteComment,
             ),
             separatorBuilder: (context, index) => Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),

@@ -42,6 +42,11 @@ class HoohImage extends ConsumerWidget {
     Widget result = CachedNetworkImage(
       filterQuality: (isBadge ?? false) ? FilterQuality.none : FilterQuality.low,
       width: width,
+      fadeInCurve: Curves.easeOut,
+      fadeOutCurve: Curves.easeOut,
+      fadeInDuration: Duration(milliseconds: 250),
+      fadeOutDuration: Duration(milliseconds: 250),
+      placeholderFadeInDuration: Duration(milliseconds: 250),
       fit: BoxFit.cover,
       height: height,
       useOldImageOnUrlChange: true,

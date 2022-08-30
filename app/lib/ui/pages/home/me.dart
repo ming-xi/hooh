@@ -28,6 +28,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:sprintf/sprintf.dart';
 import 'package:tuple/tuple.dart';
+import 'package:common/utils/ui_utils.dart';
 
 class MePage extends ConsumerStatefulWidget {
   const MePage({
@@ -139,6 +140,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen())).then((value) {
                 refreshPage(ref.read(widget.provider.notifier));
               });
+              // Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
             },
             icon: Badge(
               badgeColor: designColors.orange.auto(ref),
@@ -252,11 +254,11 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                     const SizedBox(
                       height: 32,
                     ),
-                    buildProfileCard(user, titleTextStyle),
+                    buildTileButtons(user),
                     const SizedBox(
                       height: 32,
                     ),
-                    buildTileButtons(user),
+                    buildProfileCard(user, titleTextStyle),
                     const SizedBox(
                       height: 32,
                     ),
@@ -377,7 +379,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                     )));
       }),
       Tuple4(globalLocalizations.me_tile_nfts, "assets/images/icon_user_center_nft.svg", false, () {
-        Toast.showSnackBar(context, globalLocalizations.me_tile_nfts_coming_soon);
+        showSnackBar(context, globalLocalizations.me_tile_nfts_coming_soon);
       }),
       Tuple4(globalLocalizations.me_tile_bookmarks, "assets/images/icon_user_center_fav.svg", true, () {
         Navigator.push(
@@ -638,60 +640,61 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                   globalLocalizations.me_profile,
                   style: titleTextStyle,
                 ),
-            const Spacer(),
-            TextButton(
-              style: MainStyles.textButtonStyle(ref),
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfileScreen()));
-              },
-              child: Text(
-                globalLocalizations.me_profile_edit,
-                style: TextStyle(fontSize: 14, color: designColors.blue_dark.auto(ref), fontWeight: FontWeight.normal, decoration: TextDecoration.underline),
-              ),
-            )
-          ],
-        ),
-        // SizedBox(
-        //   height: 8,
-        // ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            HoohIcon(
-              "assets/images/icon_me_calendar.svg",
-              width: 24,
-              height: 24,
-              color: designColors.dark_01.auto(ref),
+                const Spacer(),
+                TextButton(
+                  style: MainStyles.textButtonStyle(ref),
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfileScreen()));
+                  },
+                  child: Text(
+                    globalLocalizations.me_profile_edit,
+                    style:
+                        TextStyle(fontSize: 14, color: designColors.blue_dark.auto(ref), fontWeight: FontWeight.normal, decoration: TextDecoration.underline),
+                  ),
+                )
+              ],
             ),
-            const SizedBox(
-              width: 8,
+            // SizedBox(
+            //   height: 8,
+            // ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                HoohIcon(
+                  "assets/images/icon_me_calendar.svg",
+                  width: 24,
+                  height: 24,
+                  color: designColors.dark_01.auto(ref),
+                ),
+                const SizedBox(
+                  width: 8,
+                ),
+                Text(
+                  sprintf(globalLocalizations.me_profile_joined,
+                      [DateUtil.getZonedDateString(user.createdAt!, format: globalLocalizations.me_profile_joined_date_format)]),
+                  style: TextStyle(fontSize: 16, color: designColors.dark_01.auto(ref)),
+                )
+              ],
             ),
-            Text(
-              sprintf(globalLocalizations.me_profile_joined,
-                  [DateUtil.getZonedDateString(user.createdAt!, format: globalLocalizations.me_profile_joined_date_format)]),
-              style: TextStyle(fontSize: 16, color: designColors.dark_01.auto(ref)),
-            )
-          ],
-        ),
-        Visibility(
-          visible: (user.signature?.trim() ?? "").isNotEmpty,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(
-                height: 8,
+            Visibility(
+              visible: (user.signature?.trim() ?? "").isNotEmpty,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  Text(
+                    user.signature ?? "",
+                    style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
+                  ),
+                ],
               ),
-              Text(
-                user.signature ?? "",
-                style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
-              ),
-            ],
-          ),
-        ),
+            ),
 
             Visibility(
-            visible: (user.website?.trim() ?? "").isNotEmpty,
+                visible: (user.website?.trim() ?? "").isNotEmpty,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -735,47 +738,73 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
     //   ...temp,
     //   ...temp,
     // ];
-    List<Widget>? badges = user.receivedBadges
-        ?.take(maxBadgeCount)
-        .map((e) => [
-              HoohImage(
-                imageUrl: e,
-                width: badgeWidth,
-                isBadge: true,
-              ),
-              const SizedBox(
-                width: middleSpacing,
-              )
-            ])
-        .expand((element) => element)
-        .toList();
-    if (badges != null && badges.isNotEmpty) {
-      badges.removeLast();
+
+    List<Widget> list;
+    if (user.receivedBadges == null || user.receivedBadges!.isEmpty) {
+      list = [
+        // buildMyBadge(user, height),
+        const SizedBox(
+          width: outerSpacing,
+        ),
+        Expanded(
+          child: Text(
+            globalLocalizations.me_no_badges,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: designColors.dark_03.auto(ref)),
+          ),
+        ),
+        IconButton(
+            onPressed: () {
+              goToBadgeScreen(user);
+            },
+            icon: HoohIcon(
+              "assets/images/icon_more.svg",
+              width: 32,
+              height: 32,
+              color: designColors.dark_03.auto(ref),
+            )),
+        const SizedBox(
+          width: paddingRight,
+        ),
+      ];
+    } else {
+      var badges = user.receivedBadges
+          ?.take(maxBadgeCount)
+          .map((e) => [
+                HoohImage(
+                  imageUrl: e,
+                  width: badgeWidth,
+                  isBadge: true,
+                ),
+                const SizedBox(
+                  width: middleSpacing,
+                )
+              ])
+          .expand((element) => element)
+          .toList();
+      if (badges != null && badges.isNotEmpty) {
+        badges.removeLast();
+      }
+      list = [
+        const SizedBox(
+          width: outerSpacing,
+        ),
+        ...?badges,
+        const Spacer(),
+        IconButton(
+            onPressed: () {
+              goToBadgeScreen(user);
+            },
+            icon: HoohIcon(
+              "assets/images/icon_more.svg",
+              width: 32,
+              height: 32,
+              color: designColors.dark_03.auto(ref),
+            )),
+        const SizedBox(
+          width: paddingRight,
+        ),
+      ];
     }
-    var list = [
-      // buildMyBadge(user, height),
-      const SizedBox(
-        width: outerSpacing,
-      ),
-      ...?badges,
-      // SizedBox(
-      //   width: outerSpacing,
-      // ),
-      const Spacer(),
-      IconButton(
-          onPressed: () {
-            goToBadgeScreen(user);
-          },
-          icon: HoohIcon(
-            "assets/images/icon_more.svg",
-            width: 32,
-            height: 32,
-            color: designColors.dark_03.auto(ref),
-          )),
-      const SizedBox(
-        width: paddingRight,
-      ),
-    ];
 
     return Padding(
       padding: const EdgeInsets.only(left: paddingLeft),

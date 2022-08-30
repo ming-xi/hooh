@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'package:common/utils/ui_utils.dart';
+import 'package:universal_io/io.dart';
 
 import 'package:common/extensions/extensions.dart';
 import 'package:app/global.dart';
@@ -152,8 +153,8 @@ class _TemplateAddTagScreenState extends ConsumerState<TemplateAddTagScreen> wit
                               modelState.uploading
                                   ? null
                                   : () {
-                                      hideKeyboard();
-                                      Toast.showSnackBar(context, globalLocalizations.common_uploading);
+                                hideKeyboard();
+                                      showSnackBar(context, globalLocalizations.common_uploading);
                                       TemplateTextSettingModelState textSettingState = ref.read(widget.textSettingProvider);
                                       model.saveTemplate(
                                           frameX: textSettingState.frameX,
@@ -171,7 +172,7 @@ class _TemplateAddTagScreenState extends ConsumerState<TemplateAddTagScreen> wit
                                                         )));
                                           },
                                           onError: (msg) {
-                                            // Toast.showSnackBar(context, msg);
+                                            // showSnackBar(context, msg);
                                             showCommonRequestErrorDialog(ref, context, msg);
                                           });
                                     }),
@@ -190,9 +191,9 @@ class _TemplateAddTagScreenState extends ConsumerState<TemplateAddTagScreen> wit
 
   void addTag(TemplateAddTagPageViewModel model, String text) {
     model.addTag(text, onDuplicateTagAdded: (tag) {
-      Toast.showSnackBar(context, globalLocalizations.select_topic_duplicated_tag);
+      showSnackBar(context, globalLocalizations.select_topic_duplicated_tag);
     }, onMaxReached: (tag) {
-      Toast.showSnackBar(context, sprintf(globalLocalizations.select_topic_reach_max_tag_limit, [TemplateAddTagScreen.MAX_TAG_COUNT]));
+      showSnackBar(context, sprintf(globalLocalizations.select_topic_reach_max_tag_limit, [TemplateAddTagScreen.MAX_TAG_COUNT]));
     });
   }
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 cd ..
-modules=('common' 'app')
+modules=('common' 'app'  'crm')
 for module in "${modules[@]}" ; do
     echo "dir = $module"
     cd "$module" || exit

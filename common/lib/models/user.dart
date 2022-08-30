@@ -170,3 +170,19 @@ class SystemNotification {
 
   Map<String, dynamic> toJson() => _$SystemNotificationToJson(this);
 }
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
+class UserLoginHistory {
+  int networkType;
+  String username;
+  String encryptedPassword;
+  String name;
+  String avatar;
+  DateTime lastLoginAt;
+
+  UserLoginHistory(this.networkType, this.username, this.encryptedPassword, this.name, this.avatar, this.lastLoginAt);
+
+  factory UserLoginHistory.fromJson(Map<String, dynamic> json) => _$UserLoginHistoryFromJson(json);
+
+  Map<String, dynamic> toJson() => _$UserLoginHistoryToJson(this);
+}

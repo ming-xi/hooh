@@ -93,6 +93,7 @@ class SystemNotificationScreenViewModel extends StateNotifier<SystemNotification
   }
 
   void _updateLastRefreshData() {
-    preferences.putInt(Preferences.KEY_LAST_SYSTEM_NOTIFICATIONS_READ, DateUtil.getCurrentUtcDate().millisecondsSinceEpoch);
+    // preferences.putInt(Preferences.KEY_LAST_SYSTEM_NOTIFICATIONS_READ, DateUtil.getCurrentUtcDate().millisecondsSinceEpoch);
+    preferences.putString(Preferences.KEY_LAST_SYSTEM_NOTIFICATIONS_READ_STRING, DateUtil.getUtcDateString(DateUtil.getCurrentUtcDate()));
   }
 }

@@ -17,6 +17,7 @@ import 'package:common/models/template.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -27,13 +28,16 @@ import 'package:sprintf/sprintf.dart';
 
 import 'templates_view_model.dart';
 
-final StateNotifierProvider<TemplatesPageViewModel, TemplatesPageModelState> homeTemplatesProvider = StateNotifierProvider((ref) {
+final StateNotifierProvider<TemplatesPageViewModel, TemplatesPageModelState> galleryTemplatesProvider = StateNotifierProvider((ref) {
   return TemplatesPageViewModel(TemplatesPageModelState.init());
 });
 
 class GalleryPage extends ConsumerStatefulWidget {
+  final StateNotifierProvider<TemplatesPageViewModel, TemplatesPageModelState> provider;
+
   GalleryPage({
     Key? key,
+    required this.provider,
   }) : super(key: key);
 
   @override
@@ -55,9 +59,8 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
     ref.watch(globalLocaleProvider);
     int imageWidth = MediaQuery.of(context).size.width ~/ 3;
     debugPrint("page context=$context");
-    TemplatesPageModelState modelState = ref.watch(homeTemplatesProvider);
-    TemplatesPageViewModel model = ref.read(homeTemplatesProvider.notifier);
-
+    TemplatesPageModelState modelState = ref.watch(widget.provider);
+    TemplatesPageViewModel model = ref.read(widget.provider.notifier);
     double safePadding = MediaQuery.of(context).padding.top;
     // double padding = 16.0;
     double padding = 8;
@@ -289,7 +292,8 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
               onTap: () {
                 _galleryItemTouched(index);
               },
-              child: TemplateView(PostImageSetting.withTemplate(template), viewSetting: viewSetting, template: template),
+              child: TemplateView(modelState.postImageSettings.isNotEmpty ? modelState.postImageSettings[index - 1] : PostImageSetting.withTemplate(template),
+                  viewSetting: viewSetting, template: template),
             );
           }
         },
@@ -310,24 +314,10 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
           itemBuilder: (context, index) {
             return GestureDetector(
               onTap: () {
-                // // TemplateTagItem selectedTag;
-                // for (var item in modelState.tags) {
-                //   item.selected = false;
-                // }
-                // modelState.tags[index].selected = true;
-                // // selectedTag = modelState.tags[index];
-                // // 因为categories其实还是原来的list，所以给state赋值无效。所以要构建一个新的list赋值，有3种写法：
-                // // #1
-                // // List<TemplateTagItemItem> newList = [];
-                // // newList.addAll(categories);
-                // // ref.read(galleryCategoriesProvider.state).state = newList;
-                //
-                // // #2 这个叫联什么什么写法，就是两个点，代表要对这个对象进行后面的操作
-                // // ref.read(galleryCategoriesProvider.state).state = []..addAll(categories);
-                //
-                // // #3 dart把#2优化成了3个点的，叫spread，一个意思，语法糖
-                // viewModel.updateState(modelState.copyWith(tags: [...modelState.tags]));
-                // viewModel.getImageList((state) => null);
+                if (modelState.tags[index].type == TemplateTagItem.SEARCH_TYPE_FAVORITES && ref.read(globalUserInfoProvider) == null) {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+                  return;
+                }
                 model.setSelectedTag(index);
                 _refreshController.resetNoData();
                 _imageScrollController.jumpTo(0);
@@ -409,13 +399,18 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
       //   });
       // }
     } else {
-      TemplatesPageModelState modelState = ref.watch(homeTemplatesProvider);
+      TemplatesPageModelState modelState = ref.watch(widget.provider);
       Template template = modelState.templates[index - 1];
       network.requestAsync<Template>(network.getTemplateInfo(template.id), (data) {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => EditPostScreen(setting: PostImageSetting.withTemplate(data, text: ""))));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => EditPostScreen(
+                    setting:
+                        modelState.postImageSettings.isNotEmpty ? modelState.postImageSettings[index - 1] : PostImageSetting.withTemplate(data, text: ""))));
       }, (error) {
         if (error.errorCode == Constants.RESOURCE_NOT_FOUND) {
-          showDialog(
+          showHoohDialog(
               context: context,
               builder: (popContext) => AlertDialog(
                     title: Text(globalLocalizations.error_view_template_not_found),
@@ -447,15 +442,14 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
   }
 
   void showUploadDialog() {
-    TemplatesPageModelState modelState = ref.watch(homeTemplatesProvider);
-    TemplatesPageViewModel model = ref.read(homeTemplatesProvider.notifier);
+    TemplatesPageModelState modelState = ref.watch(widget.provider);
+    TemplatesPageViewModel model = ref.read(widget.provider.notifier);
     network.getFeeInfo().then((response) {
-      int createTemplateReward = response.createTemplateReward;
-      _showDialogWithCheckBox(
+      _showHoohDialogWithCheckBox(
           title: globalLocalizations.templates_upload_guide_title,
-          content: sprintf(globalLocalizations.templates_upload_guide_content, [formatCurrency(createTemplateReward)]),
+          content: sprintf(globalLocalizations.templates_upload_guide_content, [formatCurrency(response.createTemplateReward)]),
           checked: (ref) {
-            TemplatesPageModelState modelState = ref.watch(homeTemplatesProvider);
+            TemplatesPageModelState modelState = ref.watch(widget.provider);
             return modelState.agreementChecked;
           },
           checkBoxText: globalLocalizations.templates_don_t_prompt_next_time,
@@ -465,7 +459,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
             model.setAgreementChecked(value!);
           },
           onOkClick: () {
-            preferences.putBool(Preferences.KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED, modelState.agreementChecked);
+            preferences.putBool(Preferences.KEY_UPLOAD_TEMPLATE_AGREEMENT_CHECKED, ref.read(widget.provider).agreementChecked);
             Navigator.pop(context);
             User? user = ref.read(globalUserInfoProvider);
             if (user == null) {
@@ -492,13 +486,13 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
   }
 
   void showUseLocalImageNoRewardsDialog() {
-    TemplatesPageModelState modelState = ref.watch(homeTemplatesProvider);
-    TemplatesPageViewModel model = ref.read(homeTemplatesProvider.notifier);
-    _showDialogWithCheckBox(
+    TemplatesPageModelState modelState = ref.watch(widget.provider);
+    TemplatesPageViewModel model = ref.read(widget.provider.notifier);
+    _showHoohDialogWithCheckBox(
         title: globalLocalizations.templates_local_image_dialog_title,
         content: globalLocalizations.templates_local_image_dialog_content,
         checked: (ref) {
-          TemplatesPageModelState modelState = ref.watch(homeTemplatesProvider);
+          TemplatesPageModelState modelState = ref.watch(widget.provider);
           return modelState.noRewardsChecked;
         },
         checkBoxText: globalLocalizations.templates_don_t_prompt_next_time,
@@ -514,7 +508,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
         });
   }
 
-  void _showDialogWithCheckBox({
+  void _showHoohDialogWithCheckBox({
     required String title,
     required String content,
     required bool Function(WidgetRef ref) checked,
@@ -523,7 +517,7 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
     required Function(bool?) onCheckBoxChanged,
     required Function() onOkClick,
   }) {
-    showDialog(
+    showHoohDialog(
         context: context,
         barrierDismissible: false,
         builder: (popContext) {
@@ -548,16 +542,18 @@ class _GalleryPageState extends ConsumerState<GalleryPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: SizedBox(
                         height: screenHeight / 4,
-                        child: CustomScrollView(
-                          slivers: [
-                            SliverFillRemaining(
-                              hasScrollBody: false,
-                              child: Text(
-                                content,
-                                style: TextStyle(fontSize: 16, color: designColors.light_06.auto(ref)),
-                              ),
-                            )
-                          ],
+                        child: Scrollbar(
+                          child: CustomScrollView(
+                            slivers: [
+                              SliverFillRemaining(
+                                hasScrollBody: false,
+                                child: Text(
+                                  content,
+                                  style: TextStyle(fontSize: 16, color: designColors.light_06.auto(ref)),
+                                ),
+                              )
+                            ],
+                          ),
                         ),
                       ),
                     ),

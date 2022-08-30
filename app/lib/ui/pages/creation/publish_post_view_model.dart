@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:app/global.dart';
@@ -22,6 +21,7 @@ import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:sprintf/sprintf.dart';
+import 'package:universal_io/io.dart';
 
 part 'publish_post_view_model.g.dart';
 
@@ -34,11 +34,20 @@ class PublishPostScreenModelState {
   final bool uploading;
   final bool hintChecked;
 
-  PublishPostScreenModelState(
-      {required this.setting, this.tags = const [], this.allowDownload = true, this.isPrivate = false, this.uploading = false, required this.hintChecked});
+  PublishPostScreenModelState({
+    required this.setting,
+    required this.hintChecked,
+    required this.allowDownload,
+    this.tags = const [],
+    this.isPrivate = false,
+    this.uploading = false,
+  });
 
   factory PublishPostScreenModelState.init(PostImageSetting setting) {
-    return PublishPostScreenModelState(setting: setting, hintChecked: preferences.getBool(Preferences.KEY_ADD_TO_VOTE_LIST_DIALOG_CHECKED) ?? false);
+    return PublishPostScreenModelState(
+        setting: setting,
+        hintChecked: preferences.getBool(Preferences.KEY_ADD_TO_VOTE_LIST_DIALOG_CHECKED) ?? false,
+        allowDownload: preferences.getBool(Preferences.KEY_PUBLISH_POST_DOWNLOAD_TO_DEVICE) ?? true);
   }
 }
 
@@ -121,8 +130,9 @@ class PublishPostScreenViewModel extends StateNotifier<PublishPostScreenModelSta
     if (state.allowDownload) {
       FileUtil.saveImageToGallery(imageFile);
     }
+    preferences.putBool(Preferences.KEY_PUBLISH_POST_DOWNLOAD_TO_DEVICE, state.allowDownload);
     // Navigator.of(context).pop();
-    // showDialog(
+    // showHoohDialog(
     //     context: context,
     //     builder: (popContext) =>
     //         AlertDialog(

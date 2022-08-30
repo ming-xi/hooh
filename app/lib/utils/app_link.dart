@@ -10,6 +10,7 @@ import 'package:app/utils/constants.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/template.dart';
 import 'package:common/utils/network.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -45,16 +46,17 @@ void openAppLink(BuildContext context, String? link, {WidgetRef? ref}) {
     Navigator.push(context, MaterialPageRoute(builder: (context) => PostDetailScreen(postId: uuid)));
   } else if (_isUserLink(link)) {
     String uuid = _getSingleUuid(link);
-    Navigator.push(context, MaterialPageRoute(builder: (context) => UserProfileScreen(userId: uuid)));
     if (_isUserBadgeLink(link)) {
       Navigator.push(context, MaterialPageRoute(builder: (context) => BadgesScreen(userId: uuid)));
+    } else {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => UserProfileScreen(userId: uuid)));
     }
   } else if (_isTemplateLink(link)) {
     Uri? uri = Uri.tryParse(link);
     if (uri != null) {
       bool hit = false;
       if (ref != null) {
-        List<TemplateTagItem> tags = ref.read(homeTemplatesProvider).tags;
+        List<TemplateTagItem> tags = ref.read(galleryTemplatesProvider).tags;
         int? index;
         int? type = int.tryParse(uri.queryParameters['type'] ?? "");
         String? tag = uri.queryParameters['tag'];
@@ -80,7 +82,7 @@ void openAppLink(BuildContext context, String? link, {WidgetRef? ref}) {
         }
         if (index != null) {
           ref.read(homePageProvider.notifier).updateTabIndex(1);
-          ref.read(homeTemplatesProvider.notifier).setSelectedTag(index);
+          ref.read(galleryTemplatesProvider.notifier).setSelectedTag(index);
           popToHomeScreen(context);
         }
         if (!hit) {
@@ -89,11 +91,11 @@ void openAppLink(BuildContext context, String? link, {WidgetRef? ref}) {
             TemplateDetailView.showTemplateDialog(context, ref, data);
           }, (error) {
             if (error.errorCode == Constants.RESOURCE_NOT_FOUND) {
-              showDialog(
+              showHoohDialog(
                   context: context,
                   builder: (popContext) => AlertDialog(
-                    title: Text(globalLocalizations.error_view_template_not_found),
-                  ));
+                        title: Text(globalLocalizations.error_view_template_not_found),
+                      ));
             } else {
               showCommonRequestErrorDialog(ref, context, error);
             }
@@ -120,20 +122,28 @@ bool _checkHost(String link) {
 
 bool _isPostLink(String link) {
   RegExp regExp = RegExp("$_LINK_PREFIX/$_LINK_POSTS/$_UUID_REGEX");
-  return regExp.matchAsPrefix(link) != null;
+  var result = regExp.matchAsPrefix(link) != null;
+  debugPrint("_isPostLink=$result");
+  return result;
 }
 
 bool _isUserLink(String link) {
   RegExp regExp = RegExp("$_LINK_PREFIX/$_LINK_USERS/$_UUID_REGEX");
-  return regExp.matchAsPrefix(link) != null;
+  var result = regExp.matchAsPrefix(link) != null;
+  debugPrint("_isUserLink=$result");
+  return result;
 }
 
 bool _isTemplateLink(String link) {
   RegExp regExp = RegExp("$_LINK_PREFIX/$_LINK_TEMPLATES");
-  return regExp.matchAsPrefix(link) != null;
+  var result = regExp.matchAsPrefix(link) != null;
+  debugPrint("_isTemplateLink=$result");
+  return result;
 }
 
 bool _isUserBadgeLink(String link) {
   RegExp regExp = RegExp("$_LINK_PREFIX/$_LINK_USERS/$_UUID_REGEX/$_LINK_BADGES");
-  return regExp.matchAsPrefix(link) != null;
+  var result = regExp.matchAsPrefix(link) != null;
+  debugPrint("_isUserBadgeLink=$result");
+  return result;
 }

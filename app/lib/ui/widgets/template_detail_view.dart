@@ -16,6 +16,7 @@ import 'package:common/models/template.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/date_util.dart';
 import 'package:common/utils/network.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -56,7 +57,7 @@ class _TemplateDetailBottomSheetState extends ConsumerState<TemplateDetailBottom
     if (e == null) {
       model.updateTemplateData(template);
     } else {
-      // Toast.showSnackBar(context, e.devMessage);
+      // showSnackBar(context, e.devMessage);
       showCommonRequestErrorDialog(ref, context, e);
     }
   }
@@ -130,7 +131,7 @@ class _TemplateDetailViewState extends ConsumerState<TemplateDetailView> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => EditPostScreen(setting: PostImageSetting.withTemplate(data, text: ""))));
             }, (error) {
               if (error.errorCode == Constants.RESOURCE_NOT_FOUND) {
-                showDialog(
+                showHoohDialog(
                     context: context,
                     builder: (popContext) => AlertDialog(
                           title: Text(globalLocalizations.error_view_template_not_found),
@@ -236,7 +237,7 @@ class _TemplateDetailViewState extends ConsumerState<TemplateDetailView> {
         PopupMenuItem itemDelete = PopupMenuItem(
           onTap: () {
             Future.delayed(Duration(milliseconds: 250), () {
-              showDialog(
+              showHoohDialog(
                   context: ctx,
                   barrierDismissible: false,
                   builder: (popContext) {
@@ -247,7 +248,7 @@ class _TemplateDetailViewState extends ConsumerState<TemplateDetailView> {
                             onPressed: () {
                               Navigator.of(popContext).pop();
                               network.requestAsync<void>(network.deleteTemplate(template.id), (_) {
-                                Toast.showSnackBar(context, globalLocalizations.template_detail_menu_delete_success);
+                                showSnackBar(context, globalLocalizations.template_detail_menu_delete_success);
                                 widget.onDelete!(template);
                               }, (e) {
                                 showCommonRequestErrorDialog(ref, context, e);
@@ -484,7 +485,16 @@ class _TemplateDetailViewState extends ConsumerState<TemplateDetailView> {
     if (template.author!.followed ?? false) {
       return;
     }
+    showHoohDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return LoadingDialog(LoadingDialogController());
+        });
     network.requestAsync(network.followUser(template.author!.id), (data) {
+      Navigator.of(
+        context,
+      ).pop();
       if (data is FollowUserResponse && data.receivedBadge != null) {
         showReceiveBadgeDialog(context, data.receivedBadge!);
       }
@@ -493,6 +503,9 @@ class _TemplateDetailViewState extends ConsumerState<TemplateDetailView> {
         widget.onFollow!(template, null);
       }
     }, (error) {
+      Navigator.of(
+        context,
+      ).pop();
       if (widget.onFollow != null) {
         widget.onFollow!(template, error);
       }

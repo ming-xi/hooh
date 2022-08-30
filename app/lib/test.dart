@@ -1,12 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+import 'dart:ui';
+import 'package:app/test_regex.dart';
+import 'package:common/utils/ui_utils.dart';
+import 'package:universal_io/io.dart';
 
 import 'package:app/global.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/ipfs_node.dart';
+import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
+import 'package:common/models/network/responses.dart';
+import 'package:common/models/user.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +20,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 // import 'package:jshare_flutter_plugin/jshare_flutter_plugin.dart';
 import 'package:pretty_json/pretty_json.dart';
-import 'package:sprintf/sprintf.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
@@ -49,17 +54,71 @@ class _TestMenuScreenState extends ConsumerState<TestMenuScreen> {
           children: [
             MainStyles.blueButton(
               ref,
-              "test",
-              () {},
+              "测试（勿点）",
+              () {
+                // showHoohDialog(
+                //     context: context,
+                //     builder: (context) {
+                //       return LoadingDialog(LoadingDialogController());
+                //     });
+                showGeneralDialog(
+                  barrierDismissible: true,
+                  barrierLabel: '',
+                  barrierColor: Colors.black.withOpacity(0.25),
+                  // transitionDuration: Duration(milliseconds: 500),
+                  pageBuilder: (ctx, anim1, anim2) => AlertDialog(
+                    title: Text('blured background'),
+                    content: Text('background should be blured and little bit darker '),
+                    elevation: 2,
+                    actions: [
+                      TextButton(
+                        child: Text('OK'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  ),
+                  transitionBuilder: (ctx, anim1, anim2, child) => BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 8 * anim1.value, sigmaY: 8 * anim1.value),
+                    child: FadeTransition(
+                      child: child,
+                      opacity: anim1,
+                    ),
+                  ),
+                  context: context,
+                );
+              },
             ),
             SizedBox(
               height: 16,
             ),
             MainStyles.blueButton(
               ref,
-              "clear preferences",
+              "测试正则表达式",
+              () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => TestRegexScreen()));
+              },
+            ),
+            SizedBox(
+              height: 16,
+            ),
+            MainStyles.blueButton(
+              ref,
+              "清除引导页和缓存等记录",
               () {
                 preferences.clear();
+                showSnackBar(context, "已清除");
+              },
+            ),
+            SizedBox(
+              height: 16,
+            ),
+            MainStyles.blueButton(
+              ref,
+              "快速登录",
+              () {
+                showQuickLoginDialog();
               },
             ),
             SizedBox(
@@ -69,12 +128,13 @@ class _TestMenuScreenState extends ConsumerState<TestMenuScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    "choose server:",
+                    "选择服务器：",
                     style: TextStyle(color: designColors.dark_01.auto(ref)),
                   ),
                 ),
                 DropdownButton<int>(
                   value: networkType,
+                  dropdownColor: designColors.light_00.auto(ref),
                   style: TextStyle(color: designColors.dark_01.auto(ref)),
                   items: [Network.TYPE_LOCAL, Network.TYPE_STAGING, Network.TYPE_PRODUCTION]
                       .map((e) => DropdownMenuItem<int>(
@@ -88,6 +148,7 @@ class _TestMenuScreenState extends ConsumerState<TestMenuScreen> {
                     }
                     preferences.putInt(Preferences.KEY_SERVER, value);
                     network.reloadServerType();
+                    handleUserLogout(ref);
                     setState(() {
                       networkType = value;
                     });
@@ -99,6 +160,60 @@ class _TestMenuScreenState extends ConsumerState<TestMenuScreen> {
         ),
       ),
     );
+  }
+
+  void showQuickLoginDialog() {
+    List<dynamic> list = json.decode(preferences.getString(Preferences.KEY_HISTORY_USER_LOGIN_INFO) ?? "[]");
+    List<UserLoginHistory> history = list.map((e) => UserLoginHistory.fromJson(e)).toList();
+    history = history.where((element) => element.networkType == networkType).toList();
+    if (history.isEmpty) {
+      showSnackBar(context, "尚未在${Network.SERVER_HOST_NAMES[networkType]!}登录过任何账号");
+      return;
+    }
+    showHoohDialog(
+        context: context,
+        builder: (popContext) {
+          return AlertDialog(
+              contentPadding: EdgeInsets.symmetric(vertical: 16),
+              title: Text("选择用户"),
+              content: SizedBox(
+                width: 400,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemBuilder: (listContext, index) {
+                    UserLoginHistory item = history[index];
+                    return ListTile(
+                      dense: true,
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        handleUserLogout(ref);
+                        network.requestAsync<LoginResponse>(network.loginWithEncryptedPassword(item.username, item.encryptedPassword), (response) {
+                          handleUserLogin(ref, response.user, response.jwtResponse.accessToken, null);
+                          showSnackBar(context, "登录成功");
+                        }, (error) => showCommonRequestErrorDialog(ref, context, error));
+                      },
+                      leading: HoohImage(
+                        imageUrl: item.avatar,
+                        cornerRadius: 100,
+                      ),
+                      title: Text(
+                        item.name,
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: designColors.dark_01.auto(ref)),
+                      ),
+                      subtitle: Text(
+                        item.username,
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: designColors.dark_03.auto(ref)),
+                      ),
+                      trailing: Text(
+                        formatDate(context, item.lastLoginAt),
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: designColors.dark_03.auto(ref)),
+                      ),
+                    );
+                  },
+                  itemCount: history.length,
+                ),
+              ));
+        });
   }
 }
 
@@ -160,7 +275,7 @@ class _FirstPageState extends State<FirstPage> {
                 //   File file = File(result.files.single.path!);
                 //   String? ext = result.files.single.extension;
                 //   bool uploadSuccess = ipfs.uploadFile(file, ext, onComplete: (cid) {
-                //     showDialog(
+                //     showHoohDialog(
                 //         context: context,
                 //         builder: (context) {
                 //           return AlertDialog(
@@ -181,7 +296,7 @@ class _FirstPageState extends State<FirstPage> {
                 //           );
                 //         });
                 //   }, onTimeout: () {
-                //     showDialog(
+                //     showHoohDialog(
                 //         context: context,
                 //         builder: (context) {
                 //           return const AlertDialog(
@@ -191,7 +306,7 @@ class _FirstPageState extends State<FirstPage> {
                 //         });
                 //   });
                 //   if (!uploadSuccess) {
-                //     showDialog(
+                //     showHoohDialog(
                 //         context: context,
                 //         builder: (context) {
                 //           return const AlertDialog(
@@ -218,7 +333,7 @@ class _FirstPageState extends State<FirstPage> {
                   network.getUserInfo("4ee-e489-452f-9827-a15946cf9656").catchError((error, stackTrace) {
                     debugPrint(error.toString());
                   }).then((value) {
-                    showDialog(
+                    showHoohDialog(
                         context: context,
                         builder: (e) => AlertDialog(
                               title: Text("用户"),
@@ -232,7 +347,7 @@ class _FirstPageState extends State<FirstPage> {
                   String key = "test key";
                   if (preferences.hasKey(key)) {
                     preferences.putString(key, "123");
-                    showDialog(
+                    showHoohDialog(
                         context: context,
                         builder: (e) => AlertDialog(
                               title: Text(key),
@@ -240,7 +355,7 @@ class _FirstPageState extends State<FirstPage> {
                             ));
                   } else {
                     preferences.putString(key, "test value");
-                    showDialog(
+                    showHoohDialog(
                         context: context,
                         builder: (e) => AlertDialog(
                               title: Text(key),
@@ -253,14 +368,14 @@ class _FirstPageState extends State<FirstPage> {
                 onPressed: () {
                   String key = "test key";
                   if (preferences.hasKey(key)) {
-                    showDialog(
+                    showHoohDialog(
                         context: context,
                         builder: (e) => AlertDialog(
                               title: Text(key),
                               content: Text(preferences.getString(key)!),
                             ));
                   } else {
-                    showDialog(
+                    showHoohDialog(
                         context: context,
                         builder: (e) => AlertDialog(
                               title: Text(key),
@@ -363,7 +478,7 @@ class Util {
   }
 
   static Future<void> showMyDialog(BuildContext context, File file, String? ext, {Function(String)? onComplete, Function()? onTimeout}) async {
-    return showDialog<void>(
+    return showHoohDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {

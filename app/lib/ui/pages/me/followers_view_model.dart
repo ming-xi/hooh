@@ -101,7 +101,7 @@ class FollowerScreenViewModel extends StateNotifier<FollowerScreenModelState> {
     });
   }
 
-  void setFollowState(BuildContext context, String userId, bool newState, {Function(HoohApiErrorResponse error)? callback}) {
+  void setFollowState(BuildContext context, String userId, bool newState, {Function()? onSuccess, Function(HoohApiErrorResponse error)? onFailure}) {
     Future request = newState ? network.followUser(userId) : network.cancelFollowUser(userId);
     for (var user in state.users) {
       if (user.id == userId) {
@@ -109,13 +109,16 @@ class FollowerScreenViewModel extends StateNotifier<FollowerScreenModelState> {
       }
     }
     network.requestAsync(request, (data) {
+      if (onSuccess != null) {
+        onSuccess();
+      }
       if (data is FollowUserResponse && data.receivedBadge != null) {
         showReceiveBadgeDialog(context, data.receivedBadge!);
       }
       updateState(state.copyWith(users: [...state.users]));
     }, (error) {
-      if (callback != null) {
-        callback(error);
+      if (onFailure != null) {
+        onFailure(error);
       }
     });
   }

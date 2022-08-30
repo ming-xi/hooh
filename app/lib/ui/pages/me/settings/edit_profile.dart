@@ -7,6 +7,7 @@ import 'package:app/utils/constants.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/user.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -30,8 +31,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   Widget build(BuildContext context) {
     EditProfileScreenModelState modelState = ref.watch(widget.provider);
     EditProfileScreenViewModel model = ref.read(widget.provider.notifier);
-
     User user = ref.watch(globalUserInfoProvider)!;
+    // User? user1=ref.watch(globalUserInfoProvider);
+    // user1=null;
+    // User user=user1!;
     return Scaffold(
       appBar: HoohAppBar(
         title: Text(globalLocalizations.me_profile_edit),
@@ -103,7 +106,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           if (file == null) {
             return;
           }
-          showDialog(
+          showHoohDialog(
               context: context,
               barrierDismissible: false,
               builder: (context) {
@@ -113,9 +116,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             Navigator.of(context).pop();
             if (user != null) {
               ref.read(globalUserInfoProvider.state).state = user;
-              Toast.showSnackBar(context, globalLocalizations.edit_profile_edit_success);
+              showSnackBar(context, globalLocalizations.edit_profile_edit_success);
             } else {
-              Toast.showSnackBar(context, msg!);
+              showSnackBar(context, msg!);
             }
           });
         });
@@ -237,7 +240,7 @@ class _EditNameScreenState extends ConsumerState<EditNameScreen> {
   void showChangeTooOftenDialog(BuildContext context, EditProfileScreenViewModel model) {
     model.getChangeNameLimit((days, msg) {
       if (days != null) {
-        showDialog(
+        showHoohDialog(
             context: context,
             barrierDismissible: false,
             builder: (context) {
@@ -261,7 +264,7 @@ class _EditNameScreenState extends ConsumerState<EditNameScreen> {
   void changeName(BuildContext context, EditProfileScreenViewModel model) {
     model.getChangeNameLimit((days, msg) {
       if (days != null) {
-        showDialog(
+        showHoohDialog(
             context: context,
             barrierDismissible: false,
             builder: (popContext) {
@@ -271,7 +274,7 @@ class _EditNameScreenState extends ConsumerState<EditNameScreen> {
                   TextButton(
                       onPressed: () {
                         Navigator.of(popContext).pop();
-                        showDialog(
+                        showHoohDialog(
                             context: context,
                             barrierDismissible: false,
                             builder: (context) {
@@ -281,13 +284,13 @@ class _EditNameScreenState extends ConsumerState<EditNameScreen> {
                           Navigator.of(context).pop();
                           if (user != null) {
                             ref.read(globalUserInfoProvider.state).state = user;
-                            Toast.showSnackBar(context, globalLocalizations.edit_profile_edit_success);
+                            showSnackBar(context, globalLocalizations.edit_profile_edit_success);
                             Navigator.of(context, rootNavigator: true).pop();
                           } else {
                             if (response!.errorCode == Constants.EDIT_NAME_TOO_OFTEN) {
                               showChangeTooOftenDialog(context, model);
                             } else {
-                              // Toast.showSnackBar(context, response!.message);
+                              // showSnackBar(context, response!.message);
                               showCommonRequestErrorDialog(ref, context, response);
                             }
                           }
@@ -348,7 +351,7 @@ class _EditSignatureScreenState extends ConsumerState<EditSignatureScreen> {
                   ? null
                   : () {
                       hideKeyboard();
-                      showDialog(
+                      showHoohDialog(
                           context: context,
                           barrierDismissible: false,
                           builder: (context) {
@@ -358,10 +361,10 @@ class _EditSignatureScreenState extends ConsumerState<EditSignatureScreen> {
                         Navigator.of(context).pop();
                         if (user != null) {
                           ref.read(globalUserInfoProvider.state).state = user;
-                          Toast.showSnackBar(context, globalLocalizations.edit_profile_edit_success);
+                          showSnackBar(context, globalLocalizations.edit_profile_edit_success);
                           Navigator.of(context, rootNavigator: true).pop();
                         } else {
-                          // Toast.showSnackBar(context, msg!);
+                          // showSnackBar(context, msg!);
                           showCommonRequestErrorDialog(ref, context, error!);
                         }
                       });
@@ -443,7 +446,7 @@ class _EditWebsiteScreenState extends ConsumerState<EditWebsiteScreen> {
                   ? null
                   : () {
                       hideKeyboard();
-                      showDialog(
+                      showHoohDialog(
                           context: context,
                           barrierDismissible: false,
                           builder: (context) {
@@ -453,10 +456,10 @@ class _EditWebsiteScreenState extends ConsumerState<EditWebsiteScreen> {
                         Navigator.of(context).pop();
                         if (user != null) {
                           ref.read(globalUserInfoProvider.state).state = user;
-                          Toast.showSnackBar(context, globalLocalizations.edit_profile_edit_success);
+                          showSnackBar(context, globalLocalizations.edit_profile_edit_success);
                           Navigator.of(context, rootNavigator: true).pop();
                         } else {
-                          // Toast.showSnackBar(context, msg!);
+                          // showSnackBar(context, msg!);
                           showCommonRequestErrorDialog(ref, context, error!);
                         }
                       });

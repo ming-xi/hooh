@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -20,6 +19,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:pretty_json/pretty_json.dart';
+import 'package:universal_io/io.dart';
 
 //顶层变量
 Network network = Network._internal();
@@ -42,9 +42,9 @@ class Network {
     TYPE_PRODUCTION: HOST_PRODUCTION,
   };
   static const SERVER_HOST_NAMES = {
-    TYPE_LOCAL: "LOCAL",
-    TYPE_STAGING: "STAGING",
-    TYPE_PRODUCTION: "PRODUCTION",
+    TYPE_LOCAL: "本地服务器",
+    TYPE_STAGING: "测试服",
+    TYPE_PRODUCTION: "正式服",
   };
 
   static const TYPE_LOCAL = 0;
@@ -115,6 +115,10 @@ class Network {
 
   Future<LoginResponse> login(String username, String password) {
     String encryptedPassword = sha512.convert(utf8.encode(password)).toString();
+    return loginWithEncryptedPassword(username, encryptedPassword);
+  }
+
+  Future<LoginResponse> loginWithEncryptedPassword(String username, String encryptedPassword) {
     return _getResponseObject<LoginResponse>(HttpMethod.post, _buildHoohUri("users/login"),
         body: LoginWithPasswordRequest(username, encryptedPassword).toJson(), deserializer: LoginResponse.fromJson);
   }
@@ -331,8 +335,13 @@ class Network {
   }
 
   Future<UnreadNotificationCountResponse> getUnreadNotificationCount() {
-    int milliSeconds = preferences.getInt(Preferences.KEY_LAST_SYSTEM_NOTIFICATIONS_READ) ?? 0;
-    Map<String, dynamic> params = {"timestamp": DateUtil.getUtcDateString(DateTime.fromMillisecondsSinceEpoch(milliSeconds))};
+    // int milliSeconds = preferences.getInt(Preferences.KEY_LAST_SYSTEM_NOTIFICATIONS_READ) ?? 0;
+    String? date = preferences.getString(Preferences.KEY_LAST_SYSTEM_NOTIFICATIONS_READ_STRING);
+    Map<String, dynamic> params = {};
+    if (date != null) {
+      params["timestamp"] = date;
+      params["timestamp"] = date;
+    }
     return _getResponseObject<UnreadNotificationCountResponse>(HttpMethod.get, _buildHoohUri("users/notifications/unread-count", params: params),
         deserializer: UnreadNotificationCountResponse.fromJson);
   }
@@ -690,7 +699,12 @@ class Network {
       {Map<String, dynamic>? extraHeaders, Map<String, dynamic>? body, M Function(Map<String, dynamic>)? deserializer}) async {
     extraHeaders ??= {};
     _prepareHeaders(extraHeaders);
-    var data = await _getRawResponse(method, uri, extraHeaders: extraHeaders, body: body, deserializer: deserializer);
+    dynamic data;
+    try {
+      data = await _getRawResponse(method, uri, extraHeaders: extraHeaders, body: body, deserializer: deserializer);
+    } catch (e) {
+      data = HoohApiErrorResponse(0, e.toString(), e.toString());
+    }
     if (data is HoohApiErrorResponse) {
       return Future.error(data);
     } else {
@@ -705,10 +719,14 @@ class Network {
   Future<List<M>> _getResponseList<M>(HttpMethod method, Uri uri,
       {Map<String, dynamic>? extraHeaders, Map<String, dynamic>? body, M Function(Map<String, dynamic>)? deserializer}) async {
     extraHeaders ??= {};
-    // extraHeaders["Authorization"] =
-    //     "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBY2Nlc3NUb2tlbiIsInVzZXJfc2FmZV9pZCI6ImRlOTkyYWVkLWEyYzctNGEzZS05YzZkLTU3YmM3YTEyNWYwYyIsImV4cCI6MTY1MDA5ODgwNywiaWF0IjoxNjQ3NTA2ODA3fQ.pcqeofRYGPQ0fvIIn5ZdSOkEGNyU-trFaqWcyDBOAvJyi-bHSLhqCzwOjDRDF6fJ-BzqMQkg-_IRr61Hq4baBg";
     _prepareHeaders(extraHeaders);
-    var data = await _getRawResponse(method, uri, extraHeaders: extraHeaders, body: body, deserializer: deserializer);
+    // var data = await _getRawResponse(method, uri, extraHeaders: extraHeaders, body: body, deserializer: deserializer);
+    dynamic data;
+    try {
+      data = await _getRawResponse(method, uri, extraHeaders: extraHeaders, body: body, deserializer: deserializer);
+    } catch (e) {
+      data = HoohApiErrorResponse(0, e.toString(), e.toString());
+    }
     if (data is HoohApiErrorResponse) {
       return Future.error(data);
     } else {
@@ -733,9 +751,17 @@ class Network {
       headers["Authorization"] = "Bearer $token";
     }
     headers["Content-Type"] = "application/json";
-    headers["User-Agent"] = deviceInfo.getUserAgent();
+    if (!kIsWeb) {
+      headers["User-Agent"] = deviceInfo.getUserAgent();
+    } else {
+      headers['Access-Control-Allow-Origin'] = '*';
+    }
     // headers["Language"] = Platform.localeName;
-    headers["Accept-Language"] = Platform.localeName;
+    // headers["Accept-Language"] = preferences.getString(Preferences.KEY_LANGUAGE) ?? Platform.localeName;
+    String languageCode = preferences.getString(Preferences.KEY_LANGUAGE) ?? "en";
+    if (languageCode != "system") {
+      headers["Accept-Language"] = languageCode;
+    }
   }
 
   Future<dynamic> _getRawResponse<M>(HttpMethod method, Uri uri,
@@ -787,7 +813,8 @@ class Network {
           hoohApiErrorResponse.message = "<未返回错误信息>";
         }
       } else {
-        hoohApiErrorResponse = HoohApiErrorResponse(500, "<无法解析>", "<无法解析>");
+        debugPrint("response=${response.reasonPhrase}");
+        hoohApiErrorResponse = HoohApiErrorResponse(response.statusCode, "<无法解析>", "<无法解析>");
       }
       return hoohApiErrorResponse;
     }
@@ -816,7 +843,63 @@ class Network {
     reloadServerType();
     _client = http.Client();
   }
+
 //endregion
+
+//region crm user
+
+  Future<LoginResponse> crmLogin(String username, String password) {
+    String encryptedPassword = sha512.convert(utf8.encode(password)).toString();
+    return crmLoginWithEncryptedPassword(username, encryptedPassword);
+  }
+
+  Future<LoginResponse> crmLoginWithEncryptedPassword(String username, String encryptedPassword) {
+    return _getResponseObject<LoginResponse>(HttpMethod.post, _buildHoohUri("crm/users/login"),
+        body: LoginWithPasswordRequest(username, encryptedPassword).toJson(), deserializer: LoginResponse.fromJson);
+  }
+
+//endregion
+
+//region crm templates
+
+  Future<List<Template>> crmSearchTemplates(int state, {String? tag, DateTime? date, bool desc = true, int size = DEFAULT_PAGE_SIZE}) {
+    Map<String, dynamic> params = {
+      "state": state,
+      "size": size,
+      "desc": desc,
+    };
+    if (tag != null) {
+      params["tag"] = tag;
+    }
+    if (date != null) {
+      params["timestamp"] = DateUtil.getUtcDateString(date);
+    }
+    return _getResponseList<Template>(HttpMethod.get, _buildHoohUri("crm/templates/search", params: params), deserializer: Template.fromJson);
+  }
+
+  Future<Template> crmGetTemplateDetail(String templateId) {
+    return _getResponseObject<Template>(HttpMethod.get, _buildHoohUri("crm/templates/$templateId"), deserializer: Template.fromJson);
+  }
+
+  Future<Template> crmModifyTemplate(String templateId, ModifyTemplateRequest request) {
+    return _getResponseObject<Template>(HttpMethod.put, _buildHoohUri("crm/templates/$templateId"), body: request.toJson(), deserializer: Template.fromJson);
+  }
+
+  Future<void> crmApproveTemplate(String templateId) {
+    return _getResponseObject<void>(
+      HttpMethod.put,
+      _buildHoohUri("crm/templates/$templateId/approve"),
+    );
+  }
+
+  Future<void> crmRejectTemplate(String templateId) {
+    return _getResponseObject<void>(
+      HttpMethod.put,
+      _buildHoohUri("crm/templates/$templateId/reject"),
+    );
+  }
+//endregion
+
 //   ///准备一个可以支持Let's Encrypt证书的client
 //   void _prepareHttpClient() {
 // //     /// This is LetsEncrypt's self-signed trusted root certificate authority

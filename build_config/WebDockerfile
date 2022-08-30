@@ -1,0 +1,3 @@
+FROM nginx:alpine
+ARG ROOT_DIR
+COPY ${ROOT_DIR}/web/ /usr/share/nginx/html
