@@ -269,12 +269,9 @@ class _HoohAppState extends ConsumerState<HoohApp> with WidgetsBindingObserver, 
       title: 'HooH',
       // home: HomeScreen(),
       home: const SplashScreen(),
-      debugShowCheckedModeBanner: false,
+      // debugShowCheckedModeBanner: false,
       builder: (context, child) {
         globalLocalizations = AppLocalizations.of(context)!;
-        return Scaffold(
-          body: child!,
-        );
         if (kReleaseMode) {
           return Scaffold(
             body: child!,

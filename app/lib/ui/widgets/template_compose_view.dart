@@ -100,7 +100,7 @@ class _TemplateViewState extends ConsumerState<TemplateView> {
   Widget build(BuildContext context) {
     var visible = ref.watch(visibleProvider);
     List<Widget> widgets = [
-      buildMainImage(),
+      Positioned.fill(child: Container(child: buildMainImage())),
     ];
     if (widget.setting.mask) {
       widgets.add(buildMaskView());
