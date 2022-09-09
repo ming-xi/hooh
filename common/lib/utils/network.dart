@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:common/models/external_value.dart';
 import 'package:common/models/hooh_api_error_response.dart';
 import 'package:common/models/network/requests.dart';
 import 'package:common/models/network/responses.dart';
@@ -33,6 +34,7 @@ class Network {
   }
 
   static const HOST_LOCAL = "192.168.31.136:8080";
+
   // static const HOST_LOCAL = "192.168.3.100:8080";
   static const HOST_STAGING = "stgapi.hooh.zone";
   static const HOST_PRODUCTION = "api.hooh.zone";
@@ -77,6 +79,7 @@ class Network {
 
   void reloadServerType() {
     serverType = preferences.getInt(Preferences.KEY_SERVER) ?? TYPE_PRODUCTION;
+    debugPrint("serverType=$serverType");
   }
 
   String getS3ImageKey(String? url) {
@@ -898,8 +901,25 @@ class Network {
       _buildHoohUri("crm/templates/$templateId/reject"),
     );
   }
+
 //endregion
 
+//region crm external values
+  Future<List<ExternalValue>> crmGetAllExternalValues() {
+    return _getResponseList<ExternalValue>(HttpMethod.get, _buildHoohUri("crm/external-values"), deserializer: ExternalValue.fromJson);
+  }
+
+  Future<ExternalValue> crmEditExternalValue(String key, String value) {
+    return _getResponseObject<ExternalValue>(HttpMethod.put, _buildHoohUri("crm/external-values/$key"),
+        body: ChangeExternalValueRequest(value).toJson(), deserializer: ExternalValue.fromJson);
+  }
+
+//endregion
+//region crm statistics
+  Future<UserStatisticsResponse> crmGetStatisticsOfUsers() {
+    return _getResponseObject<UserStatisticsResponse>(HttpMethod.get, _buildHoohUri("crm/statistics/users"), deserializer: UserStatisticsResponse.fromJson);
+  }
+//endregion
 //   ///准备一个可以支持Let's Encrypt证书的client
 //   void _prepareHttpClient() {
 // //     /// This is LetsEncrypt's self-signed trusted root certificate authority

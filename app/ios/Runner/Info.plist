@@ -97,9 +97,9 @@
 	<key>NSAppleMusicUsageDescription</key>
 	<string>Explain why your app uses music</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Example usage description</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Explain why your app uses photo library</string>
+    <string>This allows HOOH to use your camera taking photos to make posts or templates</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This allows HOOH to share your photos from your gallery to create a post or a template and save images to your camera roll.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

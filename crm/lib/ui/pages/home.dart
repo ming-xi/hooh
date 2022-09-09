@@ -5,6 +5,8 @@ import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:crm/global.dart';
 import 'package:crm/ui/pages/home_view_model.dart';
+import 'package:crm/ui/pages/misc/external_values.dart';
+import 'package:crm/ui/pages/statistics/dashboard.dart';
 import 'package:crm/ui/pages/template/templates.dart';
 import 'package:crm/utils/constants.dart';
 import 'package:crm/utils/design_colors.dart';
@@ -299,7 +301,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   height: 36,
                 ),
                 Visibility(
-                  visible: false,
+                  visible: kDebugMode,
                   child: Row(
                     children: [
                       Expanded(
@@ -318,7 +320,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   value: e,
                                 ))
                             .toList(),
-                        onChanged: (value) {
+                        onChanged: (value) async {
                           if (value == null) {
                             return;
                           }
@@ -367,6 +369,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           MenuTabItem(
             pageId: Constants.PAGE_ID_CONFIGS,
             title: Constants.PAGE_NAME_CONFIGS,
+            onClick: changePage,
+          ),
+          MenuTabItem(
+            pageId: Constants.PAGE_ID_STATISTICS,
+            title: Constants.PAGE_NAME_STATISTICS,
+            onClick: changePage,
           ),
         ],
       ),
@@ -376,6 +384,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void changePage(int pageId) {
     HomeScreenViewModel model = ref.read(homeScreenProvider.notifier);
     model.changePage(pageId);
+    Orientation? orientation = ref.watch(globalOrientationProvider);
+    if (orientation == Orientation.portrait) {
+      Navigator.of(
+        context,
+      ).pop();
+    }
   }
 
   Widget buildMainPage() {
@@ -383,6 +397,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     switch (modelState.selectedPageId) {
       case Constants.PAGE_ID_TEMPLATES:
         return TemplateReviewPage();
+      case Constants.PAGE_ID_CONFIGS:
+        return ExternalValuesPage();
+      case Constants.PAGE_ID_STATISTICS:
+        return DashboardPage();
       default:
         return Container();
     }

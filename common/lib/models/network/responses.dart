@@ -231,3 +231,16 @@ class FollowUserResponse {
 
   Map<String, dynamic> toJson() => _$FollowUserResponseToJson(this);
 }
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
+class UserStatisticsResponse {
+  int total;
+  int totalReal;
+  int yesterdayLoginUsers;
+
+  UserStatisticsResponse(this.total, this.totalReal, this.yesterdayLoginUsers);
+
+  factory UserStatisticsResponse.fromJson(Map<String, dynamic> json) => _$UserStatisticsResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$UserStatisticsResponseToJson(this);
+}

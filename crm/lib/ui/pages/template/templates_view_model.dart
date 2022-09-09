@@ -23,6 +23,7 @@ class TemplatesPageModelState {
       this.lastTimestamp,
       this.desc = true,
       this.size = 50,
+      // this.size = 2,
       this.pageState = PageState.inited});
 
   factory TemplatesPageModelState.init() {

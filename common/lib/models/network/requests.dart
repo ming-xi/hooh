@@ -209,3 +209,14 @@ class ModifyTemplateRequest {
 
   Map<String, dynamic> toJson() => _$ModifyTemplateRequestToJson(this);
 }
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
+class ChangeExternalValueRequest {
+  String value;
+
+  ChangeExternalValueRequest(this.value);
+
+  factory ChangeExternalValueRequest.fromJson(Map<String, dynamic> json) => _$ChangeExternalValueRequestFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ChangeExternalValueRequestToJson(this);
+}

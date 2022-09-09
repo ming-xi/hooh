@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'dart:js' as js;
 import 'package:common/models/user.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
@@ -25,3 +25,8 @@ const DARK_MODE_VALUES = [
 final StateProvider<int> globalDarkModeProvider = StateProvider((ref) {
   return DARK_MODE_SYSTEM;
 });
+
+void openLink(BuildContext context, String url, {String? title}) async {
+  // Navigator.push(context, MaterialPageRoute(builder: (context) => WebViewScreen(title ?? "", url)));
+  js.context.callMethod('open', [url]);
+}

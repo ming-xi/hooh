@@ -123,7 +123,9 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                   iconColor: designColors.light_01.auto(ref),
                   title: globalLocalizations.landing_ios_title,
                   label: globalLocalizations.landing_ios_label,
-                  onClick: () {}),
+                  onClick: () {
+                    openLink(context, "https://apps.apple.com/us/app/hooh-social-network-of-new-age/id1639486347");
+                  }),
               SizedBox(
                 height: 18,
               ),
@@ -131,11 +133,17 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                   assetName: "assets/images/icon_playstore.svg",
                   title: globalLocalizations.landing_android_title,
                   label: globalLocalizations.landing_android_label,
-                  onClick: () {}),
+                  onClick: () {
+                    openLink(context, "https://play.google.com/store/apps/details?id=xyz.hooh.app");
+                  }),
               SizedBox(
                 height: 18,
               ),
-              buildCommonButton(title: globalLocalizations.landing_apk, onClick: () {}),
+              buildCommonButton(
+                  title: globalLocalizations.landing_apk,
+                  onClick: () {
+                    openLink(context, "https://play.google.com/store/apps/details?id=xyz.hooh.app");
+                  }),
               SizedBox(
                 height: 96,
               ),

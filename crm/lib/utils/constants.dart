@@ -26,6 +26,8 @@ class Constants {
   static const PAGE_NAME_POSTS = "帖子管理";
   static const PAGE_ID_CONFIGS = 3;
   static const PAGE_NAME_CONFIGS = "参数设置";
+  static const PAGE_ID_STATISTICS = 4;
+  static const PAGE_NAME_STATISTICS = "数据统计";
 }
 
 //region global variants
