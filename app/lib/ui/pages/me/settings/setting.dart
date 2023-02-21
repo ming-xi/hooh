@@ -6,7 +6,7 @@ import 'package:app/ui/pages/me/settings/language.dart';
 import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 import 'package:common/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -118,12 +118,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               children: [
                 !showDot
                     ? titleWidget
-                    : Badge(
+                    : badge.Badge(
                         child: titleWidget,
-                        position: BadgePosition.topEnd(end: -8, top: -4),
+                        position: badge.BadgePosition.topEnd(end: -8, top: -4),
                         badgeColor: designColors.orange.auto(ref),
                         elevation: 0,
-                        shape: BadgeShape.circle,
+                        shape: badge.BadgeShape.circle,
                         padding: EdgeInsets.all(4),
                       ),
                 const Spacer(),

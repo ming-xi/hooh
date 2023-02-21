@@ -1,17 +1,16 @@
-import 'package:universal_io/io.dart';
-
 import 'package:app/global.dart';
-import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/ui/pages/creation/template_add_tag_view_model.dart';
 import 'package:app/ui/pages/home/home.dart';
 import 'package:app/ui/pages/home/home_view_model.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/pages/user/templates.dart';
+import 'package:app/ui/widgets/appbar.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:universal_io/io.dart';
 
 class TemplateDoneScreen extends ConsumerStatefulWidget {
   final File? imageFile;
@@ -81,11 +80,13 @@ class _TemplateDoneScreenState extends ConsumerState<TemplateDoneScreen> with Si
                           globalLocalizations.template_done_to_my_templates,
                           () {
                             popToHomeScreen(context);
+                            String userId =
+                                ref.read(globalUserInfoProvider)!.id;
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => UserTemplateScreen(
-                                          userId: ref.read(globalUserInfoProvider)!.id,
+                                          userId: userId,
                                         )));
                           },
                         ),

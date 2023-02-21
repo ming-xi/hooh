@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.0+12
+version: 1.0.5+18
 
 environment:
   sdk: ">=2.17.0 <3.0.0"
@@ -36,7 +36,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.5
   blur: ^3.1.0
-  #  hooks_riverpod: ^1.0.4
+  hooks_riverpod: ^1.0.4
   common:
     path: ../common
   webview_flutter_plus: ^0.3.0+2
@@ -50,7 +50,7 @@ dependencies:
   #  image_cropper: ^2.0.2
   copy_with_extension: ^4.0.3
   phone_form_field: ^7.0.2
-  image: ^3.2.0
+  image: 3.2.0
   filesystem_picker: ^3.0.0
   permission_handler: ^10.0.0
   flutter_colorpicker: ^1.0.3
@@ -65,10 +65,10 @@ dependencies:
   secure_storage_local_storage_inspector: ^0.2.3
   loadmore: ^2.0.1
   localized_rich_text: ^0.0.5
-  firebase_core: ^1.20.1
-  firebase_messaging: ^12.0.2
-  firebase_analytics: ^9.3.1
-  firebase_crashlytics: ^2.8.7
+  firebase_core: ^2.4.1
+  firebase_messaging: ^14.2.1
+  firebase_analytics: ^10.1.0
+  firebase_crashlytics: ^3.0.10
   badges: ^2.0.3
   tab_indicator_styler: ^2.0.0
   flutter_local_notifications: ^9.8.0+1
@@ -83,6 +83,7 @@ dependencies:
   share_plus: ^4.0.10+1
   barcode: ^2.2.2
   uni_links: ^0.5.1
+  twitter_api_v2: ^4.0.1
 
 dev_dependencies:
   flutter_test:

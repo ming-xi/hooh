@@ -1,25 +1,25 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
-import 'package:app/test_regex.dart';
-import 'package:common/utils/ui_utils.dart';
-import 'package:universal_io/io.dart';
 
 import 'package:app/global.dart';
+import 'package:app/test_regex.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/widgets/ipfs_node.dart';
-import 'package:app/ui/widgets/toast.dart';
+import 'package:app/ui/widgets/template_compose_view.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/network/responses.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 // import 'package:jshare_flutter_plugin/jshare_flutter_plugin.dart';
 import 'package:pretty_json/pretty_json.dart';
+import 'package:universal_io/io.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
@@ -55,40 +55,7 @@ class _TestMenuScreenState extends ConsumerState<TestMenuScreen> {
             MainStyles.blueButton(
               ref,
               "测试（勿点）",
-              () {
-                // showHoohDialog(
-                //     context: context,
-                //     builder: (context) {
-                //       return LoadingDialog(LoadingDialogController());
-                //     });
-                showGeneralDialog(
-                  barrierDismissible: true,
-                  barrierLabel: '',
-                  barrierColor: Colors.black.withOpacity(0.25),
-                  // transitionDuration: Duration(milliseconds: 500),
-                  pageBuilder: (ctx, anim1, anim2) => AlertDialog(
-                    title: Text('blured background'),
-                    content: Text('background should be blured and little bit darker '),
-                    elevation: 2,
-                    actions: [
-                      TextButton(
-                        child: Text('OK'),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
-                  ),
-                  transitionBuilder: (ctx, anim1, anim2, child) => BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 8 * anim1.value, sigmaY: 8 * anim1.value),
-                    child: FadeTransition(
-                      child: child,
-                      opacity: anim1,
-                    ),
-                  ),
-                  context: context,
-                );
-              },
+              () async {},
             ),
             SizedBox(
               height: 16,

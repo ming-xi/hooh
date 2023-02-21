@@ -46,7 +46,8 @@ class RegisterScreenViewModel extends StateNotifier<RegisterScreenModelState> {
 
   void register(BuildContext context, String username, String password, String email,
       {void Function(LoginResponse)? onSuccess, Function(HoohApiErrorResponse)? onFailed}) {
-    network.requestAsync<LoginResponse>(network.register(username, password, email), (data) {
+    network.requestAsync<LoginResponse>(
+        network.register(username, password, email.toLowerCase()), (data) {
       // network.setUserToken(data.jwtResponse.accessToken);
       if (onSuccess != null) {
         onSuccess(data);
@@ -109,7 +110,7 @@ class RegisterScreenViewModel extends StateNotifier<RegisterScreenModelState> {
   }
 
   bool _checkEmail(String email) {
-    email = email.trim();
+    email = email.trim().toLowerCase();
     if (email.isEmpty) {
       //不修改错误提示
       return false;

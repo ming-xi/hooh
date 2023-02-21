@@ -16,7 +16,7 @@ import in_app_review
 import package_info_plus_macos
 import path_provider_macos
 import share_plus_macos
-import shared_preferences_macos
+import shared_preferences_foundation
 import sqflite
 import url_launcher_macos
 

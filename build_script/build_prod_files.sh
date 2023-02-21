@@ -1,4 +1,5 @@
 #!/bin/bash
+./flutter_get_all.sh
 if ! ./flutter_build_apk_prod.sh & then
     echo "build android error"
     exit 1

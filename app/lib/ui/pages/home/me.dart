@@ -14,13 +14,13 @@ import 'package:app/ui/pages/user/register/start.dart';
 import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/pages/user/templates.dart';
 import 'package:app/ui/widgets/appbar.dart';
-import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 import 'package:common/models/network/responses.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/date_util.dart';
+import 'package:common/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -28,7 +28,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:sprintf/sprintf.dart';
 import 'package:tuple/tuple.dart';
-import 'package:common/utils/ui_utils.dart';
 
 class MePage extends ConsumerStatefulWidget {
   const MePage({
@@ -117,11 +116,11 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                   refreshPage(ref.read(widget.provider.notifier));
                 });
               },
-              icon: Badge(
+              icon: badge.Badge(
                 badgeColor: designColors.orange.auto(ref),
                 padding: EdgeInsets.all(4),
                 elevation: 0,
-                position: BadgePosition.topEnd(end: -4, top: -6),
+                position: badge.BadgePosition.topEnd(end: -4, top: -6),
                 showBadge: (modelState.unread?.unreadCount ?? 0) != 0,
                 badgeContent: Text(
                   "${modelState.unread?.unreadCount ?? 0}",
@@ -142,11 +141,11 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
               });
               // Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
             },
-            icon: Badge(
+            icon: badge.Badge(
               badgeColor: designColors.orange.auto(ref),
               padding: EdgeInsets.all(4),
               elevation: 0,
-              position: BadgePosition.topEnd(end: -2, top: -2),
+              position: badge.BadgePosition.topEnd(end: -2, top: -2),
               showBadge: !(user.emailValidated ?? false),
               child: HoohIcon(
                 "assets/images/icon_me_setting.svg",
@@ -308,7 +307,10 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
     );
     ElevatedButton card = ElevatedButton(
       onPressed: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => FollowerScreen(userId: ref.read(globalUserInfoProvider)!.id, isFollower: isFollower)));
+        String userId = ref.read(globalUserInfoProvider)!.id;
+        Navigator.push(context, MaterialPageRoute(builder: (context) {
+          return FollowerScreen(userId: userId, isFollower: isFollower);
+        }));
       },
       child: column,
       style: ElevatedButton.styleFrom(

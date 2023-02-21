@@ -314,6 +314,14 @@
   "user_posts_no_following_title": "Oops, \nyou haven't followed anyone yet.\nCome on, make some friends!",
   "user_posts_not_login_button": "Login",
   "user_posts_not_login_title": "Log in to see what is new!",
+  "user_profile_menu_report": "Report User",
+  "user_profile_menu_report_fraud": "Fraud",
+  "user_profile_menu_report_harrassement": "Harrassement",
+  "user_profile_menu_report_inappropriate": "Report User",
+  "user_profile_menu_report_other": "other",
+  "user_profile_menu_report_sexual": "Sexual picture",
+  "user_profile_menu_report_spam": "Spam/Advertizing",
+  "user_profile_menu_report_success": "Report Succeeded !",
   "user_profile_posts": "Posts",
   "user_profile_templates": "Templates",
   "validate_code_helper": "Don't receive the code? It may take a few minutes to process, or you may want to check your spam",
@@ -337,7 +345,7 @@
   "wallet_overview": "Overview:",
   "wallet_pow": "POW",
   "wallet_reputation": "Influence",
-  "second": "{count,plural,  =1{{count} second} =other{{count} seconds}}",
+  "second": "{count,plural,  =1{{count} second} other{{count} seconds}}",
   "@second": {
     "placeholders": {
       "count": {
@@ -345,7 +353,7 @@
       }
     }
   },
-  "minute": "{count,plural,  =1{{count} minute} =other{{count} minutes}}",
+  "minute": "{count,plural,  =1{{count} minute} other{{count} minutes}}",
   "@minute": {
     "placeholders": {
       "count": {
@@ -353,7 +361,7 @@
       }
     }
   },
-  "hour": "{count,plural,  =1{{count} hour} =other{{count} hours}}",
+  "hour": "{count,plural,  =1{{count} hour} other{{count} hours}}",
   "@hour": {
     "placeholders": {
       "count": {
@@ -361,7 +369,7 @@
       }
     }
   },
-  "day": "{count,plural,  =1{{count} day} =other{{count} days}}",
+  "day": "{count,plural,  =1{{count} day} other{{count} days}}",
   "@day": {
     "placeholders": {
       "count": {
@@ -369,7 +377,7 @@
       }
     }
   },
-  "month": "{count,plural,  =1{{count} month} =other{{count} months}}",
+  "month": "{count,plural,  =1{{count} month} other{{count} months}}",
   "@month": {
     "placeholders": {
       "count": {
@@ -377,7 +385,7 @@
       }
     }
   },
-  "post": "{count,plural,  =1{{count} post} =other{{count} posts}}",
+  "post": "{count,plural,  =1{{count} post} other{{count} posts}}",
   "@post": {
     "placeholders": {
       "count": {

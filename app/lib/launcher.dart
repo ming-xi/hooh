@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:app/global.dart';
@@ -8,6 +9,7 @@ import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/file_utils.dart';
 import 'package:app/utils/push.dart';
 import 'package:common/utils/device_info.dart';
+import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:common/utils/ui_utils.dart';
 import 'package:file_local_storage_inspector/file_local_storage_inspector.dart';
@@ -35,6 +37,7 @@ class Launcher {
 
   Future<void> prepare() async {
     WidgetsFlutterBinding.ensureInitialized();
+    HttpOverrides.global = MyHttpOverrides();
     // enableImmersiveMode();
     WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
     // 保留开屏页

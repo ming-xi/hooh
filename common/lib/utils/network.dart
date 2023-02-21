@@ -18,6 +18,7 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:html_unescape/html_unescape.dart';
 import 'package:http/http.dart' as http;
 import 'package:pretty_json/pretty_json.dart';
 import 'package:universal_io/io.dart';
@@ -36,9 +37,14 @@ class Network {
   static const HOST_LOCAL = "192.168.31.136:8080";
 
   // static const HOST_LOCAL = "192.168.3.100:8080";
-  static const HOST_STAGING = "stgapi.hooh.zone";
-  static const HOST_PRODUCTION = "api.hooh.zone";
-  static const SERVER_HOSTS = {
+  // static const HOST_STAGING = "stgapi.hooh.zone";
+  // static const HOST_PRODUCTION = "api.hooh.zone";
+  // static const HOST_STAGING = "stg-api.hooh.fun";
+  // static const HOST_STAGING = "stg-fun.hooh.zone";
+  // static const HOST_PRODUCTION = "fun.hooh.zone";
+  static const HOST_STAGING = "stg-api.hooh.fun";
+  static const HOST_PRODUCTION = "api.hooh.fun";
+  static var SERVER_HOSTS = {
     TYPE_LOCAL: HOST_LOCAL,
     TYPE_STAGING: HOST_STAGING,
     TYPE_PRODUCTION: HOST_PRODUCTION,
@@ -57,12 +63,16 @@ class Network {
   static const DEFAULT_PAGE_SIZE = 20;
   static const DEFAULT_PAGE = 1;
 
+  static const MAX_REDIRECT_COUNT = 5;
+
   late int serverType;
 
   late final http.Client _client;
   bool _isUsingLocalServer = false;
+  final HtmlUnescape _unescape = HtmlUnescape();
 
-  void requestAsync<T>(Future<T> request, Function(T data) onSuccess, Function(HoohApiErrorResponse error) onError) {
+  void requestAsync<T>(Future<T> request, Function(T data) onSuccess,
+      Function(HoohApiErrorResponse error) onError) {
     request.then((data) {
       onSuccess(data);
     }).catchError((Object error, StackTrace stackTrace) {
@@ -671,10 +681,11 @@ class Network {
     int id = Random().nextInt(10000);
     logRequest(id, HttpMethod.put, Uri.parse(url), {'data': "<file bytes>"});
     var response = await http.put(Uri.parse(url), body: fileBytes);
-    logResponse(id, response, null);
+    logResponse(id, response.statusCode, "<upload file>", null);
     if (response.statusCode >= 200 && response.statusCode < 400) {
       return true;
     } else {
+      debugPrint("response=${response.body}");
       return false;
     }
   }
@@ -684,7 +695,7 @@ class Network {
       int id = Random().nextInt(10000);
       logRequest(id, HttpMethod.get, Uri.parse(url), null);
       final response = await http.get(Uri.parse(url));
-      logResponse(id, response, null);
+      logResponse(id, response.statusCode, "<download bytes>", null);
       if (response.contentLength == 0) {
         return null;
       }
@@ -712,7 +723,11 @@ class Network {
       return Future.error(data);
     } else {
       if (deserializer != null) {
-        return deserializer(data as Map<String, dynamic>);
+        if (data is Map<String, dynamic>) {
+          return deserializer(data);
+        } else {
+          return Future.value(null);
+        }
       } else {
         return Future.value(null);
       }
@@ -751,7 +766,8 @@ class Network {
   void _prepareHeaders(Map<String, dynamic> headers) {
     String? token = preferences.getString(Preferences.KEY_USER_ACCESS_TOKEN);
     if (token != null) {
-      headers["Authorization"] = "Bearer $token";
+      // headers["Authorization"] = "Bearer $token";
+      headers["Authorization"] = token;
     }
     headers["Content-Type"] = "application/json";
     if (!kIsWeb) {
@@ -768,45 +784,88 @@ class Network {
   }
 
   Future<dynamic> _getRawResponse<M>(HttpMethod method, Uri uri,
-      {Map<String, dynamic>? extraHeaders, Map<String, dynamic>? body, M Function(Map<String, dynamic>)? deserializer}) async {
+      {Map<String, dynamic>? extraHeaders,
+      Map<String, dynamic>? body,
+      M Function(Map<String, dynamic>)? deserializer,
+      int redirectCount = 0}) async {
     int id = Random().nextInt(10000);
-    logRequest(id, method, uri, body);
-    http.Response response;
+    logRequest(id, method, uri, body, extraHeaders: extraHeaders);
+    http.StreamedResponse response;
+    late String responseBody;
+    // try {
+    //   switch (method) {
+    //     case HttpMethod.get:
+    //       response = await _client.get(uri, headers: extraHeaders?.map((key, value) => MapEntry(key, value.toString())));
+    //       break;
+    //     case HttpMethod.post:
+    //       response = await _client.post(uri, body: json.encode(body), headers: extraHeaders?.map((key, value) => MapEntry(key, value.toString())));
+    //       break;
+    //     case HttpMethod.put:
+    //       response = await _client.put(uri, body: json.encode(body), headers: extraHeaders?.map((key, value) => MapEntry(key, value.toString())));
+    //       break;
+    //     case HttpMethod.delete:
+    //       response = await _client.delete(uri, body: json.encode(body), headers: extraHeaders?.map((key, value) => MapEntry(key, value.toString())));
+    //       break;
+    //   }
+    // } catch (e) {
+    //   print(e);
+    //   rethrow;
+    // }
     try {
-      switch (method) {
-        case HttpMethod.get:
-          response = await _client.get(uri, headers: extraHeaders?.map((key, value) => MapEntry(key, value.toString())));
-          break;
-        case HttpMethod.post:
-          response = await _client.post(uri, body: json.encode(body), headers: extraHeaders?.map((key, value) => MapEntry(key, value.toString())));
-          break;
-        case HttpMethod.put:
-          response = await _client.put(uri, body: json.encode(body), headers: extraHeaders?.map((key, value) => MapEntry(key, value.toString())));
-          break;
-        case HttpMethod.delete:
-          response = await _client.delete(uri, body: json.encode(body), headers: extraHeaders?.map((key, value) => MapEntry(key, value.toString())));
-          break;
+      http.Request request = http.Request(method.name, uri);
+      request.followRedirects = false;
+      if (extraHeaders != null) {
+        request.headers.addAll(
+            extraHeaders.map((key, value) => MapEntry(key, value.toString())));
       }
+      if (body != null) {
+        request.body = json.encode(body);
+      }
+      response = (await _client.send(request));
+      responseBody = await response.stream.bytesToString();
     } catch (e) {
       print(e);
       rethrow;
     }
     dynamic returnedJson;
     try {
-      if (response.bodyBytes.isNotEmpty) {
-        returnedJson = jsonDecode(utf8.decode(response.bodyBytes));
+      if (responseBody.isNotEmpty) {
+        returnedJson = jsonDecode(responseBody);
       }
     } catch (e) {
       debugPrint(e.toString());
     }
     try {
-      logResponse(id, response, returnedJson);
+      logResponse(id, response.statusCode, responseBody, returnedJson);
     } catch (e) {
       debugPrint(e.toString());
     }
     if (response.statusCode >= 200 && response.statusCode < 400) {
-      //success
-      return returnedJson;
+      if (response.statusCode == 301 || response.statusCode == 302) {
+        //redirect
+        if (redirectCount >= MAX_REDIRECT_COUNT) {
+          HoohApiErrorResponse hoohApiErrorResponse;
+          debugPrint("response=${response.reasonPhrase}");
+          hoohApiErrorResponse = HoohApiErrorResponse(response.statusCode,
+              "<too many redirects>", "<too many redirects>");
+          return hoohApiErrorResponse;
+        } else {
+          String newUrl = responseBody;
+          newUrl = newUrl
+              .substring(newUrl.indexOf('<a href="') + '<a href="'.length);
+
+          newUrl = newUrl.substring(0, newUrl.indexOf('">here'));
+          newUrl = _unescape.convert(newUrl);
+          return _getRawResponse(method, Uri.parse(newUrl),
+              extraHeaders: extraHeaders,
+              body: body,
+              deserializer: deserializer,
+              redirectCount: redirectCount + 1);
+        }
+      } else {
+        //success
+        return returnedJson;
+      }
     } else {
       //failed
       HoohApiErrorResponse hoohApiErrorResponse;
@@ -817,24 +876,36 @@ class Network {
         }
       } else {
         debugPrint("response=${response.reasonPhrase}");
-        hoohApiErrorResponse = HoohApiErrorResponse(response.statusCode, "<无法解析>", "<无法解析>");
+        hoohApiErrorResponse =
+            HoohApiErrorResponse(response.statusCode, "<无法解析>", "<无法解析>");
       }
       return hoohApiErrorResponse;
     }
   }
 
-  void logResponse(int id, http.Response response, dynamic returnedJson) {
-    debugPrint("[RESPONSE $id] HTTP ${response.statusCode}\njson=${returnedJson == null ? "null" : prettyJson(returnedJson)}");
+  void logResponse(int id, int statusCode, String body, dynamic returnedJson) {
+    if (returnedJson == null) {
+      debugPrint("[RESPONSE $id] HTTP $statusCode\nresponse=$body");
+    } else {
+      debugPrint(
+          "[RESPONSE $id] HTTP $statusCode\njson=${returnedJson == null ? "null" : prettyJson(returnedJson)}");
+    }
   }
 
-  void logRequest(int id, HttpMethod method, Uri uri, Map<String, dynamic>? body) {
+  void logRequest(
+      int id, HttpMethod method, Uri uri, Map<String, dynamic>? body,
+      {Map<String, dynamic>? extraHeaders}) {
     debugPrint(
-        "[REQUEST  $id] ${method.name.toUpperCase()} url=${uri.toString()},\n query:${"\n" + prettyJson(uri.queryParameters)},\n body:${body == null ? "null" : ("\n" + prettyJson(body))}");
+        "[REQUEST  $id] ${method.name.toUpperCase()} url=${uri.toString()},\n query:${"\n" + prettyJson(uri.queryParameters)},\n headers:${extraHeaders == null ? "null" : prettyJson(extraHeaders)},\n body:${body == null ? "null" : ("\n" + prettyJson(body))}");
   }
 
-  Uri _buildUri(bool ssl, String host, String path, {Map<String, dynamic>? params}) {
-    var queryParameters = params?.map((key, value) => MapEntry(key, value.toString()));
-    return ssl ? Uri.https(host, path, queryParameters) : Uri.http(host, path, queryParameters);
+  Uri _buildUri(bool ssl, String host, String path,
+      {Map<String, dynamic>? params}) {
+    var queryParameters =
+        params?.map((key, value) => MapEntry(key, value.toString()));
+    return ssl
+        ? Uri.https(host, path, queryParameters)
+        : Uri.http(host, path, queryParameters);
   }
 
   Uri _buildHoohUri(String path, {bool hasPrefix = true, Map<String, dynamic>? params}) {
@@ -997,4 +1068,13 @@ class DownloadInfo {
   String? filename;
 
   DownloadInfo({this.bytes, this.filename});
+}
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
 }

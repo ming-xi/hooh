@@ -142,7 +142,8 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
               buildCommonButton(
                   title: globalLocalizations.landing_apk,
                   onClick: () {
-                    openLink(context, "https://play.google.com/store/apps/details?id=xyz.hooh.app");
+                    openLink(context,
+                        "https://hooh-public.s3.ap-southeast-1.amazonaws.com/hooh_latest.apk");
                   }),
               SizedBox(
                 height: 96,

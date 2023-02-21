@@ -12,6 +12,7 @@ metadata:
   labels:
     app: web-prod
 spec:
+  revisionHistoryLimit: 0 # Default to 10 if not specified
   replicas: 1
   selector:
     matchLabels:

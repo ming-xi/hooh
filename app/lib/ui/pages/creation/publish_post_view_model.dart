@@ -52,7 +52,8 @@ class PublishPostScreenModelState {
 }
 
 class PublishPostScreenViewModel extends StateNotifier<PublishPostScreenModelState> {
-  static const double OUTPUT_IMAGE_SIZE = 1080;
+  // static const double OUTPUT_IMAGE_SIZE = 1080;
+  static const double OUTPUT_IMAGE_SIZE = 720;
 
   PublishPostScreenViewModel(PublishPostScreenModelState state) : super(state) {
     // 如果需要加载时自动拉取数据，在这里调用

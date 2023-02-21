@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:common/utils/device_info.dart';
+import 'package:common/utils/network.dart';
 import 'package:common/utils/preferences.dart';
 import 'package:common/utils/ui_utils.dart';
 import 'package:crm/global.dart';
@@ -23,6 +24,7 @@ class Launcher {
   static const KEY_ADMIN_MODE = "KEY_ADMIN_MODE";
 
   Future<void> prepare() async {
+    Network.SERVER_HOSTS[Network.TYPE_STAGING] = "stg-api.hooh.fun";
     WidgetsFlutterBinding.ensureInitialized();
     // enableImmersiveMode();
     WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();

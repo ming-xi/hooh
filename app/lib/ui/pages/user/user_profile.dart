@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:app/global.dart';
 import 'package:app/ui/pages/me/activities.dart';
 import 'package:app/ui/pages/me/activities_view_model.dart';
@@ -10,31 +12,34 @@ import 'package:app/ui/pages/user/register/styles.dart';
 import 'package:app/ui/pages/user/templates.dart';
 import 'package:app/ui/pages/user/user_profile_view_model.dart';
 import 'package:app/ui/widgets/appbar.dart';
-import 'package:app/ui/widgets/toast.dart';
 import 'package:app/utils/design_colors.dart';
 import 'package:app/utils/ui_utils.dart';
 import 'package:common/models/page_state.dart';
 import 'package:common/models/user.dart';
 import 'package:common/utils/date_util.dart';
+import 'package:common/utils/ui_utils.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'package:common/utils/ui_utils.dart';
 import 'package:sprintf/sprintf.dart';
 import 'package:tuple/tuple.dart';
 
 class UserProfileScreen extends ConsumerStatefulWidget {
   final String userId;
-  late final StateNotifierProvider<UserProfileScreenViewModel, UserProfileScreenModelState> provider;
-  late final StateNotifierProvider<ActivitiesScreenViewModel, ActivitiesScreenModelState> trendsProvider;
+  late final StateNotifierProvider<UserProfileScreenViewModel,
+      UserProfileScreenModelState> provider;
+  late final StateNotifierProvider<ActivitiesScreenViewModel,
+      ActivitiesScreenModelState> trendsProvider;
 
   UserProfileScreen({
     required this.userId,
     Key? key,
   }) : super(key: key) {
     provider = StateNotifierProvider((ref) {
-      return UserProfileScreenViewModel(UserProfileScreenModelState.init(userId));
+      return UserProfileScreenViewModel(
+          UserProfileScreenModelState.init(userId));
     });
     trendsProvider = StateNotifierProvider((ref) {
       return ActivitiesScreenViewModel(ActivitiesScreenModelState.init(userId));
@@ -47,8 +52,14 @@ class UserProfileScreen extends ConsumerStatefulWidget {
 
 class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   User? user;
-  final List<BoxShadow> cardShadow = [BoxShadow(color: const Color(0x00000000).withAlpha((255 * 0.2).toInt()), blurRadius: 10, spreadRadius: -4)];
-  final RefreshController _refreshController = RefreshController(initialRefresh: false);
+  final List<BoxShadow> cardShadow = [
+    BoxShadow(
+        color: const Color(0x00000000).withAlpha((255 * 0.2).toInt()),
+        blurRadius: 10,
+        spreadRadius: -4)
+  ];
+  final RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
   ScrollController scrollController = ScrollController();
 
   @override
@@ -61,14 +72,20 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     UserProfileScreenModelState modelState = ref.watch(widget.provider);
     UserProfileScreenViewModel model = ref.read(widget.provider.notifier);
 
-    ActivitiesScreenModelState trendsModelState = ref.watch(widget.trendsProvider);
-    ActivitiesScreenViewModel trendsModel = ref.read(widget.trendsProvider.notifier);
+    ActivitiesScreenModelState trendsModelState =
+        ref.watch(widget.trendsProvider);
+    ActivitiesScreenViewModel trendsModel =
+        ref.read(widget.trendsProvider.notifier);
 
-    TextStyle? titleTextStyle = TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: designColors.dark_01.auto(ref));
+    TextStyle? titleTextStyle = TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: designColors.dark_01.auto(ref));
 
     // bool loading = modelState.user == null && modelState.isLoading;
     bool loading = modelState.user == null;
-    debugPrint("loading=$loading modelState.user=${modelState.user} modelState.isLoading=${modelState.isLoading}");
+    debugPrint(
+        "loading=$loading modelState.user=${modelState.user} modelState.isLoading=${modelState.isLoading}");
     String title = "";
     String subtitle = "";
     if (!loading) {
@@ -92,19 +109,21 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       appBar: appBar,
       floatingActionButton: SafeArea(
           child: SizedBox(
-        width: 40,
-        height: 40,
-        child: FloatingActionButton(
-            backgroundColor: designColors.feiyu_blue.auto(ref),
-            onPressed: () {
-              scrollController.animateTo(0, duration: Duration(milliseconds: 250), curve: Curves.easeOutCubic);
+            width: 40,
+            height: 40,
+            child: FloatingActionButton(
+                backgroundColor: designColors.feiyu_blue.auto(ref),
+                onPressed: () {
+              scrollController.animateTo(0,
+                  duration: Duration(milliseconds: 250),
+                  curve: Curves.easeOutCubic);
             },
-            child: HoohIcon(
-              "assets/images/icon_back_to_top.svg",
-              width: 16,
-              color: designColors.light_01.light,
-            )),
-      )),
+                child: HoohIcon(
+                  "assets/images/icon_back_to_top.svg",
+                  width: 16,
+                  color: designColors.light_01.light,
+                )),
+          )),
       body: SmartRefresher(
         enablePullDown: true,
         enablePullUp: true,
@@ -133,8 +152,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         child: CustomScrollView(
           controller: scrollController,
           slivers: [
-            buildUserInfo(avatarSize, badgeOffset, user, context, titleTextStyle),
-            ...UserActivityPage.buildGridView(context, ref, trendsModelState, trendsModel, 12)
+            buildUserInfo(
+                avatarSize, badgeOffset, user, context, titleTextStyle),
+            ...UserActivityPage.buildGridView(
+                context, ref, trendsModelState, trendsModel, 12)
           ],
         ),
       ),
@@ -142,35 +163,135 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   }
 
   HoohAppBar buildAppBar(String title, String subtitle) {
+    UserProfileScreenModelState modelState = ref.watch(widget.provider);
+    UserProfileScreenViewModel model = ref.read(widget.provider.notifier);
+
     return HoohAppBar(
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             title,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: designColors.dark_01.auto(ref)),
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: designColors.dark_01.auto(ref)),
           ),
           Text(
             subtitle,
-            style: TextStyle(fontSize: 12, color: designColors.light_06.auto(ref)),
+            style:
+                TextStyle(fontSize: 12, color: designColors.light_06.auto(ref)),
           ),
         ],
       ),
-      // actions: [
-      //   IconButton(
-      //       onPressed: () {},
-      //       icon: HoohIcon(
-      //         "assets/images/icon_me_message.svg",
-      //         width: 24,
-      //         height: 24,
-      //         color: designColors.dark_01.auto(ref),
-      //       ))
-      // ],
+      actions: ref.watch(globalUserInfoProvider) == null
+          ? []
+          : [buildMenuButton(model, modelState)],
       centerTitle: true,
     );
   }
 
-  Widget buildUserInfo(double avatarSize, double badgeOffset, User user, BuildContext context, TextStyle titleTextStyle) {
+  Widget buildMenuButton(UserProfileScreenViewModel model,
+      UserProfileScreenModelState modelState) {
+    return PopupMenuButton(
+      color: designColors.light_00.auto(ref),
+      icon: HoohIcon(
+        "assets/images/icon_more.svg",
+        width: 24,
+        height: 24,
+        color: designColors.dark_01.auto(ref),
+      ),
+      onSelected: (value) {},
+      // offset: Offset(0.0, appBarHeight),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(const Radius.circular(8)),
+      ),
+      itemBuilder: (ctx) {
+        TextStyle style = TextStyle(
+            fontSize: 16,
+            color: designColors.dark_01.auto(ref),
+            fontWeight: FontWeight.bold);
+
+        PopupMenuItem itemReport = PopupMenuItem(
+          onTap: () {
+            Future.delayed(const Duration(milliseconds: 250), () {
+              showReportDialog();
+            });
+          },
+          child: Text(
+            globalLocalizations.user_profile_menu_report,
+            style: style,
+          ),
+        );
+        List<PopupMenuItem> items = [itemReport];
+        return items;
+      },
+    );
+  }
+
+  void showReportDialog() {
+    var options = [
+      globalLocalizations.user_profile_menu_report_sexual,
+      globalLocalizations.user_profile_menu_report_spam,
+      globalLocalizations.user_profile_menu_report_harrassement,
+      globalLocalizations.user_profile_menu_report_fraud,
+      globalLocalizations.user_profile_menu_report_other,
+    ];
+    Function onTap2 = (BuildContext popContext) {
+      Navigator.of(
+        popContext,
+      ).pop();
+      showSnackBar(
+          context, globalLocalizations.user_profile_menu_report_success);
+    };
+    if (Platform.isIOS || Platform.isMacOS) {
+      /// To display an actionSheet
+      showCupertinoModalPopup(
+          context: context,
+          builder: (popContext) {
+            return CupertinoActionSheet(
+              actions: options
+                  .map((e) => CupertinoActionSheetAction(
+                      child: Text(e),
+                      onPressed: () {
+                        onTap2(popContext);
+                      }))
+                  .toList(),
+              cancelButton: CupertinoActionSheetAction(
+                child: Text(globalLocalizations.common_cancel),
+                onPressed: () {
+                  Navigator.of(popContext).pop();
+                },
+              ),
+            );
+          });
+    } else {
+      showHoohDialog(
+          context: context,
+          builder: (popContext) {
+            return AlertDialog(
+              // title: Text(globalLocalizations.user_profile_menu_report),
+              contentPadding: EdgeInsets.symmetric(vertical: 16),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: options.map((e) {
+                  return ListTile(
+                    title: Text(
+                      e,
+                    ),
+                    onTap: () {
+                      onTap2(popContext);
+                    },
+                  );
+                }).toList(),
+              ),
+            );
+          });
+    }
+  }
+
+  Widget buildUserInfo(double avatarSize, double badgeOffset, User user,
+      BuildContext context, TextStyle titleTextStyle) {
     return SliverToBoxAdapter(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -235,9 +356,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => FollowerScreen(
-                                          userId: widget.userId,
-                                          isFollower: false,
-                                        )));
+                                      userId: widget.userId,
+                                      isFollower: false,
+                                    )));
                           })),
                   const SizedBox(
                     width: 8,
@@ -251,9 +372,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => FollowerScreen(
-                                          userId: widget.userId,
-                                          isFollower: true,
-                                        )));
+                                      userId: widget.userId,
+                                      isFollower: true,
+                                    )));
                           })),
                 ],
               ),
@@ -296,14 +417,18 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
 
   Widget buildTileButtons(User user) {
     List<Tuple4<String, String, bool, void Function()?>> configs = [
-      Tuple4(globalLocalizations.me_tile_posts, "assets/images/icon_user_center_post.svg", true, () {
+      Tuple4(globalLocalizations.me_tile_posts,
+          "assets/images/icon_user_center_post.svg", true, () {
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) =>
-                    UserPostsScreen(title: globalLocalizations.me_tile_posts, userId: user.id, type: UserPostsScreenModelState.TYPE_CREATED)));
+                builder: (context) => UserPostsScreen(
+                    title: globalLocalizations.me_tile_posts,
+                    userId: user.id,
+                    type: UserPostsScreenModelState.TYPE_CREATED)));
       }),
-      Tuple4(globalLocalizations.me_tile_templates, "assets/images/icon_user_center_contents.svg", true, () {
+      Tuple4(globalLocalizations.me_tile_templates,
+          "assets/images/icon_user_center_contents.svg", true, () {
         Navigator.push(
             context,
             MaterialPageRoute(
@@ -311,7 +436,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                       userId: user.id,
                     )));
       }),
-      Tuple4(globalLocalizations.me_tile_nfts, "assets/images/icon_user_center_nft.svg", false, () {
+      Tuple4(globalLocalizations.me_tile_nfts,
+          "assets/images/icon_user_center_nft.svg", false, () {
         showSnackBar(context, globalLocalizations.me_tile_nfts_coming_soon);
       }),
     ];
@@ -320,15 +446,18 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       const Color(0xFF20E0C2),
     ];
     if (MainStyles.isDarkMode(ref)) {
-      colors = colors.map((e) => e.withAlpha(globalDarkModeImageAlpha)).toList();
+      colors =
+          colors.map((e) => e.withAlpha(globalDarkModeImageAlpha)).toList();
     }
-    LinearGradient gradient = LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight);
+    LinearGradient gradient = LinearGradient(
+        colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight);
     Color disabledColor = designColors.dark_03.auto(ref);
     const int columnCount = 3;
     const double spacing = 4;
     const double padding = 20;
     double screenWidth = MediaQuery.of(context).size.width;
-    double itemSize = (screenWidth - padding * 2 - (columnCount - 1) * spacing) / columnCount;
+    double itemSize =
+        (screenWidth - padding * 2 - (columnCount - 1) * spacing) / columnCount;
     var rowCount = (configs.length / columnCount).ceil();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: padding),
@@ -337,15 +466,21 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         child: GridView.builder(
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: columnCount, mainAxisSpacing: spacing, crossAxisSpacing: spacing, childAspectRatio: 1),
+              crossAxisCount: columnCount,
+              mainAxisSpacing: spacing,
+              crossAxisSpacing: spacing,
+              childAspectRatio: 1),
           itemBuilder: (context, index) {
-            Tuple4<String, String, bool, void Function()?> config = configs[index];
+            Tuple4<String, String, bool, void Function()?> config =
+                configs[index];
             return Material(
               color: designColors.light_00.auto(ref),
               type: MaterialType.transparency,
               child: Ink(
                 decoration: BoxDecoration(
-                    gradient: config.item3 ? gradient : null, color: !config.item3 ? disabledColor : null, borderRadius: BorderRadius.circular(20)),
+                    gradient: config.item3 ? gradient : null,
+                    color: !config.item3 ? disabledColor : null,
+                    borderRadius: BorderRadius.circular(20)),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(20),
                   onTap: config.item4,
@@ -373,7 +508,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                         child: Center(
                           child: Text(
                             config.item1,
-                            style: const TextStyle(fontSize: 16, color: Colors.white),
+                            style: const TextStyle(
+                                fontSize: 16, color: Colors.white),
                           ),
                         ),
                       )
@@ -405,7 +541,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                           context,
                           MaterialPageRoute(
                               builder: (context) => UserPostsScreen(
-                                  title: globalLocalizations.user_profile_posts, userId: user.id, type: UserPostsScreenModelState.TYPE_CREATED)));
+                                  title: globalLocalizations.user_profile_posts,
+                                  userId: user.id,
+                                  type:
+                                      UserPostsScreenModelState.TYPE_CREATED)));
                     })),
             const SizedBox(
               width: 8,
@@ -419,8 +558,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                           context,
                           MaterialPageRoute(
                               builder: (context) => UserTemplateScreen(
-                                    userId: user.id,
-                                  )));
+                                userId: user.id,
+                              )));
                     })),
           ],
         ),
@@ -434,12 +573,15 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       return Container();
     }
     bool followed = user.followed ?? false;
-    Color color = followed ? designColors.dark_03.auto(ref) : designColors.feiyu_blue.auto(ref);
+    Color color = followed
+        ? designColors.dark_03.auto(ref)
+        : designColors.feiyu_blue.auto(ref);
     return TextButton(
       onPressed: () {
         User? user = ref.read(globalUserInfoProvider);
         if (user == null) {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => StartScreen()));
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => StartScreen()));
           return;
         }
         UserProfileScreenViewModel model = ref.read(widget.provider.notifier);
@@ -462,12 +604,19 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         });
       },
       child: Text(
-        followed ? globalLocalizations.common_unfollow : globalLocalizations.common_follow,
-        style: TextStyle(fontFamily: 'Baloo', fontSize: 18, fontWeight: FontWeight.bold),
+        followed
+            ? globalLocalizations.common_unfollow
+            : globalLocalizations.common_follow,
+        style: TextStyle(
+            fontFamily: 'Baloo', fontSize: 18, fontWeight: FontWeight.bold),
       ),
       style: TextButton.styleFrom(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(14), bottomLeft: Radius.circular(14), topRight: Radius.zero, bottomRight: Radius.zero),
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(14),
+              bottomLeft: Radius.circular(14),
+              topRight: Radius.zero,
+              bottomRight: Radius.zero),
         ),
         primary: Colors.white,
         onSurface: Colors.white,
@@ -478,7 +627,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     );
   }
 
-  Widget buildFollowerCard({required String title, int? amount, Function()? onClick}) {
+  Widget buildFollowerCard(
+      {required String title, int? amount, Function()? onClick}) {
     var column = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -487,14 +637,18 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         ),
         Text(
           title,
-          style: TextStyle(fontSize: 12, color: designColors.light_06.auto(ref)),
+          style:
+              TextStyle(fontSize: 12, color: designColors.light_06.auto(ref)),
         ),
         const SizedBox(
           height: 4,
         ),
         Text(
           formatAmount(amount ?? 0),
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: designColors.dark_01.auto(ref)),
+          style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: designColors.dark_01.auto(ref)),
         ),
         const Spacer(
           flex: 12,
@@ -512,7 +666,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           padding: EdgeInsets.all(10),
           primary: designColors.light_01.auto(ref),
           onPrimary: designColors.light_02.auto(ref),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           shadowColor: Colors.black.withAlpha((255 * 0.2).toInt()),
           elevation: 4),
     );
@@ -523,13 +678,17 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     // );
   }
 
-  BoxDecoration buildCardDecoration() => BoxDecoration(boxShadow: cardShadow, borderRadius: BorderRadius.circular(20), color: designColors.light_01.auto(ref));
+  BoxDecoration buildCardDecoration() => BoxDecoration(
+      boxShadow: cardShadow,
+      borderRadius: BorderRadius.circular(20),
+      color: designColors.light_01.auto(ref));
 
   Widget buildMainCard(Widget child) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
-        padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20, top: 12),
+        padding:
+            const EdgeInsets.only(left: 20, right: 20, bottom: 20, top: 12),
         decoration: buildCardDecoration(),
         child: child,
       ),
@@ -565,9 +724,14 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                     height: 24,
                     child: Center(
                       child: Text(
-                        sprintf(globalLocalizations.me_profile_joined,
-                            [DateUtil.getZonedDateString(user.createdAt!, format: globalLocalizations.me_profile_joined_date_format)]),
-                        style: TextStyle(fontSize: 16, color: designColors.dark_01.auto(ref)),
+                        sprintf(globalLocalizations.me_profile_joined, [
+                          DateUtil.getZonedDateString(user.createdAt!,
+                              format: globalLocalizations
+                                  .me_profile_joined_date_format)
+                        ]),
+                        style: TextStyle(
+                            fontSize: 16,
+                            color: designColors.dark_01.auto(ref)),
                       ),
                     ),
                   )
@@ -583,7 +747,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                     ),
                     Text(
                       user.signature ?? "",
-                      style: TextStyle(fontSize: 14, color: designColors.light_06.auto(ref)),
+                      style: TextStyle(
+                          fontSize: 14, color: designColors.light_06.auto(ref)),
                     ),
                   ],
                 ),
@@ -598,7 +763,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                     },
                     child: Text(
                       user.website ?? "",
-                      style: TextStyle(fontSize: 14, color: designColors.feiyu_blue.auto(ref), decoration: TextDecoration.underline),
+                      style: TextStyle(
+                          fontSize: 14,
+                          color: designColors.feiyu_blue.auto(ref),
+                          decoration: TextDecoration.underline),
                     ),
                   )),
             ],
@@ -617,7 +785,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     const double buttonSize = 36;
     const double badgeWidth = 32;
     double screenWidth = MediaQuery.of(context).size.width;
-    int maxBadgeCount = (screenWidth - (paddingLeft + outerSpacing * 2 + buttonSize + paddingRight) + middleSpacing) ~/ (badgeWidth + middleSpacing);
+    int maxBadgeCount = (screenWidth -
+            (paddingLeft + outerSpacing * 2 + buttonSize + paddingRight) +
+            middleSpacing) ~/
+        (badgeWidth + middleSpacing);
 
     List<Widget> list;
     if (user.receivedBadges == null || user.receivedBadges!.isEmpty) {
@@ -629,7 +800,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         Expanded(
           child: Text(
             globalLocalizations.me_no_badges,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: designColors.dark_03.auto(ref)),
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: designColors.dark_03.auto(ref)),
           ),
         ),
         IconButton(
@@ -650,15 +824,15 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       List<Widget>? badges = user.receivedBadges
           ?.take(maxBadgeCount)
           .map((e) => [
-                HoohImage(
-                  imageUrl: e,
-                  width: badgeWidth,
-                  isBadge: true,
-                ),
-                const SizedBox(
-                  width: middleSpacing,
-                )
-              ])
+        HoohImage(
+          imageUrl: e,
+          width: badgeWidth,
+          isBadge: true,
+        ),
+        const SizedBox(
+          width: middleSpacing,
+        )
+      ])
           .expand((element) => element)
           .toList();
       if (badges != null && badges.isNotEmpty) {
@@ -720,6 +894,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   }
 
   void goToBadgeScreen(User user) {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => BadgesScreen(userId: user.id)));
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => BadgesScreen(userId: user.id)));
   }
 }

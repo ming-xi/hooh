@@ -63,7 +63,7 @@ class IpfsNode {
           ));
     });
     //插入到 Overlay中显示 OverlayEntry
-    Overlay.of(context)?.insert(overlayEntry);
+    Overlay.of(context).insert(overlayEntry);
     nodeInserted = true;
     //
     // //延时两秒，移除 OverlayEntry

@@ -1,5 +1,6 @@
-<manifest xmlns:android = "http://schemas.android.com/apk/res/android"
-          package = "xyz.hooh.app">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="xyz.hooh.app">
 	<uses-permission android:name = "android.permission.INTERNET"/>
 	<uses-permission android:name = "android.permission.ACCESS_NETWORK_STATE"/>
 	<uses-permission android:name = "android.permission.WAKE_LOCK"/>
@@ -9,19 +10,23 @@
 	<uses-permission android:name = "android.permission.READ_EXTERNAL_STORAGE"/>
 	<uses-permission android:name = "android.permission.WRITE_EXTERNAL_STORAGE"/>
 	<uses-permission android:name = "android.permission.CAMERA"/>
-	<application
-		android:label = "HOOH"
-		android:usesCleartextTraffic = "true"
-		android:name = "${applicationName}"
-		android:icon = "@mipmap/ic_launcher">
-		<meta-data
-			android:name = "com.google.firebase.messaging.default_notification_icon"
-			android:resource = "@drawable/icon_small_notification"/>
-		<meta-data
-			android:name = "com.google.firebase.messaging.default_notification_channel_id"
-			android:value = "high_importance_channel"/>
-		<activity
-			android:name = ".MainActivity"
+
+    <application
+        android:label="HOOH"
+        android:usesCleartextTraffic="true"
+        android:name="${applicationName}"
+        tools:replace="android:name"
+
+        android:icon="@mipmap/ic_launcher">
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/icon_small_notification"/>
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="high_importance_channel"/>
+
+        <activity
+            android:name=".MainActivity"
 			android:exported = "true"
 			android:launchMode = "singleTop"
 			android:theme = "@style/LaunchTheme"

@@ -314,6 +314,14 @@
   "user_posts_no_following_title": "关注任意用户，这个空白页面就会消失哦 \n这里会看到他们的有趣创作~",
   "user_posts_not_login_button": "登录",
   "user_posts_not_login_title": "立刻登录开启更多有趣功能",
+  "user_profile_menu_report": "举报用户",
+  "user_profile_menu_report_fraud": "诈骗或欺诈",
+  "user_profile_menu_report_harrassement": "骚扰",
+  "user_profile_menu_report_inappropriate": "举报用户",
+  "user_profile_menu_report_other": "其他",
+  "user_profile_menu_report_sexual": "低俗色情",
+  "user_profile_menu_report_spam": "垃圾广告",
+  "user_profile_menu_report_success": "举报成功！",
   "user_profile_posts": "创作",
   "user_profile_templates": "模板",
   "validate_code_helper": "无法收到验证码？稍等几分钟或查看垃圾箱试试～",
@@ -337,7 +345,7 @@
   "wallet_overview": "账户总览",
   "wallet_pow": "POW",
   "wallet_reputation": "Influence",
-  "second": "{count,plural,  =other{{count}秒}}",
+  "second": "{count,plural,  other{{count}秒}}",
   "@second": {
     "placeholders": {
       "count": {
@@ -345,7 +353,7 @@
       }
     }
   },
-  "minute": "{count,plural,  =other{{count}分钟}}",
+  "minute": "{count,plural,  other{{count}分钟}}",
   "@minute": {
     "placeholders": {
       "count": {
@@ -353,7 +361,7 @@
       }
     }
   },
-  "hour": "{count,plural,  =other{{count}小时}}",
+  "hour": "{count,plural,  other{{count}小时}}",
   "@hour": {
     "placeholders": {
       "count": {
@@ -361,7 +369,7 @@
       }
     }
   },
-  "day": "{count,plural,  =other{{count}天}}",
+  "day": "{count,plural,  other{{count}天}}",
   "@day": {
     "placeholders": {
       "count": {
@@ -369,7 +377,7 @@
       }
     }
   },
-  "month": "{count,plural,  =other{{count}个月}}",
+  "month": "{count,plural,  other{{count}个月}}",
   "@month": {
     "placeholders": {
       "count": {
@@ -377,7 +385,7 @@
       }
     }
   },
-  "post": "{count,plural,  =other{{count}个帖子}}",
+  "post": "{count,plural,  other{{count}个帖子}}",
   "@post": {
     "placeholders": {
       "count": {

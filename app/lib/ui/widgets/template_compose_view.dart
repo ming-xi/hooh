@@ -173,7 +173,7 @@ class _TemplateViewState extends ConsumerState<TemplateView> {
   }
 
   Widget buildUploaderInfoButton(Template template) {
-    var button = SizedBox(
+    var button = const SizedBox(
       width: 44,
       height: 44,
       child: Center(
@@ -207,7 +207,9 @@ class _TemplateViewState extends ConsumerState<TemplateView> {
   Widget buildMaskView() {
     return Positioned.fill(
         child: Container(
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(widget.radius ?? 0), color: Color(TemplateView.MASK_COLOR)),
+          decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(widget.radius ?? 0),
+          color: const Color(TemplateView.MASK_COLOR)),
     ));
   }
 
@@ -215,6 +217,7 @@ class _TemplateViewState extends ConsumerState<TemplateView> {
     return Positioned.fill(
       child: CustomPaint(
         willChange: false,
+        // painter: PostTextPainter2(),
         painter: PostTextPainter(widget.setting.text!, widget.setting.textColor,
             frameX: widget.setting.frameX,
             frameY: widget.setting.frameY,
@@ -355,7 +358,7 @@ class PostTextPainter extends CustomPainter {
   }) {
     p.strokeCap = StrokeCap.square;
     p.strokeWidth = 1;
-    p.style = PaintingStyle.stroke;
+    // p.style = PaintingStyle.stroke;
     // WidgetsBinding? binding = WidgetsBinding.instance;
     // double devicePixelRatio = binding!.window.devicePixelRatio;
     // // 4px
@@ -405,20 +408,20 @@ class PostTextPainter extends CustomPainter {
       p.color = shouldUseLightStroke(textColor) ? Colors.white : Colors.black;
       p.style = PaintingStyle.stroke;
       p.strokeWidth = strokeWidth;
-      drawTextInternal(canvas, size, p);
+      drawTextInternal(canvas, size);
     }
     // draw text body
     p.color = textColor;
     p.style = PaintingStyle.fill;
-    drawTextInternal(canvas, size, p);
+    drawTextInternal(canvas, size);
   }
 
   bool shouldUseLightStroke(Color color) {
     return (color.red + color.green + color.blue) / 3 <= 0x45;
   }
 
-  void drawTextInternal(Canvas canvas, Size size, Paint paint) {
-    final textStyle = TextStyle(
+  void drawTextInternal(Canvas canvas, Size size) {
+    TextStyle textStyle = TextStyle(
       fontSize: fontSize,
       fontFamily: fontFamily,
       height: lineHeight,
@@ -426,25 +429,24 @@ class PostTextPainter extends CustomPainter {
       shadows: !drawShadow
           ? null
           : [
-              Shadow(
+              const Shadow(
                 offset: Offset(1.0, 1.0),
                 blurRadius: 4.0,
                 color: Color(TemplateView.MASK_COLOR),
               ),
             ],
-      foreground: paint,
+      foreground: p,
     );
 
-    final textSpan = TextSpan(
-      text: text,
-      style: textStyle,
-    );
     Map<TextAlignment, ui.TextAlign> alignMap = {
       TextAlignment.left: TextAlign.left,
       TextAlignment.center: TextAlign.center,
       TextAlignment.right: TextAlign.right,
     };
-    tp.text = textSpan;
+    // tp.text = TextSpan(
+    //   text: text,
+    //   style: textStyle,
+    // );
     tp.textAlign = alignMap[alignment]!;
     if (!userChanged) {
       // if (fontSize == null) {
@@ -457,11 +459,11 @@ class PostTextPainter extends CustomPainter {
       // }
     }
     debugPrint("userChanged=$userChanged fontSize=$fontSize");
-    final span = TextSpan(
+    tp.text = TextSpan(
       text: text,
       style: textStyle.copyWith(fontSize: fontSize),
     );
-    tp.text = span;
+    tp.markNeedsLayout();
     tp.layout(
       // minWidth:0,
       minWidth: translate(frameW, size.width) - textPadding * 2,
@@ -469,9 +471,13 @@ class PostTextPainter extends CustomPainter {
     );
     ui.Offset offset;
     if (!userChanged) {
-      offset = Offset(translate(frameX, size.width) + textPadding, translate(frameY, size.height) + (translate(frameH, size.height) - tp.height) / 2);
+      offset = Offset(
+          translate(frameX, size.width) + textPadding,
+          translate(frameY, size.height) +
+              (translate(frameH, size.height) - tp.height) / 2);
     } else {
-      offset = Offset(translate(frameX, size.width) + textPadding, translate(frameY, size.height) + textPadding);
+      offset = Offset(translate(frameX, size.width) + textPadding,
+          translate(frameY, size.height) + textPadding);
     }
     tp.paint(canvas, offset);
   }
@@ -523,6 +529,67 @@ class PostTextPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(PostTextPainter oldDelegate) {
+    return this != oldDelegate;
+  }
+}
+
+class PostTextPainter2 extends CustomPainter {
+  final Paint p = Paint();
+  Color textColor = Colors.blue;
+  double fontSize = 100;
+  String fontFamily = 'Linotte';
+  final TextPainter tp = TextPainter(
+    textDirection: TextDirection.ltr,
+  );
+
+  PostTextPainter2() {
+    p.strokeCap = StrokeCap.square;
+    p.strokeWidth = 1;
+  }
+
+  @override
+  bool? hitTest(ui.Offset position) {
+    // return super.hitTest(position);
+    return false;
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    drawText(canvas, size);
+  }
+
+  void drawText(Canvas canvas, Size size) {
+    // draw text stroke
+    p.color = Colors.black;
+    p.style = PaintingStyle.stroke;
+    p.strokeWidth = 1;
+    drawTextInternal(canvas, size);
+    // draw text body
+    p.color = textColor;
+    p.style = PaintingStyle.fill;
+    drawTextInternal(canvas, size);
+  }
+
+  void drawTextInternal(Canvas canvas, Size size) {
+    tp.text = TextSpan(
+      text: "Test",
+      style: TextStyle(
+        fontSize: fontSize,
+        // fontFamily: fontFamily,
+        height: 1,
+        foreground: p,
+      ),
+    );
+    tp.layout(
+      // minWidth:0,
+      minWidth: 200,
+      maxWidth: 200,
+    );
+    tp.paint(canvas, Offset(-100, -100));
+  }
+
+  @override
+  bool shouldRepaint(PostTextPainter2 oldDelegate) {
     return this != oldDelegate;
   }
 }

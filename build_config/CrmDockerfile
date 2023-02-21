@@ -1,3 +1,15 @@
-FROM nginx:alpine
+#FROM nginx:alpine
+#ARG ROOT_DIR
+#COPY ${ROOT_DIR}/web/ /usr/share/nginx/html
+
+FROM alpine
+
+VOLUME /dist
 ARG ROOT_DIR
-COPY ${ROOT_DIR}/web/ /usr/share/nginx/html
+ARG SCRIPT_DIR
+COPY ${ROOT_DIR}/web /src
+COPY ${SCRIPT_DIR}/install.sh /
+
+RUN chmod +x /install.sh
+CMD ["/install.sh"]
+
