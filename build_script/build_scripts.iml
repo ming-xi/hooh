@@ -12,7 +12,12 @@
       <excludeFolder url="file://$MODULE_DIR$/../crm/build" />
       <excludeFolder url="file://$MODULE_DIR$/../crm/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/../crm/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/../app/build" />
+      <excludeFolder url="file://$MODULE_DIR$/../app/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/../app/.pub" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Dart SDK" level="project" />
+    <orderEntry type="library" name="Dart Packages" level="project" />
   </component>
 </module>

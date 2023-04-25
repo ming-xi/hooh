@@ -314,6 +314,8 @@
   "user_posts_no_following_title": "关注任意用户，这个空白页面就会消失哦 \n这里会看到他们的有趣创作~",
   "user_posts_not_login_button": "登录",
   "user_posts_not_login_title": "立刻登录开启更多有趣功能",
+  "user_profile_menu_block": "屏蔽用户",
+  "user_profile_menu_block_success": "屏蔽成功！",
   "user_profile_menu_report": "举报用户",
   "user_profile_menu_report_fraud": "诈骗或欺诈",
   "user_profile_menu_report_harrassement": "骚扰",

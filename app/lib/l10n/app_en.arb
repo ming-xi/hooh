@@ -314,6 +314,8 @@
   "user_posts_no_following_title": "Oops, \nyou haven't followed anyone yet.\nCome on, make some friends!",
   "user_posts_not_login_button": "Login",
   "user_posts_not_login_title": "Log in to see what is new!",
+  "user_profile_menu_block": "Block User",
+  "user_profile_menu_block_success": "Block Succeed !",
   "user_profile_menu_report": "Report User",
   "user_profile_menu_report_fraud": "Fraud",
   "user_profile_menu_report_harrassement": "Harrassement",

@@ -223,7 +223,19 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
             style: style,
           ),
         );
-        List<PopupMenuItem> items = [itemReport];
+        PopupMenuItem itemBlock = PopupMenuItem(
+          onTap: () {
+            Future.delayed(const Duration(milliseconds: 250), () {
+              showSnackBar(
+                  context, globalLocalizations.user_profile_menu_block_success);
+            });
+          },
+          child: Text(
+            globalLocalizations.user_profile_menu_block,
+            style: style,
+          ),
+        );
+        List<PopupMenuItem> items = [itemReport, itemBlock];
         return items;
       },
     );
